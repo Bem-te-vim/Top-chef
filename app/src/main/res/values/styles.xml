@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ShapeAppearance.Image.Circle" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.Image.RoundedSquare" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <!-- ImageButtonForm -->
+    <style name="btn_favorite" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">@drawable/oval_shape</item>
+        <item name="layout_constraintDimensionRatio">1:1</item>
+    </style>
+
+    <!--    ImageButtonRoundedSquareForm-->
+    <style name="ImageButtonRoundedSquareForm" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">@drawable/rounded_square_shape</item>
+        <item name="layout_constraintDimensionRatio">1:1</item>
+    </style>
+
+    <!--shapeableImageViewCircleForm -->
+    <style name="ShapeableImageViewCircleForm">
+        <item name="android:scaleType">centerCrop</item>
+        <item name="layout_constraintDimensionRatio">1:1</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Image.Circle</item>
+    </style>
+
+    <!--ShapeableImageViewRoundedSquareForm-->
+    <style name="ShapeableImageViewRoundedSquareForm">
+        <item name="android:scaleType">centerCrop</item>
+        <item name="layout_constraintDimensionRatio">1:1</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Image.RoundedSquare</item>
+    </style>
+
+    <style name="AutoCompleteTextViewForm" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu" />
+</resources>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background2"
+    tools:context=".feature_feed_main.ui.activity.MainActivity">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/app_bar_shape"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/image_profile"
+            style="@style/ShapeableImageViewCircleForm"
+            android:layout_width="50dp"
+            android:layout_height="0dp"
+
+            android:layout_marginTop="8dp"
+            android:src="@drawable/sam"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/Helo_Profile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Hello, Sam 👩‍🍳!"
+            android:textAlignment="textStart"
+            android:textColor="@color/myWhite"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageButton"
+            app:layout_constraintStart_toEndOf="@+id/image_profile"
+            app:layout_constraintTop_toTopOf="@+id/image_profile" />
+
+
+        <TextView
+            android:id="@+id/random_massage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Check Amazing Recipes"
+            android:textAlignment="textStart"
+            android:textColor="@color/myLtGray"
+            android:textSize="14sp"
+            android:typeface="sans"
+            app:layout_constraintEnd_toStartOf="@+id/imageButton"
+            app:layout_constraintStart_toEndOf="@+id/image_profile"
+            app:layout_constraintTop_toBottomOf="@+id/Helo_Profile" />
+
+        <ImageButton
+            android:id="@+id/imageButton"
+            style="@style/btn_favorite"
+            android:layout_width="40dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+
+            android:backgroundTint="@color/backgroundIc"
+            android:contentDescription="@string/notifications"
+            android:src="@drawable/notification_alarm_svgrepo_com"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_search_filter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/image_profile">
+
+            <EditText
+                android:id="@+id/text_input_search"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/rounded_square_shape_for_edtx"
+                android:backgroundTint="@color/backgroundIc"
+                android:drawableStart="@drawable/search_svgrepo_com"
+                android:drawablePadding="6dp"
+                android:focusable="false"
+                android:hint="@string/search"
+                android:inputType="none"
+                android:textColor="@color/black"
+                android:textColorHint="@color/myGray"
+                android:textSize="16sp"
+
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageButton2"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="Autofill" />
+
+            <ImageButton
+                android:id="@+id/imageButton2"
+                style="@style/ImageButtonRoundedSquareForm"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:backgroundTint="@color/backgroundIc"
+                android:contentDescription="@string/filter"
+                android:src="@drawable/outline_filter_alt_24"
+                app:layout_constraintBottom_toBottomOf="@+id/text_input_search"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/text_input_search" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:paddingBottom="60dp"
+        android:clipToPadding="false"
+        android:id="@+id/rv_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/container_app_bar" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

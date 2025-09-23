@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fitsSystemWindows="true"
+    tools:context=".feature_add_recipe.ui.activity.AddRecipeActivity">
+
+
+    <!--always leave it down here-->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingHorizontal="10dp"
+        android:paddingBottom="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/img_cover_add_recipe"
+                style="@style/ShapeableImageViewRoundedSquareForm"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="4dp"
+                android:src="@drawable/placeholder_item"
+                app:layout_constraintDimensionRatio="3:2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_images_add_recipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="40dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/rounded_square_shape"
+                android:backgroundTint="@color/my_transparent"
+                android:orientation="horizontal"
+                android:padding="1dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="@id/img_cover_add_recipe"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:itemCount="5"
+                tools:listitem="@layout/row_images_from_detail" />
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_add_images"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/rounded_square_shape"
+                android:backgroundTint="@color/backgroundIc"
+                android:fontFamily="sans-serif"
+                android:text="@string/add_images"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@color/default_color_app"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@+id/img_cover_add_recipe"
+                app:layout_constraintStart_toStartOf="@+id/img_cover_add_recipe"
+                app:layout_constraintTop_toBottomOf="@+id/img_cover_add_recipe" />
+
+            <LinearLayout
+                android:id="@+id/container_title_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_add_images">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/AutoCompleteTextViewForm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundColor="@color/backgroundIc"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxStrokeColor="@null"
+                    app:endIconMode="dropdown_menu"
+                    app:endIconTint="@color/default_color_app">
+
+                    <AutoCompleteTextView
+                        android:text="@string/type"
+                        android:id="@+id/autoCompleteType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:ellipsize="end"
+                        android:inputType="none"
+                        android:padding="15dp"
+                        android:textAlignment="viewStart"
+                        android:popupBackground="@color/backgroundIc"
+                        android:singleLine="true"
+                        android:textColor="@color/myGray"
+                        android:textSize="18sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <EditText
+                    android:id="@+id/edtx_recipe_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_square_shape_for_edtx"
+                    android:backgroundTint="@color/backgroundIc"
+                    android:hint="@string/recipe_title"
+                    android:inputType="textCapSentences"
+                    android:maxLength="45"
+                    android:padding="12dp"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textColorHint="@color/myGray"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/character_count_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginBottom="4dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/value_bar_value"
+                    android:textColor="@color/LtGrayFoTxt"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/edtx_recipe_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_square_shape_for_edtx"
+                    android:backgroundTint="@color/backgroundIc"
+                    android:gravity="top|start"
+                    android:hint="@string/description"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:maxLength="300"
+                    android:minHeight="150dp"
+                    android:padding="12dp"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textColorHint="@color/myGray"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/character_count_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/value_bar_value"
+                    android:textColor="@color/LtGrayFoTxt"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/container_information"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/container_title_description">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/important_information"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="true"
+                    android:textColor="@color/default_color_app"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/difficult"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_recipe_difficult"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:isScrollContainer="false"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:itemCount="5"
+                        tools:listitem="@layout/row_difficult_item" />
+
+                    <TextView
+                        android:id="@+id/difficult_level"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif-medium"
+                        android:singleLine="true"
+                        android:textAlignment="center"
+                        android:textColor="@color/LtGrayFoTxt"
+                        android:textSize="16sp"
+                        tools:text="@string/very_hard" />
+                </LinearLayout>
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/preparation_time"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/edtx_preparation_time_hour"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_square_shape_for_edtx"
+                        android:backgroundTint="@color/backgroundIc"
+                        android:ellipsize="end"
+                        android:hint="@string/hour"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/WhiteForTxt"
+                        android:textColorHint="@color/myGray"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginHorizontal="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/hour_s"
+                        android:textColor="@color/LtGrayFoTxt"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/edtx_preparation_time_minute"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_square_shape_for_edtx"
+                        android:backgroundTint="@color/backgroundIc"
+                        android:ellipsize="end"
+                        android:hint="@string/minutes"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/WhiteForTxt"
+                        android:textColorHint="@color/myGray"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginHorizontal="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/minute_s"
+                        android:textColor="@color/LtGrayFoTxt"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/coking_time"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/edtx_coking_time_hour"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_square_shape_for_edtx"
+                        android:backgroundTint="@color/backgroundIc"
+                        android:ellipsize="end"
+                        android:hint="@string/hour"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/WhiteForTxt"
+                        android:textColorHint="@color/myGray"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginHorizontal="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/hour_s"
+                        android:textColor="@color/LtGrayFoTxt"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/edtx_coking_time_minute"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_square_shape_for_edtx"
+                        android:backgroundTint="@color/backgroundIc"
+                        android:ellipsize="end"
+                        android:hint="@string/minutes"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:padding="12dp"
+                        android:textAlignment="center"
+                        android:textColor="@color/WhiteForTxt"
+                        android:textColorHint="@color/myGray"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginHorizontal="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/minute_s"
+                        android:textColor="@color/LtGrayFoTxt"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/container_ingredients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/container_information">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/ingredient"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="true"
+                    android:textColor="@color/default_color_app"
+                    android:textSize="18sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_ingredients"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    tools:itemCount="5" />
+
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_square_shape_for_edtx"
+                    android:backgroundTint="@color/backgroundIc"
+                    android:gravity="top|start"
+                    android:hint="@string/ingredient_"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:minHeight="100dp"
+                    android:padding="12dp"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textColorHint="@color/myGray"
+                    android:textSize="18sp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/rounded_square_shape"
+                    android:backgroundTint="@color/backgroundIc"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/add_ingredient"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textColor="@color/default_color_app"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/container_preparation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/container_ingredients">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/preparation"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="true"
+                    android:textColor="@color/default_color_app"
+                    android:textSize="18sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_preparation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    tools:itemCount="5" />
+
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/rounded_square_shape_for_edtx"
+                    android:backgroundTint="@color/backgroundIc"
+                    android:gravity="top|start"
+                    android:hint="@string/step_1"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:minHeight="100dp"
+                    android:padding="12dp"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textColorHint="@color/myGray"
+                    android:textSize="18sp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/rounded_square_shape"
+                    android:backgroundTint="@color/backgroundIc"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/add_step"
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textColor="@color/default_color_app"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+                <Button
+                    app:layout_constraintTop_toBottomOf="@id/container_preparation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:backgroundTint="@color/default_color_app"
+                    android:textColor="@color/WhiteForTxt"
+                    android:text="Salvar"
+                    android:layout_marginHorizontal="90dp"
+                    android:textSize="18sp"
+                    android:layout_marginTop="16dp"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
