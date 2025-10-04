@@ -39,6 +39,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.glide)
+    annotationProcessor (libs.compiler)
     implementation(libs.gson)
     implementation(libs.androidx.room.runtime)
     kapt(libs.androidx.room.compiler)

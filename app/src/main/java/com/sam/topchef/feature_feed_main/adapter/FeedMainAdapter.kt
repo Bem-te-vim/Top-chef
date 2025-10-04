@@ -9,16 +9,23 @@ import com.sam.topchef.feature_feed_main.adapter.holder.PopularRecipesViewHolder
 import com.sam.topchef.feature_feed_main.adapter.holder.RecipePostViewHolder
 import com.sam.topchef.feature_feed_main.data.model.MainFeedItem
 
-class FeedMainAdapter(private val items: List<MainFeedItem>) :
+class FeedMainAdapter() :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    var onItemClickListener: ((Int) -> Unit)? = null
-    var onWhatShowListener: ((String) -> Unit)? = null
 
     companion object {
         private const val VIEW_TYPE_CATEGORY_RECIPE = 0
         private const val VIEW_TYPE_POPULAR_RECIPE = 1
         private const val VIEW_TYPE_RECIPES_POST = 3
+    }
+
+    var onItemClickListener: ((Int) -> Unit)? = null
+    var onWhatShowListener: ((String) -> Unit)? = null
+
+    private val items= mutableListOf<MainFeedItem>()
+    fun setItems(newItems: List<MainFeedItem>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -69,10 +76,12 @@ class FeedMainAdapter(private val items: List<MainFeedItem>) :
     ) {
         when (val item = items[position]) {
             is MainFeedItem.Categories -> (holder as CategoriesRecipeViewHolder).bind(
+                item.categories,
                 onWhatShowListener
             )
 
             is MainFeedItem.PopularRecipes -> (holder as PopularRecipesViewHolder).bind(
+                item.popularRecipes,
                 onItemClickListener,
                 onWhatShowListener
             )

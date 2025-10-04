@@ -35,4 +35,7 @@
     <string name="add_ingredient">Adicionar Ingrediente</string>
     <string name="ingredient_">Ingrediente*</string>
     <string name="type">Tipo*</string>
+    <string name="save">Salvar</string>
+    <string name="add_recipe">Adicionar receita</string>
+    <string name="open_cart">Abrir Carrinho</string>
 </resources>

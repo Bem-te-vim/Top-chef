@@ -1,22 +1,29 @@
 package com.sam.topchef.feature_feed_main.adapter
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.feature_feed_main.data.model.PopularRecipe
 
-class PopularRecipesAdapter(private val popularRecipes: List<PopularRecipe>,
+class PopularRecipesAdapter(
+    private val popularRecipes: List<PopularRecipe>,
     val popularRecipeClick: (Int) -> Unit
 ) :
     RecyclerView.Adapter<PopularRecipesAdapter.PopularRecipesViewHolder>() {
 
 
     inner class PopularRecipesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+        private val context = itemView.context
+
         val imgCover: ShapeableImageView = view.findViewById(R.id.img_popular_recipe)
         val txtReview: TextView = view.findViewById(R.id.txt_reviews)
         val btnFavorite: ImageButton = view.findViewById(R.id.btn_favorite_popular_recipe)
@@ -24,23 +31,47 @@ class PopularRecipesAdapter(private val popularRecipes: List<PopularRecipe>,
         val txtTimerAndDifficultAndChef: TextView = view.findViewById(R.id.txt_popularRecipe_info)
 
         fun bind(item: PopularRecipe) {
-            imgCover //Todo
+            Glide.with(context)
+                .load(item.coverUrl)
+                .placeholder(R.drawable.placeholder_item)
+                .into(imgCover)
+
             imgCover.setOnClickListener { popularRecipeClick(item.id) }
 
             txtTitle.text = item.title
 
             txtReview.text = itemView.context.getString(R.string.reviews, item.reviews)
 
+            val difficult = when (item.difficult) {
+                1 -> context.getString(R.string.very_easy)
+                2 -> context.getString(R.string.easy)
+                3 -> context.getString(R.string.average)
+                4 -> context.getString(R.string.hard)
+                5 -> context.getString(R.string.very_hard)
+                else -> "ERROR"
+            }
             txtTimerAndDifficultAndChef.text = itemView.context.getString(
                 R.string.recipe_info,
                 item.time,
                 "min",
-                item.difficult,
+                difficult,
                 item.chef
             )
 
+
+
             btnFavorite.setOnClickListener {
-                //todo
+                item.isFavorite = !item.isFavorite
+
+                if (item.isFavorite) {
+                    btnFavorite.imageTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.default_color_app)
+                    )
+                } else {
+                    btnFavorite.imageTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.myGray)
+                    )
+                }
             }
         }
     }

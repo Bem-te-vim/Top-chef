@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.feature_feed_main.data.model.RecipeCategory
@@ -19,12 +20,18 @@ class CategoryRecipeAdapter(
         val tvCategory: TextView = view.findViewById(R.id.tv_category)
         val imgCategory: ShapeableImageView = view.findViewById(R.id.img_category)
 
-        fun bind(categories: RecipeCategory) {
-            imgCategory //todo
-            tvCategory.text = categories.title
+        fun bind(item: RecipeCategory) {
+
+
+            Glide.with(itemView.context)
+                .load(item.coverUrl)
+                .placeholder(R.drawable.placeholder_item)
+                .into(imgCategory)
+
+            tvCategory.text = item.type
 
             itemView.setOnClickListener {
-                onCategoryClick(categories)
+                onCategoryClick(item)
             }
         }
 

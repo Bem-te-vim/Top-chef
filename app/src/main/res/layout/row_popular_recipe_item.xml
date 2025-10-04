@@ -3,20 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:layout_marginHorizontal="8dp"
-    android:paddingBottom="1dp"
-    android:layout_height="wrap_content">
+    android:paddingBottom="1dp">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/img_popular_recipe"
         style="@style/ShapeableImageViewRoundedSquareForm"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:src="@drawable/pexels"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/pexels" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/txt_reviews"
@@ -40,7 +40,7 @@
 
     <ImageButton
         android:id="@+id/btn_favorite_popular_recipe"
-        style="@style/btn_favorite"
+        style="@style/btnRoundedForm"
         android:layout_width="40dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
@@ -53,9 +53,9 @@
 
     <LinearLayout
 
-        android:layout_marginBottom="-1dp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-1dp"
         android:background="@drawable/rounded_square_shape"
         android:backgroundTint="@color/backgroundIc"
         android:orientation="vertical"
@@ -69,24 +69,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            tools:text="Burst Tomato Pasta"
             android:textAlignment="viewStart"
             android:textColor="@color/WhiteForTxt"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="Burst Tomato Pasta" />
 
         <TextView
             android:id="@+id/txt_popularRecipe_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:drawablePadding="8dp"
             android:fontFamily="sans-serif"
             android:gravity="center"
             android:singleLine="true"
             android:text="@string/recipe_info"
             android:textColor="@color/LtGrayFoTxt"
             android:textSize="14sp"
-            android:drawablePadding="8dp"
             app:drawableStartCompat="@drawable/timer_24dp" />
 
     </LinearLayout>

@@ -14,6 +14,9 @@ data class Recipe(
     @ColumnInfo(name = "reviews")
     val reviews: Double = 0.0,
 
+    @ColumnInfo(name = "chef")
+    val chef: String? = null,
+
     @ColumnInfo(name = "title")
     val title: String,
 
@@ -27,7 +30,11 @@ data class Recipe(
     val description: String? = null,
 
     @ColumnInfo(name = "preparation_time")
-    val preparationTime: Int? = null,
+    val preparationTime: Int = 0,
+
+    @ColumnInfo(name = "cooking_time")
+    val cookingTime: Int = 0,
+
 
     @ColumnInfo(name = "difficult")
     val difficult: Int,

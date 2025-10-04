@@ -14,19 +14,15 @@ class RecipeDifficultAdapter(
     private var difficultyLevel: Int = 1,
 ) : RecyclerView.Adapter<RecipeDifficultAdapter.RecipeDifficultViewHolder>() {
 
-    var getDifficultyLevel: ((Int)-> Unit)? = null
-
     inner class RecipeDifficultViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val context = itemView.context
         val ic: ShapeableImageView = view.findViewById(R.id.img_ic_difficult)
         @SuppressLint("NotifyDataSetChanged")
         fun bind(position: Int) {
-            getDifficultyLevel?.invoke(difficultyLevel)
-            // pinta se estiver dentro do nível selecionado
             if (position < difficultyLevel) {
-                ic.imageTintList = ColorStateList.valueOf(
-                    ContextCompat.getColor(context, R.color.default_color_app)
-                )
+                    ic.imageTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(context, R.color.default_color_app)
+                    )
             } else {
                 ic.imageTintList = ColorStateList.valueOf(
                     ContextCompat.getColor(context, R.color.myGray)

@@ -73,15 +73,25 @@
                 app:layout_constraintStart_toStartOf="@+id/img_cover_add_recipe"
                 app:layout_constraintTop_toBottomOf="@+id/img_cover_add_recipe" />
 
+
+
+            <View
+                app:layout_constraintTop_toBottomOf="@id/btn_add_images"
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#33333333"
+                android:layout_marginVertical="8dp"/>
+
             <LinearLayout
+                 android:layout_marginTop="4dp"
                 android:id="@+id/container_title_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_add_images">
+                app:layout_constraintTop_toBottomOf="@id/divider">
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/AutoCompleteTextViewForm"
@@ -104,7 +114,7 @@
                         android:background="@null"
                         android:ellipsize="end"
                         android:inputType="none"
-                        android:padding="15dp"
+                        android:padding="14dp"
                         android:textAlignment="viewStart"
                         android:popupBackground="@color/backgroundIc"
                         android:singleLine="true"
@@ -165,6 +175,14 @@
                     android:textColor="@color/LtGrayFoTxt"
                     android:textSize="14sp" />
 
+                <View
+                    android:layout_marginVertical="8dp"
+                    android:id="@+id/divider2"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#33333333"
+                    app:layout_constraintTop_toTopOf="parent" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -214,17 +232,6 @@
                         tools:itemCount="5"
                         tools:listitem="@layout/row_difficult_item" />
 
-                    <TextView
-                        android:id="@+id/difficult_level"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="sans-serif-medium"
-                        android:singleLine="true"
-                        android:textAlignment="center"
-                        android:textColor="@color/LtGrayFoTxt"
-                        android:textSize="16sp"
-                        tools:text="@string/very_hard" />
                 </LinearLayout>
 
 
@@ -368,13 +375,20 @@
 
                 </LinearLayout>
 
+                <View
+                    android:id="@+id/divider3"
+                    android:layout_marginVertical="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#33333333"
+                    app:layout_constraintTop_toTopOf="parent" />
+
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/container_ingredients"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:orientation="vertical"
                 app:layout_constraintTop_toBottomOf="@id/container_information">
 
@@ -425,13 +439,20 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
+                <View
+                    android:id="@+id/divider4"
+                    android:layout_marginVertical="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#33333333"
+                    app:layout_constraintTop_toTopOf="parent" />
+
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/container_preparation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:orientation="vertical"
                 app:layout_constraintTop_toBottomOf="@id/container_ingredients">
 
@@ -482,15 +503,24 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
+                <View
+                    android:id="@+id/divider5"
+                    android:layout_marginVertical="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#33333333"
+                    app:layout_constraintTop_toTopOf="parent" />
+
             </LinearLayout>
                 <Button
+                    android:id="@+id/btn_save"
                     app:layout_constraintTop_toBottomOf="@id/container_preparation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp"
                     android:backgroundTint="@color/default_color_app"
                     android:textColor="@color/WhiteForTxt"
-                    android:text="Salvar"
+                    android:text="@string/save"
                     android:layout_marginHorizontal="90dp"
                     android:textSize="18sp"
                     android:layout_marginTop="16dp"/>

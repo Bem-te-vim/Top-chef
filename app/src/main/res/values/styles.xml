@@ -12,7 +12,7 @@
     </style>
 
     <!-- ImageButtonForm -->
-    <style name="btn_favorite" parent="Widget.AppCompat.ImageButton">
+    <style name="btnRoundedForm" parent="Widget.AppCompat.ImageButton">
         <item name="android:background">@drawable/oval_shape</item>
         <item name="layout_constraintDimensionRatio">1:1</item>
     </style>

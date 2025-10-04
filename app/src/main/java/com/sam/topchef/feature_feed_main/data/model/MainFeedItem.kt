@@ -2,15 +2,19 @@ package com.sam.topchef.feature_feed_main.data.model
 
 sealed class MainFeedItem {
 
-    object Categories : MainFeedItem()
+    data class Categories(
+        val categories: List<RecipeCategory>
+    ) : MainFeedItem()
 
-    object PopularRecipes : MainFeedItem()
+    data class PopularRecipes(
+        val popularRecipes: List<PopularRecipe>
+    ) : MainFeedItem()
 
     data class RecipePost(
         val id: Int,
         val title: String,
-        val imageUrl: String? = null,
-        val isFavorite: Boolean,
+        val coverUrl: String? = null,
+        var isFavorite: Boolean,
         val reviews: Double
     ): MainFeedItem()
 }

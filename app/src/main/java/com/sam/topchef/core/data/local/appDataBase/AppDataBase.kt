@@ -6,14 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.sam.topchef.core.data.local.dao.RecipeDao
+import com.sam.topchef.core.data.local.dao.TypeDao
+import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.ArrayConverter
 import com.sam.topchef.core.utils.DateConverter
 
-@Database(entities = [Recipe::class], version = 2)
+@Database(entities = [Recipe::class, Type::class, Cart::class], version = 6)
 @TypeConverters(DateConverter::class, ArrayConverter::class)
 abstract class AppDataBase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
+    abstract fun typeDao(): TypeDao
 
     companion object {
         private var INSTANCE: AppDataBase? = null
@@ -25,7 +29,7 @@ abstract class AppDataBase : RoomDatabase() {
                         context.applicationContext,
                         AppDataBase::class.java,
                         "top_chef"
-                    ).build()
+                    ).fallbackToDestructiveMigration().build()
                 }
                 INSTANCE as AppDataBase
             } else {
