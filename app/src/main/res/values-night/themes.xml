@@ -3,6 +3,7 @@
     <style name="Base.Theme.TopChef" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <item name="android:textCursorDrawable">@drawable/cursor_custom</item>
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+       <item name="colorPrimary">@color/default_color_app</item>
+
     </style>
 </resources>

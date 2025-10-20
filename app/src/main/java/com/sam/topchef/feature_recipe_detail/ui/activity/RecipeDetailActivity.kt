@@ -9,12 +9,11 @@ import com.bumptech.glide.Glide
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.databinding.ActivityRecipeDetailBinding
-import com.sam.topchef.feature_recipe_detail.adapter.ImagesAdapter
+import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import kotlin.concurrent.thread
 
 class RecipeDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecipeDetailBinding
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +41,8 @@ class RecipeDetailActivity : AppCompatActivity() {
                 val title = recipe.title
                 val reviews = recipe.reviews
                 val type = recipe.type ?: "Tipo não informado."
-                val description = recipe.description ?: "Você pode adicionar uma descricao quando quiser :)"
+                val description =
+                    recipe.description ?: "Você pode adicionar uma descricao quando quiser :)"
                 val difficult = recipe.difficult
                 val ingredients = recipe.ingredients
                 val preparationMode = recipe.preparationMode
@@ -61,9 +61,11 @@ class RecipeDetailActivity : AppCompatActivity() {
                 binding.txtRecipeTitle.text = title
                 binding.txtRecipeDescription.text = description
                 binding.btnEvaluateRecipe.text = reviews.toString()
-                val totalTimeInMinutes  = preparationTime + cookingTime
-                binding.txtRecipeCookingTime.text = minuterFormater(totalTimeInMinutes)
 
+
+/**                val totalTimeInMinutes = preparationTime + cookingTime
+                binding.txtRecipeCookingTime.text = minuterFormater(totalTimeInMinutes)
+**/
 
                 binding.rvImageFromDetail.layoutManager =
                     LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -94,10 +96,5 @@ class RecipeDetailActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
     }
 
-    fun minuterFormater(totalMinutes: Int): String {
-        val hour = totalMinutes / 60
-        val min = totalMinutes % 60
-        return String.format("%dh:%02dmin", hour, min)
-    }
 
 }

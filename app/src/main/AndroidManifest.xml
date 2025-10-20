@@ -14,10 +14,13 @@
         android:theme="@style/Theme.TopChef"
         tools:targetApi="31">
         <activity
+            android:name=".feature_shopping_list.activities.ShoppingListActivity"
+            android:exported="false" />
+        <activity
             android:name=".feature_add_recipe.ui.activity.AddRecipeActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".feature_see_all.ui.activity.SeeAllActivity"
             android:exported="false"

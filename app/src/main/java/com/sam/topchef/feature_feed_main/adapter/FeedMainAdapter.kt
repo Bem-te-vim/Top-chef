@@ -20,12 +20,17 @@ class FeedMainAdapter() :
 
     var onItemClickListener: ((Int) -> Unit)? = null
     var onWhatShowListener: ((String) -> Unit)? = null
+    var onLongClickListenerToDelete: ((position: Int, id: Int) -> Boolean)? = null
 
-    private val items= mutableListOf<MainFeedItem>()
+    private val items = mutableListOf<MainFeedItem>()
     fun setItems(newItems: List<MainFeedItem>) {
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()
+    }
+    fun removeItem(position: Int){
+        items.removeAt(position)
+        notifyItemRemoved(position)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -59,6 +64,7 @@ class FeedMainAdapter() :
             )
 
             VIEW_TYPE_RECIPES_POST -> RecipePostViewHolder(
+                onLongClickListenerToDelete,
                 inflater.inflate(
                     R.layout.row_recipes_post_item,
                     parent,

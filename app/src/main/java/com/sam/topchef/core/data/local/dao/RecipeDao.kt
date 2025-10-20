@@ -1,7 +1,6 @@
 package com.sam.topchef.core.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -13,11 +12,14 @@ interface RecipeDao {
     @Insert
     fun insert(recipe: Recipe)
 
-    @Delete
-    fun delete(recipe: Recipe): Int
-
     @Update
     fun update(recipe: Recipe)
+
+    @Query("SELECT * FROM Recipe WHERE LOWER(title) LIKE '%' || LOWER(:search) || '%' OR LOWER(type) LIKE '%' || LOWER(:search) || '%'")
+    fun search(search: String): List<Recipe>
+
+    @Query("DELETE FROM Recipe WHERE id = :id")
+    fun delete(id: Int): Int
 
     @Query("SELECT * FROM Recipe WHERE id = :id")
     fun getRecipe(id: Int): Recipe

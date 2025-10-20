@@ -36,7 +36,11 @@ class PopularRecipesAdapter(
                 .placeholder(R.drawable.placeholder_item)
                 .into(imgCover)
 
-            imgCover.setOnClickListener { popularRecipeClick(item.id) }
+            txtReview.setOnClickListener {
+                // TODO: add feature review
+            }
+
+            itemView.setOnClickListener { popularRecipeClick(item.id) }
 
             txtTitle.text = item.title
 

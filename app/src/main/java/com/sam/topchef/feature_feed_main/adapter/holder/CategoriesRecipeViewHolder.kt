@@ -21,6 +21,7 @@ class CategoriesRecipeViewHolder(
     private val tvTitle: TextView = view.findViewById(R.id.tv_title)
     private val btnSeeAll: AppCompatButton = view.findViewById(R.id.btn_see_all)
 
+
     fun bind(
         categories: List<RecipeCategory>,
         onWhatShowListener: ((String) -> Unit)? = null

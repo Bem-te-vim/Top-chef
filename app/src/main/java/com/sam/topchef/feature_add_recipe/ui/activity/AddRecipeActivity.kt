@@ -1,26 +1,55 @@
 package com.sam.topchef.feature_add_recipe.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
+import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import kotlin.concurrent.thread
 
 class AddRecipeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddRecipeBinding
+    private lateinit var imagesAdapter: ImagesAdapter
     private val difficultAdapter = RecipeDifficultAdapter()
+
+
+    private val selectedUris = mutableListOf<String>()
+    private val pickImages =
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+            if (uris.isNotEmpty()) {
+                if (uris.size <= 5) {
+                    Glide.with(this).load(uris.first()).into(binding.imgCoverAddRecipe)
+                    selectedUris.clear()
+                    selectedUris.addAll(uris.map { it.toString() })
+                    imagesAdapter.notifyDataSetChanged()
+
+                    // Persistir permissão para acessar depois
+                    uris.forEach {
+                        contentResolver.takePersistableUriPermission(
+                            it,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    }
+                } else {
+                    Toast.makeText(this, "Selecione no máximo 5 imagens", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +58,37 @@ class AddRecipeActivity : AppCompatActivity() {
 
 
         val imgCover = binding.imgCoverAddRecipe
-        val btnAddImages = binding.btnAddImages
+        val rvImg = binding.rvImagesAddRecipe
+        rvImg.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        imagesAdapter = ImagesAdapter(selectedUris)
+        imagesAdapter.onImgClickListener = { img ->
+            Glide.with(this)
+                .load(img)
+                .placeholder(R.drawable.placeholder_item)
+                .into(imgCover)
+        }
+        imagesAdapter.onImgLongClickListener = { position ->
+            AlertDialog.Builder(this)
+                .setTitle("Remover imagem?")
+                .setNegativeButton("Cancelar") { p0, _ -> p0.dismiss() }
+                .setPositiveButton("Remover") { _, _ ->
+                    selectedUris.removeAt(position)
+                    imagesAdapter.notifyItemRemoved(position)
+
+                    Glide.with(this)
+                        .load(selectedUris.firstOrNull())
+                        .placeholder(R.drawable.placeholder_item)
+                        .into(imgCover)
+
+                }.show()
+            true
+        }
+        rvImg.adapter = imagesAdapter
+
+        binding.btnAddImages.setOnClickListener {
+            pickImages.launch("image/*")
+        }
+
 
         val dbItems = mutableListOf<String>()
         thread {
@@ -49,7 +108,6 @@ class AddRecipeActivity : AppCompatActivity() {
         }
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, dbItems)
-
         val autoCompleteType = binding.autoCompleteType
         autoCompleteType.apply {
             setText(getString(R.string.type))
@@ -98,6 +156,7 @@ class AddRecipeActivity : AppCompatActivity() {
                 title = edtxTitle.text.toString(),
                 description = edtxDescription.text.toString(),
                 difficult = difficultAdapter.getDifficultyLevel(),
+                imageUriString = selectedUris
             )
             thread {
                 val app = application as App
@@ -114,10 +173,12 @@ class AddRecipeActivity : AppCompatActivity() {
                 }
             }
         }
+
+
     }
 
-    //pega o length de um  editText e seta o valor em
-    // um textview
+    /**pega o length de um  editText e seta o valor em
+    um textview **/
     private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
         textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
         editText.addTextChangedListener { text ->
@@ -126,5 +187,5 @@ class AddRecipeActivity : AppCompatActivity() {
         }
     }
 
-
+    private fun sumHourMinutes(hour: Int, minutes: Int) = hour + minutes
 }

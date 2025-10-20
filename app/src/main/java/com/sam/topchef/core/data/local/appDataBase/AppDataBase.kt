@@ -13,7 +13,7 @@ import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.ArrayConverter
 import com.sam.topchef.core.utils.DateConverter
 
-@Database(entities = [Recipe::class, Type::class, Cart::class], version = 6)
+@Database(entities = [Recipe::class, Type::class, Cart::class], version = 9)
 @TypeConverters(DateConverter::class, ArrayConverter::class)
 abstract class AppDataBase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao

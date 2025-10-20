@@ -11,7 +11,11 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.feature_feed_main.data.model.MainFeedItem
 
-class RecipePostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+class RecipePostViewHolder(
+    val onLongClick: ((position: Int, id: Int) -> Boolean)? = null
+    , view: View
+) :
+    RecyclerView.ViewHolder(view) {
     private val context = itemView.context
 
     val imgRecipePost: ShapeableImageView = view.findViewById(R.id.img_recipe_post)
@@ -20,15 +24,21 @@ class RecipePostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val txtReviews: TextView = view.findViewById(R.id.txt_reviews_post)
 
     fun bind(item: MainFeedItem.RecipePost, onItemClickListener: ((Int) -> Unit)? = null) {
-        Glide.with(context)
-            .load(item.coverUrl)
-            .placeholder(R.drawable.placeholder_item)
+        Glide.with(context).load(item.coverUrl).placeholder(R.drawable.placeholder_item)
             .into(imgRecipePost)
 
         itemView.setOnClickListener {
             onItemClickListener?.invoke(item.id)
         }
 
+        itemView.setOnLongClickListener {
+            onLongClick?.invoke(adapterPosition, item.id)
+            true
+        }
+
+        txtReviews.setOnClickListener {
+            // TODO: add feature review
+        }
 
         btnFavorite.setOnClickListener {
             item.isFavorite = !item.isFavorite

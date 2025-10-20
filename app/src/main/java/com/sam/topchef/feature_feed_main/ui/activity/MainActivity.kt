@@ -2,7 +2,9 @@ package com.sam.topchef.feature_feed_main.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.core.data.local.app.App
@@ -15,6 +17,7 @@ import com.sam.topchef.feature_feed_main.data.model.RecipeCategory
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import com.sam.topchef.feature_search.activities.SearchActivity
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity
+import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
@@ -48,12 +51,32 @@ class MainActivity : AppCompatActivity() {
             startActivity(i)
         }
 
+        feedMainAdapter.onLongClickListenerToDelete = { position, id ->
+
+            val alertDialog = AlertDialog.Builder(this)
+                .setTitle("Deletar essa receita⚠?")
+                .setNegativeButton("Cancelar") { p0, _ -> p0.dismiss() }
+                .setPositiveButton("Deletar") { _, _ ->
+                    feedMainAdapter.removeItem(position)
+                    thread {
+                        val app = application as App
+                        val dao = app.db.recipeDao()
+                        dao.delete(id)
+                        runOnUiThread {
+                            Toast.makeText(this, "Receita deletada :(", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }.show()
+
+            true
+        }
+
         binding.imageProfile.setOnClickListener {
             //todo: not implemented yet -> open Activity ProfileActivity
         }
 
         binding.btnCart.setOnClickListener {
-            //todo: not implemented yet -> open Activity CartActivity
+            startActivity(Intent(this, ShoppingListActivity::class.java))
         }
 
         binding.textInputSearch.setOnClickListener {
@@ -71,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         loadData()
     }
 
-    private fun loadData(){
+    private fun loadData() {
         thread {
             val app = application as App
             val dao = app.db.recipeDao()
@@ -121,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             /**
-             * a orden em que os items sao adicionados afeta a ordem do feed
+             * the order in which items are added affects the order of the feed
              */
             val items = mutableListOf<MainFeedItem>()
             items.add(MainFeedItem.PopularRecipes(popularRecipes))
