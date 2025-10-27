@@ -34,6 +34,7 @@ class SearchActivity : AppCompatActivity() {
         binding.statusBarOverlay.layoutParams.height = statusBarHeight
 
         val txtSearch = binding.textInputSearch
+        txtSearch.requestFocus()
         txtSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -56,6 +57,8 @@ class SearchActivity : AppCompatActivity() {
 
 
         })
+
+
         val rvSearch = binding.rvSearch
         searchAdapter = SearchAdapter()
         searchAdapter.onItemClickListener = {id ->

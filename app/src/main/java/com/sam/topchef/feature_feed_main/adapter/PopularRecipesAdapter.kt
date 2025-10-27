@@ -1,5 +1,6 @@
 package com.sam.topchef.feature_feed_main.adapter
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +16,12 @@ import com.sam.topchef.feature_feed_main.data.model.PopularRecipe
 
 class PopularRecipesAdapter(
     private val popularRecipes: List<PopularRecipe>,
-    val popularRecipeClick: (Int) -> Unit
 ) :
     RecyclerView.Adapter<PopularRecipesAdapter.PopularRecipesViewHolder>() {
 
+
+    var popularRecipeClick:( (Int) -> Unit)? = null
+    var popularRecipeLikeClick: ((Int, Boolean) -> Unit)? = null
 
     inner class PopularRecipesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
@@ -40,7 +43,7 @@ class PopularRecipesAdapter(
                 // TODO: add feature review
             }
 
-            itemView.setOnClickListener { popularRecipeClick(item.id) }
+            itemView.setOnClickListener { popularRecipeClick?.invoke(item.id) }
 
             txtTitle.text = item.title
 
@@ -56,26 +59,28 @@ class PopularRecipesAdapter(
             }
             txtTimerAndDifficultAndChef.text = itemView.context.getString(
                 R.string.recipe_info,
-                item.time,
-                "min",
+                timeFormater(item.time),
                 difficult,
                 item.chef
             )
 
+            if (item.isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(context, R.color.default_color_app)
+            ) else btnFavorite.imageTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(context, R.color.myGray)
+            )
 
 
             btnFavorite.setOnClickListener {
                 item.isFavorite = !item.isFavorite
 
-                if (item.isFavorite) {
-                    btnFavorite.imageTintList = ColorStateList.valueOf(
+                if (item.isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
                         ContextCompat.getColor(context, R.color.default_color_app)
-                    )
-                } else {
-                    btnFavorite.imageTintList = ColorStateList.valueOf(
-                        ContextCompat.getColor(context, R.color.myGray)
-                    )
-                }
+                    ) else btnFavorite.imageTintList = ColorStateList.valueOf(
+                            ContextCompat.getColor(context, R.color.myGray)
+                        )
+
+                popularRecipeLikeClick?.invoke(item.id, item.isFavorite)
             }
         }
     }
@@ -100,5 +105,13 @@ class PopularRecipesAdapter(
 
     override fun getItemCount(): Int = popularRecipes.size
 
+
+    @SuppressLint("DefaultLocale")
+    private fun timeFormater(totalMinutes: Int): String{
+        val h = totalMinutes / 60
+        val min = totalMinutes % 60
+
+        return String.format("%dh:%02dmin", h, min)
+    }
 
 }

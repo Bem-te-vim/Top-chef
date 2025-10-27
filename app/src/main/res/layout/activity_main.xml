@@ -46,7 +46,6 @@
             android:textColor="@color/myWhite"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/imageButton"
             app:layout_constraintStart_toEndOf="@+id/image_profile"
             app:layout_constraintTop_toTopOf="@+id/image_profile" />
 
@@ -150,5 +149,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/container_app_bar" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/container_app_bar"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <include
+            android:id="@+id/include_recipe_list_empty"
+            layout="@layout/error_layout"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

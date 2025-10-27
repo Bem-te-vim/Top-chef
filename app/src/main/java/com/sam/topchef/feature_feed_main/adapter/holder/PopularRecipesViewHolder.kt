@@ -30,16 +30,26 @@ class PopularRecipesViewHolder(
     fun bind(
         popularRecipes: List<PopularRecipe>,
         onItemClickListener: ((Int) -> Unit)? = null,
-        onWhatShowListener: ((String) -> Unit)? = null
+        onWhatShowListener: ((String) -> Unit)? = null,
+        onLikeClickListener: ((id: Int, isLiked: Boolean) -> Unit)? = null,
+        sharedPool: RecyclerView.RecycledViewPool
     ) {
 
-        popularRecipesAdapter = PopularRecipesAdapter(popularRecipes) { id ->
+        popularRecipesAdapter = PopularRecipesAdapter(popularRecipes)
+
+        popularRecipesAdapter.popularRecipeClick = { id ->
             onItemClickListener?.invoke(id)
         }
+
+        popularRecipesAdapter.popularRecipeLikeClick = {id, isFavorite ->
+            onLikeClickListener?.invoke(id, isFavorite)
+        }
+
 
         rvPopularRecipes.apply {
             layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
             adapter = popularRecipesAdapter
+            setRecycledViewPool(sharedPool)
             setHasFixedSize(true)
             isNestedScrollingEnabled = false
             setItemViewCacheSize(10)

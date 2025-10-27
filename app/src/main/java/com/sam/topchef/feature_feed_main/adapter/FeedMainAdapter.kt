@@ -18,6 +18,10 @@ class FeedMainAdapter() :
         private const val VIEW_TYPE_RECIPES_POST = 3
     }
 
+    private val categoryViewPool = RecyclerView.RecycledViewPool()
+    private val popularViewPool = RecyclerView.RecycledViewPool()
+
+    var onLikeClickListener: ((Int, Boolean) -> Unit)? = null
     var onItemClickListener: ((Int) -> Unit)? = null
     var onWhatShowListener: ((String) -> Unit)? = null
     var onLongClickListenerToDelete: ((position: Int, id: Int) -> Boolean)? = null
@@ -83,18 +87,22 @@ class FeedMainAdapter() :
         when (val item = items[position]) {
             is MainFeedItem.Categories -> (holder as CategoriesRecipeViewHolder).bind(
                 item.categories,
-                onWhatShowListener
+                onWhatShowListener,
+                categoryViewPool
             )
 
             is MainFeedItem.PopularRecipes -> (holder as PopularRecipesViewHolder).bind(
                 item.popularRecipes,
                 onItemClickListener,
-                onWhatShowListener
+                onWhatShowListener,
+                onLikeClickListener,
+                popularViewPool
             )
 
             is MainFeedItem.RecipePost -> (holder as RecipePostViewHolder).bind(
                 item,
-                onItemClickListener
+                onItemClickListener,
+                onLikeClickListener
             )
         }
     }

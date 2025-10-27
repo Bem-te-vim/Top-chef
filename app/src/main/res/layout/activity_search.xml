@@ -33,7 +33,7 @@
         android:id="@+id/rv_search"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="4dp"
         android:clipToPadding="false"
         android:paddingBottom="20dp"
         app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"

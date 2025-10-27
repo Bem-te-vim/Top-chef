@@ -24,7 +24,8 @@ class CategoriesRecipeViewHolder(
 
     fun bind(
         categories: List<RecipeCategory>,
-        onWhatShowListener: ((String) -> Unit)? = null
+        onWhatShowListener: ((String) -> Unit)? = null,
+        sharedPool: RecyclerView.RecycledViewPool
     ) {
         categoryRecipeAdapter = CategoryRecipeAdapter(categories) { category ->
             onWhatShowListener?.invoke(category.type)
@@ -33,6 +34,7 @@ class CategoriesRecipeViewHolder(
         rvCategoryRecipe.apply {
             layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
             adapter = categoryRecipeAdapter
+            setRecycledViewPool(sharedPool)
             setHasFixedSize(true)
             isNestedScrollingEnabled = false
             setItemViewCacheSize(10)

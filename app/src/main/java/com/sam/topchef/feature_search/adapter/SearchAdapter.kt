@@ -20,6 +20,7 @@ class SearchAdapter() :
 
     private val recipes =  mutableListOf<Recipe>()
     fun submitList(list: List<Recipe>){
+        recipes.clear()
         recipes.addAll(list)
         notifyDataSetChanged()
     }

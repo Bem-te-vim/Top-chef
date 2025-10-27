@@ -22,7 +22,7 @@ interface RecipeDao {
     fun delete(id: Int): Int
 
     @Query("SELECT * FROM Recipe WHERE id = :id")
-    fun getRecipe(id: Int): Recipe
+    fun getRecipe(id: Int): Recipe?
 
     @Query("SELECT * FROM Recipe")
     fun getAllRecipes(): List<Recipe>

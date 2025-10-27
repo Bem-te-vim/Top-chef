@@ -12,8 +12,7 @@ import com.sam.topchef.R
 import com.sam.topchef.feature_feed_main.data.model.MainFeedItem
 
 class RecipePostViewHolder(
-    val onLongClick: ((position: Int, id: Int) -> Boolean)? = null
-    , view: View
+    val onLongClick: ((position: Int, id: Int) -> Boolean)? = null, view: View
 ) :
     RecyclerView.ViewHolder(view) {
     private val context = itemView.context
@@ -23,7 +22,11 @@ class RecipePostViewHolder(
     val txtTitle: TextView = view.findViewById(R.id.txt_title_post)
     val txtReviews: TextView = view.findViewById(R.id.txt_reviews_post)
 
-    fun bind(item: MainFeedItem.RecipePost, onItemClickListener: ((Int) -> Unit)? = null) {
+    fun bind(
+        item: MainFeedItem.RecipePost,
+        onItemClickListener: ((Int) -> Unit)? = null,
+        onLikeClickListener: ((id: Int, isLiked: Boolean) -> Unit)? = null
+    ) {
         Glide.with(context).load(item.coverUrl).placeholder(R.drawable.placeholder_item)
             .into(imgRecipePost)
 
@@ -36,9 +39,16 @@ class RecipePostViewHolder(
             true
         }
 
+
         txtReviews.setOnClickListener {
             // TODO: add feature review
         }
+
+        if (item.isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(context, R.color.default_color_app)
+        ) else btnFavorite.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(context, R.color.myGray)
+        )
 
         btnFavorite.setOnClickListener {
             item.isFavorite = !item.isFavorite
@@ -52,6 +62,8 @@ class RecipePostViewHolder(
                     ContextCompat.getColor(context, R.color.myGray)
                 )
             }
+
+            onLikeClickListener?.invoke(item.id, item.isFavorite)
         }
         txtTitle.text = item.title
         txtReviews.text = context.getString(R.string.reviews, item.reviews)

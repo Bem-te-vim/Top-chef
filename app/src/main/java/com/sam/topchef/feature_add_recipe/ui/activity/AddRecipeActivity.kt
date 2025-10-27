@@ -18,6 +18,7 @@ import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
+import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import kotlin.concurrent.thread
@@ -67,6 +68,7 @@ class AddRecipeActivity : AppCompatActivity() {
                 .placeholder(R.drawable.placeholder_item)
                 .into(imgCover)
         }
+
         imagesAdapter.onImgLongClickListener = { position ->
             AlertDialog.Builder(this)
                 .setTitle("Remover imagem?")
@@ -140,23 +142,91 @@ class AddRecipeActivity : AppCompatActivity() {
         setViewCount(edtxDescription, characterCountDescription, 300)
 
 
-        val rv = binding.rvRecipeDifficult
+        val rvDifficult = binding.rvRecipeDifficult
         val layoutManager =
             object : LinearLayoutManager(this, HORIZONTAL, false) {
                 override fun canScrollHorizontally(): Boolean {
                     return false
                 }
             }
-        rv.layoutManager = layoutManager
-        rv.adapter = difficultAdapter
+        rvDifficult.layoutManager = layoutManager
+        rvDifficult.adapter = difficultAdapter
 
 
-        binding.btnSave.setOnClickListener {
+        val ingredientList = mutableListOf<String>()
+        val rvIngredients = binding.rvIngredients
+        rvIngredients.layoutManager = LinearLayoutManager(this)
+
+        val ingredientAdapter = TextsAdapter(ingredientList)
+        rvIngredients.adapter = ingredientAdapter
+
+        val addIngredient = binding.addIngredient
+        addIngredient.setOnClickListener {
+
+            val ingredientFiled = binding.edtxIngredient
+            val ingredient =
+                ingredientFiled.text.toString().trim().ifEmpty { return@setOnClickListener }
+
+            ingredientList.add(ingredient)
+            ingredientAdapter.notifyItemInserted(ingredientList.lastIndex)
+            ingredientFiled.text.clear()
+        }
+
+        val stepsList = mutableListOf<String>()
+        val rvPreparation = binding.rvPreparation
+        rvPreparation.layoutManager = LinearLayoutManager(this)
+
+        val stepsAdapter = TextsAdapter(stepsList)
+        rvPreparation.adapter = stepsAdapter
+
+        val addStep = binding.addStep
+        addStep.setOnClickListener {
+            val stepField = binding.edtxStep
+            val step = stepField.text.toString().trim().ifEmpty { return@setOnClickListener }
+
+            stepsList.add(step)
+            stepsAdapter.notifyItemInserted(stepsList.lastIndex)
+            stepField.text.clear()
+        }
+
+        binding.btnSave.setOnClickListener { view ->
+
+            /**
+             * 'cause de title can't be empty
+             **/
+            val title = edtxTitle.text.toString().trim().ifEmpty {
+                edtxTitle.error = getString(R.string.required_field)
+
+                val nestedScrollView = binding.mainNestedScrollView
+                nestedScrollView.post {
+                    nestedScrollView.smoothScrollTo(0, edtxTitle.top)
+                }
+                return@setOnClickListener
+            }
+
+            val description = edtxDescription.text.toString().trim().takeIf { it.isNotEmpty() }
+            val difficult = difficultAdapter.getDifficultyLevel()
+            val imageUriString = selectedUris
+
+            val cookingTimeHour = binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
+            val cookingTimeMinute = binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+            val cookingTime = sumHourMinutes(cookingTimeHour, cookingTimeMinute)
+
+
+            val preparationTimeHour = binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
+            val preparationTimeMinute = binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+            val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
+
             val recipe = Recipe(
-                title = edtxTitle.text.toString(),
-                description = edtxDescription.text.toString(),
-                difficult = difficultAdapter.getDifficultyLevel(),
-                imageUriString = selectedUris
+                title = title,
+                description = description,
+                difficult = difficult,
+                imageUriString = imageUriString,
+                ingredients = ingredientList,
+                preparationMode = stepsList,
+                cookingTime = cookingTime,
+                preparationTime = preparationTime
+
             )
             thread {
                 val app = application as App
@@ -166,7 +236,7 @@ class AddRecipeActivity : AppCompatActivity() {
                 runOnUiThread {
                     Toast.makeText(
                         applicationContext,
-                        "Sua recita foi salva :)",
+                        getString(R.string.your_recipe_will_saved),
                         Toast.LENGTH_SHORT
                     ).show()
                     finish()
@@ -177,8 +247,10 @@ class AddRecipeActivity : AppCompatActivity() {
 
     }
 
-    /**pega o length de um  editText e seta o valor em
-    um textview **/
+    /**
+     * take the length of a editText and set the value in
+     * one textview
+     **/
     private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
         textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
         editText.addTextChangedListener { text ->
@@ -187,5 +259,10 @@ class AddRecipeActivity : AppCompatActivity() {
         }
     }
 
-    private fun sumHourMinutes(hour: Int, minutes: Int) = hour + minutes
+    private fun sumHourMinutes(hour: Int, minutes: Int): Int {
+        val totalInMinutes = (hour * 60) + minutes
+        return totalInMinutes
+    }
+
+
 }

@@ -10,8 +10,8 @@
     tools:context=".feature_add_recipe.ui.activity.AddRecipeActivity">
 
 
-    <!--always leave it down here-->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/main_nested_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -156,7 +156,7 @@
                     android:background="@drawable/rounded_square_shape_for_edtx"
                     android:backgroundTint="@color/backgroundIc"
                     android:gravity="top|start"
-                    android:hint="@string/description"
+                    android:hint="@string/description_"
                     android:inputType="textCapSentences|textMultiLine"
                     android:maxLength="300"
                     android:minHeight="150dp"
@@ -209,7 +209,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="sans-serif-medium"
-                    android:text="@string/difficult"
+                    android:text="@string/difficult_"
                     android:textAlignment="viewStart"
                     android:textColor="@color/WhiteForTxt"
                     android:textSize="16sp" />
@@ -310,7 +310,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="sans-serif-medium"
-                    android:text="@string/coking_time"
+                    android:text="@string/coking_time_"
                     android:textAlignment="viewStart"
                     android:textColor="@color/WhiteForTxt"
                     android:textSize="16sp" />
@@ -411,6 +411,7 @@
 
 
                 <EditText
+                    android:id="@+id/edtx_ingredient"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -426,6 +427,7 @@
                     android:textSize="18sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/add_ingredient"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -475,6 +477,7 @@
 
 
                 <EditText
+                    android:id="@+id/edtx_step"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -490,6 +493,7 @@
                     android:textSize="18sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/add_step"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"

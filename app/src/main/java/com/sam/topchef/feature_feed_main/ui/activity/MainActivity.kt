@@ -2,6 +2,8 @@ package com.sam.topchef.feature_feed_main.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
@@ -37,11 +39,41 @@ class MainActivity : AppCompatActivity() {
         rvMain.adapter = feedMainAdapter
         loadData()
 
+        feedMainAdapter.onLikeClickListener = { id, isFavorite ->
+            Thread {
+                val app = application as App
+                val recipeDao = app.db.recipeDao()
+                val recipe = recipeDao.getRecipe(id)
+
+                if (recipe == null) {
+                    runOnUiThread {
+
+                        Toast.makeText(
+                            applicationContext,
+                            "Essa receita foi excluida recentemente, ela desapareceara em breve.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    }
+                    return@Thread
+                }
+
+                recipeDao.update(recipe.copy(isFavorite = isFavorite))
+
+                runOnUiThread {
+                    loadData()
+                }
+
+            }.start()
+            Log.i("msg", "id:$id -> favorite:$isFavorite")
+        }
+
         feedMainAdapter.onItemClickListener = { id ->
             val i = Intent(this, RecipeDetailActivity::class.java)
             i.putExtra("id", id)
             this.startActivity(i)
         }
+
         feedMainAdapter.onWhatShowListener = { whatShow ->
             val i = Intent(this, SeeAllActivity::class.java)
             when (whatShow) {
@@ -63,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                         val dao = app.db.recipeDao()
                         dao.delete(id)
                         runOnUiThread {
-                            Toast.makeText(this, "Receita deletada :(", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this, "Receita deletada", Toast.LENGTH_LONG).show()
                         }
                     }
                 }.show()
@@ -87,6 +119,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AddRecipeActivity::class.java))
         }
 
+        //result  todo: switch loadData() from override onResume() to result Launcher if RESULT_OK
     }
 
     override fun onResume() {
@@ -100,46 +133,35 @@ class MainActivity : AppCompatActivity() {
             val dao = app.db.recipeDao()
             val allRecipes = dao.getAllRecipes()
 
-            val popularRecipes = allRecipes.shuffled().take(10).map {
-                PopularRecipe(
-                    it.id,
-                    it.chef ?: "Default",
-                    it.difficult,
-                    it.preparationTime,
-                    it.title,
-                    if (it.imageUriString.isNotEmpty()) {
-                        it.imageUriString.first()
-                    } else {
-                        null
-                    },
-                    it.reviews,
-                    it.isFavorite
-                )
-            }//.filter { it.reviews > 0 } not implemented yet
 
-            val categories = allRecipes.shuffled().take(10).map {
+            val popularRecipes = allRecipes.take(10).map { recipe ->
+                PopularRecipe(
+                    recipe.id,
+                    recipe.chef ?: "Default",
+                    recipe.difficult,
+                    recipe.preparationTime,
+                    recipe.title,
+                    recipe.imageUriString.takeIf { it.isNotEmpty() }?.first(),
+                    recipe.reviews,
+                    recipe.isFavorite
+                )
+            }
+
+            val categories = allRecipes.take(10).map { recipe ->
                 RecipeCategory(
-                    it.type ?: "Default",
-                    if (it.imageUriString.isNotEmpty()) {
-                        it.imageUriString.random()
-                    } else {
-                        null
-                    }
+                    recipe.type ?: "Default",
+                    recipe.imageUriString.takeIf { it.isNotEmpty() }?.first()
                 )
             }
 
 
-            val mainPosts = allRecipes.map {
+            val mainPosts = allRecipes.map { recipe ->
                 MainFeedItem.RecipePost(
-                    it.id,
-                    it.title,
-                    if (it.imageUriString.isNotEmpty()) {
-                        it.imageUriString.first()
-                    } else {
-                        null
-                    },
-                    it.isFavorite,
-                    it.reviews
+                    recipe.id,
+                    recipe.title,
+                    recipe.imageUriString.takeIf { it.isNotEmpty() }?.first(),
+                    recipe.isFavorite,
+                    recipe.reviews
                 )
             }
 
@@ -152,8 +174,53 @@ class MainActivity : AppCompatActivity() {
             items.addAll(mainPosts)
 
             runOnUiThread {
+                validateList(allRecipes.isEmpty())
                 feedMainAdapter.setItems(items)
             }
         }
     }
+
+    private fun validateList(isEmpty: Boolean) {
+        if (isEmpty) {
+            showRecipesNotFoundError(
+                show = true,
+                title = "Olá!",
+                message = "Parece que você ainda não tem nem uma receita salva.",
+                buttonText = "Criar Receita"
+            )
+        } else {
+            showRecipesNotFoundError(false)
+        }
+    }
+
+    private fun showRecipesNotFoundError(
+        show: Boolean = false,
+        title: String = "Oops...",
+        message: String = "Parece que algo deu errado",
+        buttonText: String = "Volar"
+    ) {
+        val include = binding.includeRecipeListEmpty
+
+        val errorLayoutRoot = include.errorLayoutRoot
+        errorLayoutRoot.visibility = if (show) View.VISIBLE else View.GONE
+
+        val errorTitle = include.errorTitle
+        val errorMessage = include.errorMessage
+        val btnGoTOHome = include.btnGoToHome
+
+        errorTitle.text = title
+        errorMessage.text = message
+        btnGoTOHome.text = buttonText
+
+        btnGoTOHome.setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    AddRecipeActivity::class.java
+                )
+            )
+        }
+    }
+
+
 }

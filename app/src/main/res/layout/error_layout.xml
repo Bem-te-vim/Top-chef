@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:id="@+id/error_layout_root"
+    android:background="@color/background2">
+
+    <ImageView
+        android:importantForAccessibility="no"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@drawable/ic_data_not_found"/>
+
+    <TextView
+        android:id="@+id/error_title"
+        android:layout_marginHorizontal="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="monospace"
+        android:textAlignment="center"
+        android:textColor="@color/WhiteForTxt"
+        android:textSize="24sp"
+        tools:text="Oops..." />
+
+
+    <TextView
+        android:id="@+id/error_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="serif-monospace"
+        android:textAlignment="center"
+        android:textColor="@color/LtGrayFoTxt"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Pasta" />
+
+    <Button
+        android:layout_marginHorizontal="80dp"
+        android:id="@+id/btn_go_to_home"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/back"
+        android:textColor="@color/WhiteForTxt"
+        android:textSize="18sp"/>
+
+
+</LinearLayout>

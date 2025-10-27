@@ -112,10 +112,9 @@
                     android:id="@+id/container_recipe_type"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:orientation="horizontal"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:layout_editor_absoluteX="16dp">
+                    android:layout_marginTop="-8dp"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <TextView
                         android:id="@+id/txt_recipe_type"
@@ -172,7 +171,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:fontFamily="sans-serif-medium"
-                        android:text="Recipe By"
+                        android:text="@string/recipe_by"
                         android:textAlignment="viewStart"
                         android:textColor="@color/LtGrayFoTxt"
                         android:textSize="14sp"
@@ -201,9 +200,9 @@
                         android:textColor="@color/WhiteForTxt"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        app:layout_constraintEnd_toStartOf="@+id/imageButton3"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/image_chef_cover"
-                        app:layout_constraintTop_toTopOf="@+id/imageButton3" />
+                        app:layout_constraintTop_toTopOf="@+id/image_chef_cover" />
 
                     <TextView
                         android:id="@+id/txt_chef_worker_position"
@@ -214,21 +213,9 @@
                         android:textAlignment="viewStart"
                         android:textColor="@color/LtGrayFoTxt"
                         android:textSize="14sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/imageButton3"
-                        app:layout_constraintEnd_toStartOf="@+id/imageButton3"
-                        app:layout_constraintStart_toEndOf="@+id/image_chef_cover" />
-
-                    <ImageButton
-                        android:id="@+id/imageButton3"
-                        style="@style/btnRoundedForm"
-                        android:layout_width="40dp"
-                        android:layout_height="0dp"
-                        android:backgroundTint="@color/backgroundIc"
-                        android:contentDescription="@string/back"
-                        android:src="@drawable/chat_24dp"
-                        app:layout_constraintBottom_toBottomOf="@+id/image_chef_cover"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="@+id/image_chef_cover" />
+                        app:layout_constraintStart_toEndOf="@+id/image_chef_cover"
+                        app:layout_constraintTop_toBottomOf="@+id/txt_chef_name" />
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -246,7 +233,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-medium"
-                        android:text="Description"
+                        android:text="@string/description"
                         android:textAlignment="viewStart"
                         android:textColor="@color/WhiteForTxt"
                         android:textSize="18sp" />
@@ -259,10 +246,11 @@
                         android:ellipsize="end"
                         android:fontFamily="sans-serif-medium"
                         android:maxLines="3"
-                        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec suscipit aliquam mattis. Maecenas et lacinia lacus. In nisl orci, placerat id ultrices at, finibus at odio. Sed lacus nisl, ullamcorper consectetur tortor sed, egestas consectetur augue. Nunc egestas et sem sed iaculis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. "
                         android:textAlignment="viewStart"
                         android:textColor="@color/LtGrayFoTxt"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="italic"
+                        tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec suscipit aliquam mattis. Maecenas et lacinia lacus. In nisl orci, placerat id ultrices at, finibus at odio. Sed lacus nisl, ullamcorper consectetur tortor sed, egestas consectetur augue. Nunc egestas et sem sed iaculis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. " />
                 </LinearLayout>
 
                 <!--Container time and cosine-->
@@ -303,7 +291,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:text="Cooking Time"
+                            android:text="@string/coking_time"
                             android:textAlignment="viewStart"
                             android:textColor="@color/WhiteForTxt"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -351,12 +339,12 @@
                             app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
-                            android:id="@+id/txt_cosine_ignore"
+                            android:id="@+id/txt_difficult_ignore"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:text="Cosine"
+                            android:text="@string/difficult"
                             android:textAlignment="viewStart"
                             android:textColor="@color/WhiteForTxt"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -364,20 +352,20 @@
                             app:layout_constraintTop_toTopOf="@+id/btn_cosine" />
 
                         <TextView
-                            android:id="@+id/txt_cosine"
+                            android:id="@+id/txt_difficult"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:fontFamily="sans-serif-medium"
                             android:maxLines="1"
-                            android:text="Italian"
+                            android:text="@string/easy"
                             android:textAlignment="viewStart"
                             android:textColor="@color/default_color_app"
                             android:textSize="16sp"
                             app:layout_constraintBottom_toBottomOf="@+id/btn_cosine"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/btn_cosine"
-                            app:layout_constraintTop_toBottomOf="@+id/txt_cosine_ignore" />
+                            app:layout_constraintTop_toBottomOf="@+id/txt_difficult_ignore" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </LinearLayout>
@@ -399,6 +387,7 @@
                         android:layout_gravity="top">
 
                         <ImageView
+                            android:importantForAccessibility="no"
                             android:id="@+id/img_washoku_ignore"
                             android:layout_width="32dp"
                             android:layout_height="32dp"
@@ -417,7 +406,7 @@
                             android:layout_marginStart="8dp"
                             android:fontFamily="sans-serif-medium"
                             android:maxLines="1"
-                            android:text="Ingredients"
+                            android:text="@string/ingredient"
                             android:textAlignment="viewStart"
                             android:textColor="@color/LtGrayFoTxt"
                             android:textSize="16sp"
