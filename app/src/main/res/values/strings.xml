@@ -74,7 +74,7 @@
     <string name="move_to_cart">Adicionar Ingredientes ao carrinho</string>
     <string name="create_cart">Criar carrinho</string>
     <string name="qtn_items"><b>%1$d</b> Items </string>
-    <string name="my_cart">Carrinho</string>
+    <string name="my_cart">Carrinhos</string>
     <string name="add_image_to_cart">add image to cart</string>
     <string name="Add_item">Adicionar item</string>
     <string name="cart_products">Produtos do Carrinho</string>
