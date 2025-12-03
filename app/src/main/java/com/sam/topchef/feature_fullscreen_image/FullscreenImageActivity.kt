@@ -13,25 +13,16 @@ class FullscreenImageActivity : AppCompatActivity() {
         binding = ActivityFullscreenImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
-
-//        window.sharedElementEnterTransition = MaterialContainerTransform().apply {
-//            duration = 300
-//            scrimColor = Color.TRANSPARENT
-//        }
-//
-//        window.sharedElementReturnTransition = MaterialContainerTransform().apply {
-//            duration = 250
-//            scrimColor = Color.TRANSPARENT
-//        }
+        
 
         val imageView = binding.fullImage
         val imageUri = intent.getStringExtra("imageUri")
 
-        if (imageUri != null)
-        Glide.with(this)
-            .load(imageUri)
-            .into(imageView)
-
+        if (imageUri != null) {
+            Glide.with(this)
+                .load(imageUri)
+                .into(imageView)
+        }
     }
 
 }

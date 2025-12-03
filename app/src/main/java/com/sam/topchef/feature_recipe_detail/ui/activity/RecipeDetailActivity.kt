@@ -1,6 +1,8 @@
 package com.sam.topchef.feature_recipe_detail.ui.activity
 
 import android.annotation.SuppressLint
+import android.app.ActivityOptions
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -15,6 +17,7 @@ import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityRecipeDetailBinding
+import com.sam.topchef.feature_fullscreen_image.FullscreenImageActivity
 import com.sam.topchef.feature_recipe_detail.adapter.StepsAdapter
 import com.sam.topchef.feature_recipe_detail.model.Step
 import kotlin.concurrent.thread
@@ -22,6 +25,7 @@ import kotlin.concurrent.thread
 class RecipeDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecipeDetailBinding
     private var recipeCookingTimerInSeconds: Int? = null
+    private var currentImageUri: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,14 +65,21 @@ class RecipeDetailActivity : AppCompatActivity() {
 
             }
         }
-    }
-    
 
-    override fun onStop() {
-        super.onStop()
-        // Importante: Pare o timer para evitar vazamentos de memória se não estiver em um serviço em background
-        // countDownTimer.cancel()
+        binding.coverImageRecipe.setOnClickListener {
+            val i = Intent(this, FullscreenImageActivity::class.java)
+            i.putExtra("imageUri", currentImageUri)
+
+            val options = ActivityOptions
+                .makeSceneTransitionAnimation(
+                    (this),
+                    it,
+                    "image_transition"
+                )
+            startActivity(i, options.toBundle())
+        }
     }
+
 
     private fun loadData(recipeId: Int) {
         thread {
@@ -110,6 +121,7 @@ class RecipeDetailActivity : AppCompatActivity() {
 
 
                 val imgCover = binding.coverImageRecipe
+                currentImageUri = imgUriList.firstOrNull()
                 setImage(imgUriList.firstOrNull(), imgCover)
 
                 binding.txtRecipeType.text = type
@@ -124,8 +136,10 @@ class RecipeDetailActivity : AppCompatActivity() {
                 binding.rvImageFromDetail.layoutManager =
                     LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
                 val imagesAdapter = ImagesAdapter(imgUriList)
+
                 imagesAdapter.onImgClickListener = { imageSrc ->
                     setImage(imageSrc, imgCover)
+                    currentImageUri = imageSrc
                 }
                 binding.rvImageFromDetail.adapter = imagesAdapter
 
