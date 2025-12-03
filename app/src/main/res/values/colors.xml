@@ -8,7 +8,9 @@
     <color name="myGray">#777777</color>
     <color name="myLtGray">#F3F3F3</color>
 
+
     <color name="default_color_app">#F86733</color>
+    <color name="default_color_app_transparent">#A9F6B190</color>
     <color name="my_transparent">#33000000</color>
 
     <color name="WhiteForTxt">#E7E7E7</color>
@@ -18,4 +20,5 @@
     <color name="background2">#F707080B</color>
 
     <color name="ic_launcher_background">#fff</color>
+    <color name="read">#ff0000</color>
 </resources>

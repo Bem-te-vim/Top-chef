@@ -7,6 +7,7 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.core.data.local.app.App
@@ -27,6 +28,8 @@ class SearchActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        enableEdgeToEdge()
+
 
         val statusBarHeight = resources.getDimensionPixelSize(
             resources.getIdentifier("status_bar_height", "dimen", "android")

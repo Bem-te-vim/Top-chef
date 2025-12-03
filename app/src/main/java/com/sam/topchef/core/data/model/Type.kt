@@ -6,7 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Type(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    val id: Int,
+
     @ColumnInfo(name = "type")
     val type: String
 )

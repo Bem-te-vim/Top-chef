@@ -5,19 +5,22 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.sam.topchef.core.data.local.dao.CartDao
 import com.sam.topchef.core.data.local.dao.RecipeDao
 import com.sam.topchef.core.data.local.dao.TypeDao
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
+import com.sam.topchef.core.utils.ArrayCartItemConverter
 import com.sam.topchef.core.utils.ArrayConverter
 import com.sam.topchef.core.utils.DateConverter
 
-@Database(entities = [Recipe::class, Type::class, Cart::class], version = 9)
-@TypeConverters(DateConverter::class, ArrayConverter::class)
+@Database(entities = [Recipe::class, Type::class, Cart::class], version = 12)
+@TypeConverters(DateConverter::class, ArrayConverter::class, ArrayCartItemConverter::class)
 abstract class AppDataBase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
     abstract fun typeDao(): TypeDao
+    abstract fun cartDao(): CartDao
 
     companion object {
         private var INSTANCE: AppDataBase? = null

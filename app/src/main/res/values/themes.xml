@@ -3,8 +3,17 @@
     <style name="Base.Theme.TopChef" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <item name="android:textCursorDrawable">@drawable/cursor_custom</item>
-       <item name="colorPrimary">@color/default_color_app</item>
+        <item name="colorPrimary">@color/default_color_app</item>
 
+
+        <item name="colorControlActivated">@color/default_color_app</item>
+        <item name="android:textColorHighlight">@color/default_color_app_transparent</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+
+        <item name="android:windowContentTransitions">true</item>
     </style>
 
     <style name="Theme.TopChef" parent="Base.Theme.TopChef" />

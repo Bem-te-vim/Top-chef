@@ -2,47 +2,81 @@
     <string name="app_name">Top Chef</string>
     <string name="notifications">Notificações</string>
     <string name="search">Procure Uma Receita…</string>
+
     <string name="filter">Filtrar</string>
     <string name="back">Voltar</string>
     <string name="see_all">Ver mais</string>
     <string name="favorite">curtir</string>
+
     <string name="recipe_info">%1$s • %2$s • por %3$s</string>
     <string name="reviews">%1$.1f</string>
     <string name="popular_recipes">Receiatas Populares</string>
     <string name="top_chefs">Top Chefs</string>
+
     <string name="categoria">Categoria</string>
     <string name="add_images">Escolher images</string>
     <string name="recipe_title">Titulo da receita*</string>
     <string name="description_">Apresentação*</string>
+
     <string name="description">Apresentação</string>
     <string name="value_bar_value">%1$d/%2$d</string>
     <string name="important_information">Informações-chave</string>
     <string name="very_hard">Muito difícil</string>
+
     <string name="hard">Difícil</string>
     <string name="average">Médio</string>
     <string name="easy">Fácil</string>
     <string name="very_easy">Muito fácil</string>
+
     <string name="difficult_">Dificuldade*</string>
     <string name="difficult">Dificuldade</string>
     <string name="minutes">Minutos</string>
     <string name="minute_s">Minuto(s)</string>
+
     <string name="hour_s">Hora(s)</string>
     <string name="hour">Horas</string>
     <string name="coking_time_">Tempo de cozimento*</string>
     <string name="coking_time">Tempo de cozimento</string>
-    <string name="preparation_time">Tempo de preparo*</string>
+
+    <string name="preparation_time_">Tempo de preparo*</string>
+    <string name="preparation_time">Tempo de preparo</string>
     <string name="ingredient">Ingredientes</string>
     <string name="preparation">Preparo</string>
+
     <string name="step_1">Passo1*</string>
     <string name="add_step">Adicionar Passo</string>
     <string name="add_ingredient">Adicionar Ingrediente</string>
     <string name="ingredient_">Ingrediente*</string>
+
     <string name="type">Tipo*</string>
     <string name="save">Salvar</string>
     <string name="add_recipe">Adicionar receita</string>
     <string name="open_cart">Abrir Carrinho</string>
+
     <string name="recipe_by">Receita de:</string>
     <string name="required_field">Campo obrigatório</string>
     <string name="your_recipe_will_saved">Sua recita foi salva</string>
+    <string name="shopping_list">Lista de compras</string>
+
+    <string name="start_timer">Iniciar  o temporizador</string>
+    <string name="steps">Passo %1$d</string>
+    <string name="preparation_mode">Modo de Preparo</string>
+    <string name="my_profile">Meu Perfil</string>
+
+    <string name="edit_profile">Editar Perfil</string>
+    <string name="favorites">Favoritos</string>
+    <string name="all_recipes">Todas as Receitas</string>
+    <string name="timer">Timer</string>
+
+    <string name="delete_recipe">Apagar Receita</string>
+    <string name="edit_recipe">Editar Receita</string>
+    <string name="share_recipe">Compartinhar Receita</string>
+    <string name="move_to_cart">Adicionar Ingredientes ao carrinho</string>
+    <string name="create_cart">Criar carrinho</string>
+    <string name="qtn_items"><b>%1$d</b> Items </string>
+    <string name="my_cart">Carrinho</string>
+    <string name="add_image_to_cart">add image to cart</string>
+    <string name="Add_item">Adicionar item</string>
+    <string name="cart_products">Produtos do Carrinho</string>
 
 </resources>

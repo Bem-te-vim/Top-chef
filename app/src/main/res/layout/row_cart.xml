@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginBottom="24dp"
+   >
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_item_from_cart"
+        style="@style/ShapeableImageViewRoundedSquareForm"
+        android:layout_width="45dp"
+        android:layout_height="0dp"
+        android:src="@drawable/shopping_cart_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:transitionName="image_transition"/>
+
+
+    <TextView
+        android:layout_marginTop="4dp"
+        android:id="@+id/cart_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:singleLine="true"
+        android:textColor="@color/WhiteForTxt"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_enter_in_cart"
+        app:layout_constraintStart_toEndOf="@+id/image_item_from_cart"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Compras da semana" />
+
+
+    <TextView
+        android:id="@+id/items_count"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:fontFamily="sans-serif"
+        android:maxLines="2"
+        android:textColor="@color/LtGrayFoTxt"
+
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_enter_in_cart"
+        app:layout_constraintStart_toEndOf="@+id/image_item_from_cart"
+        app:layout_constraintTop_toBottomOf="@+id/cart_title"
+        tools:text="@string/qtn_items" />
+
+    <ImageButton
+        android:id="@+id/btn_enter_in_cart"
+        style="@style/btnRoundedForm"
+        android:layout_width="16dp"
+        android:layout_height="0dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/rounded_arrow_forward_ios_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

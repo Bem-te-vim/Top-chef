@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background2"
+    android:fitsSystemWindows="true"
+    tools:context=".feature_profile.activities.ProfileActivity">
+
+
+    <LinearLayout
+        android:id="@+id/custom_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:importantForAccessibility="no"
+            android:padding="20dp"
+            android:src="@drawable/round_arrow_back_24" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/my_profile"
+            android:textAlignment="center"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="22sp" />
+
+        <ImageButton
+            android:id="@+id/btn_settings"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:importantForAccessibility="no"
+            android:padding="20dp"
+            android:src="@drawable/settings_24dp" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/custom_toolbar"
+        app:layout_constraintVertical_bias="1.0">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_main"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/container_profile_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+
+
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/image_profile"
+                    style="@style/ShapeableImageViewCircleForm"
+                    android:layout_width="120dp"
+                    android:layout_height="0dp"
+
+                    android:src="@drawable/sam"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageButton
+                    android:id="@+id/btn_get_image_profile"
+                    style="@style/btnRoundedForm"
+                    android:layout_width="30dp"
+                    android:layout_height="0dp"
+                    android:backgroundTint="@color/white"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/outline_photo_camera_24"
+                    app:layout_constraintBottom_toBottomOf="@id/image_profile"
+                    app:layout_constraintEnd_toEndOf="@id/image_profile" />
+
+                <TextView
+                    android:id="@+id/txt_chef_name_profile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:text="Sam Keller"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textSize="18sp"
+
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/image_profile"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/txt_chef_worker_position_profile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Aspiring chef"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/LtGrayFoTxt"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/image_profile"
+                    app:layout_constraintTop_toBottomOf="@id/txt_chef_name_profile" />
+
+                <Button
+                    android:id="@+id/edit_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/rounded_square_shape"
+                    android:backgroundTint="@color/default_color_app"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/edit_profile"
+                    android:textColor="@color/WhiteForTxt"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toStartOf="@+id/txt_chef_worker_position_profile"
+                    app:layout_constraintTop_toBottomOf="@+id/txt_chef_worker_position_profile" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/container_tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/container_profile_data">
+
+                <LinearLayout
+                    android:id="@+id/favorites"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        style="@style/ImageViewMenuFormat"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/round_favorite_border_24" />
+
+                    <TextView
+                        style="@style/TextViewMenuFormat"
+                        android:text="@string/favorites" />
+
+
+                    <ImageView
+                        style="@style/ImageViewMenuFormat"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/rounded_arrow_forward_ios_24" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/all_recipes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        style="@style/ImageViewMenuFormat"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/rounded_fastfood_24" />
+
+                    <TextView
+                        style="@style/TextViewMenuFormat"
+                        android:text="@string/all_recipes" />
+
+
+                    <ImageView
+                        style="@style/ImageViewMenuFormat"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/rounded_arrow_forward_ios_24" />
+                </LinearLayout>
+
+                <View
+
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="#33333333" />
+
+
+                <LinearLayout
+                    android:id="@+id/all_timer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        style="@style/ImageViewMenuFormat"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/round_access_time_24"
+                        app:tint="@color/white" />
+
+
+                    <TextView
+                        style="@style/TextViewMenuFormat"
+                        android:text="@string/timer" />
+
+
+                    <ImageView
+                        style="@style/ImageViewMenuFormat"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/rounded_arrow_forward_ios_24" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

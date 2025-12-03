@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,22 +15,24 @@ import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityRecipeDetailBinding
+import com.sam.topchef.feature_recipe_detail.adapter.StepsAdapter
+import com.sam.topchef.feature_recipe_detail.model.Step
 import kotlin.concurrent.thread
 
 class RecipeDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecipeDetailBinding
+    private var recipeCookingTimerInSeconds: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        enableEdgeToEdge()
 
         val statusBarHeight = resources.getDimensionPixelSize(
             resources.getIdentifier("status_bar_height", "dimen", "android")
         )
         binding.statusBarOverlay.layoutParams.height = statusBarHeight
-
 
         val i = intent
         val recipeId = i.extras?.getInt("id") as Int
@@ -52,6 +55,19 @@ class RecipeDetailActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
 
 
+        binding.goTimer.setOnClickListener {
+
+            recipeCookingTimerInSeconds?.let {
+
+            }
+        }
+    }
+    
+
+    override fun onStop() {
+        super.onStop()
+        // Importante: Pare o timer para evitar vazamentos de memória se não estiver em um serviço em background
+        // countDownTimer.cancel()
     }
 
     private fun loadData(recipeId: Int) {
@@ -63,7 +79,8 @@ class RecipeDetailActivity : AppCompatActivity() {
             runOnUiThread {
 
                 if (recipe == null) {
-                    Toast.makeText(applicationContext, "Receita não encontrada", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Receita não encontrada", Toast.LENGTH_SHORT)
+                        .show()
                     finish()
                     return@runOnUiThread
                 }
@@ -72,13 +89,16 @@ class RecipeDetailActivity : AppCompatActivity() {
                 val title = recipe.title
                 val reviews = recipe.reviews
                 val type = recipe.type ?: "Tipo não informado."
-                val description =recipe.description ?: "Adicione uma descricao quando quiser."
+                val description = recipe.description ?: "Adicione uma descricao quando quiser."
                 val difficult = recipe.difficult
                 val ingredients = recipe.ingredients
                 val cookingTime = recipe.cookingTime
 
                 val preparationMode = recipe.preparationMode
                 val preparationTime = recipe.preparationTime
+
+
+                recipeCookingTimerInSeconds = cookingTime * 60
 
 
                 fun setImage(load: String?, img: ShapeableImageView) {
@@ -98,11 +118,8 @@ class RecipeDetailActivity : AppCompatActivity() {
                 binding.btnEvaluateRecipe.text = reviews.toString()
                 binding.txtDifficult.text = difficultFormater(difficult)
                 binding.txtRecipeCookingTime.text = timeFormater(cookingTime)
+                binding.txtRecipePreparationTime.text = timeFormater(preparationTime)
 
-
-                /**                val totalTimeInMinutes = preparationTime + cookingTime
-                binding.txtRecipeCookingTime.text = minuterFormater(totalTimeInMinutes)
-                 **/
 
                 binding.rvImageFromDetail.layoutManager =
                     LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -114,9 +131,16 @@ class RecipeDetailActivity : AppCompatActivity() {
 
 
                 binding.rvIngredients.layoutManager = LinearLayoutManager(this)
-                val rv = binding.rvIngredients
-                rv.layoutManager = LinearLayoutManager(this)
-                rv.adapter = TextsAdapter(ingredients)
+                val rvIngredient = binding.rvIngredients
+                rvIngredient.layoutManager = LinearLayoutManager(this)
+                rvIngredient.adapter = TextsAdapter(ingredients)
+
+
+                binding.rvIngredients.layoutManager = LinearLayoutManager(this)
+                val rvSteps = binding.rvSteps
+                val steps = preparationMode.map { Step(it) }
+                rvSteps.layoutManager = LinearLayoutManager(this)
+                rvSteps.adapter = StepsAdapter(steps)
 
             }
 
@@ -124,9 +148,9 @@ class RecipeDetailActivity : AppCompatActivity() {
     }
 
 
-    private fun difficultFormater(difficult: Int): String{
+    private fun difficultFormater(difficult: Int): String {
 
-        return when(difficult){
+        return when (difficult) {
             1 -> getString(R.string.very_easy)
             2 -> getString(R.string.easy)
             3 -> getString(R.string.average)
@@ -137,7 +161,7 @@ class RecipeDetailActivity : AppCompatActivity() {
     }
 
     @SuppressLint("DefaultLocale")
-    private fun timeFormater(totalMinutes: Int): String{
+    private fun timeFormater(totalMinutes: Int): String {
         val h = totalMinutes / 60
         val min = totalMinutes % 60
 

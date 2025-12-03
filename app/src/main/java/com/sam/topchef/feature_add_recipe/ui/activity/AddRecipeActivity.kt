@@ -1,11 +1,13 @@
 package com.sam.topchef.feature_add_recipe.ui.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +32,8 @@ class AddRecipeActivity : AppCompatActivity() {
 
 
     private val selectedUris = mutableListOf<String>()
+
+    @SuppressLint("NotifyDataSetChanged")
     private val pickImages =
         registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
             if (uris.isNotEmpty()) {
@@ -39,7 +43,7 @@ class AddRecipeActivity : AppCompatActivity() {
                     selectedUris.addAll(uris.map { it.toString() })
                     imagesAdapter.notifyDataSetChanged()
 
-                    // Persistir permissão para acessar depois
+
                     uris.forEach {
                         contentResolver.takePersistableUriPermission(
                             it,
@@ -56,7 +60,7 @@ class AddRecipeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAddRecipeBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        enableEdgeToEdge()
 
         val imgCover = binding.imgCoverAddRecipe
         val rvImg = binding.rvImagesAddRecipe
@@ -99,7 +103,7 @@ class AddRecipeActivity : AppCompatActivity() {
             val allTypes = typeDao.getAllTypes()
 
             runOnUiThread {
-                val defaultLatItem = listOf(Type("Add+"))
+                val defaultLatItem = listOf(Type(0, "Add+"))
                 val all = listOf(allTypes.take(4), defaultLatItem).flatten()
                 val items = mutableListOf<String>()
                 all.forEach {
@@ -191,9 +195,6 @@ class AddRecipeActivity : AppCompatActivity() {
 
         binding.btnSave.setOnClickListener { view ->
 
-            /**
-             * 'cause de title can't be empty
-             **/
             val title = edtxTitle.text.toString().trim().ifEmpty {
                 edtxTitle.error = getString(R.string.required_field)
 
@@ -208,13 +209,17 @@ class AddRecipeActivity : AppCompatActivity() {
             val difficult = difficultAdapter.getDifficultyLevel()
             val imageUriString = selectedUris
 
-            val cookingTimeHour = binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
-            val cookingTimeMinute = binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+            val cookingTimeHour =
+                binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
+            val cookingTimeMinute =
+                binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
             val cookingTime = sumHourMinutes(cookingTimeHour, cookingTimeMinute)
 
 
-            val preparationTimeHour = binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
-            val preparationTimeMinute = binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+            val preparationTimeHour =
+                binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
+            val preparationTimeMinute =
+                binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
             val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
 
             val recipe = Recipe(
@@ -239,6 +244,8 @@ class AddRecipeActivity : AppCompatActivity() {
                         getString(R.string.your_recipe_will_saved),
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    setResult(RESULT_OK)
                     finish()
                 }
             }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginTop="8dp">
 
     <TextView
-        android:id="@+id/tv_title"
+        android:id="@+id/tv_title_categories"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
@@ -15,18 +15,18 @@
         android:ellipsize="end"
         android:fontFamily="sans-serif"
         android:singleLine="true"
+        android:text="@string/categoria"
         android:textAlignment="viewStart"
         android:textColor="@color/WhiteForTxt"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_see_all"
-        app:layout_constraintEnd_toStartOf="@+id/btn_see_all"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_see_all_popular_recipes"
+        app:layout_constraintEnd_toStartOf="@+id/btn_see_all_categories"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/btn_see_all"
-        tools:text="Categorias" />
+        app:layout_constraintTop_toTopOf="@id/btn_see_all_categories" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_see_all"
+        android:id="@+id/btn_see_all_categories"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -34,21 +34,22 @@
         android:text="@string/see_all"
         android:textAllCaps="false"
         android:textColor="@color/default_color_app"
-        android:textStyle="bold"
         android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:paddingHorizontal="16dp"
-        android:id="@+id/rv_horizontal"
+        tools:listitem="@layout/row_categories_recipe_item"
+        android:id="@+id/rv_categories"
         android:layout_width="match_parent"
-        android:clipToPadding="false"
         android:layout_height="wrap_content"
+        android:clipToPadding="false"
         android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_see_all" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_see_all_categories" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

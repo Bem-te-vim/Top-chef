@@ -5,6 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background2"
+    android:fitsSystemWindows="true"
     tools:context=".feature_shopping_list.activities.ShoppingListActivity">
 
 
@@ -12,18 +14,144 @@
         android:id="@+id/fakeToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/my_cart"
+
+            android:textAlignment="center"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="22sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/btn_back"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:importantForAccessibility="no"
+            android:padding="20dp"
+            android:src="@drawable/round_arrow_back_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_carts"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:paddingHorizontal="8dp"
+        app:layout_constraintBottom_toTopOf="@id/container_create_cart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/fakeToolbar"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        tools:itemCount="15"
+        tools:listitem="@layout/row_cart" />
+
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_item_from_cart"
+        style="@style/ShapeableImageViewRoundedSquareForm"
+        android:layout_width="100dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginBottom="6dp"
+        android:src="@drawable/pexels"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/container_create_cart"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintStart_toStartOf="@id/container_create_cart"
+        tools:visibility="visible" />
+
+    <ImageButton
+        android:id="@+id/btn_remove_image_to_cart"
+        style="@style/btnRoundedForm"
+        android:layout_width="30dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/add_image_to_cart"
+        android:padding="8dp"
+        android:src="@drawable/outline_close_small_24"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/image_item_from_cart"
+        app:layout_constraintTop_toTopOf="@id/image_item_from_cart"
+        tools:visibility="visible" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_create_cart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_square"
+        android:backgroundTint="@color/myDarkGray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btn_create_new_cart"
+        app:layout_constraintStart_toStartOf="parent">
+
+
+        <EditText
+            android:id="@+id/create_new_cart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="10dp"
+            android:autofillHints="@null"
+            android:background="@null"
+            android:hint="@string/create_cart"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="10"
+            android:textAlignment="viewStart"
+            android:textColor="@color/WhiteForTxt"
+            android:textColorHint="@color/LtGrayFoTxt"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_add_image_to_cart"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="" />
+
+        <ImageButton
+            android:id="@+id/btn_add_image_to_cart"
+            style="@style/btnRoundedForm"
+            android:layout_width="30dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:contentDescription="@string/add_image_to_cart"
+            android:src="@drawable/outline_photo_camera_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tint="@color/myGray" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <ImageButton
+        android:id="@+id/btn_create_new_cart"
+        style="@style/btnRoundedForm"
+        android:layout_width="45dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/default_color_app"
+        android:importantForAccessibility="no"
+        android:src="@drawable/baseline_add_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,8 +14,23 @@
         android:theme="@style/Theme.TopChef"
         tools:targetApi="31">
         <activity
-            android:name=".feature_shopping_list.activities.ShoppingListActivity"
+            android:name=".feature_fullscreen_image.FullscreenImageActivity"
             android:exported="false" />
+        <activity
+            android:name=".feature_shopping_list.activities.CartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".feature_edit_recipe.EditRecipeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".feature_profile.activities.ProfileActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".feature_shopping_list.activities.ShoppingListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".feature_add_recipe.ui.activity.AddRecipeActivity"
             android:exported="false"

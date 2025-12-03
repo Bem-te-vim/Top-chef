@@ -37,5 +37,21 @@
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Image.RoundedSquare</item>
     </style>
 
+    <style name="ImageViewMenuFormat">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="TextViewMenuFormat">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/WhiteForTxt</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">8</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
     <style name="AutoCompleteTextViewForm" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu" />
 </resources>
