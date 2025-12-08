@@ -78,5 +78,8 @@
     <string name="add_image_to_cart">add image to cart</string>
     <string name="Add_item">Adicionar item</string>
     <string name="cart_products">Produtos do Carrinho</string>
+    <string name="share_cart">Compartilhar Carrinho</string>
+    <string name="edit_cart">Editar</string>
+    <string name="delete_cart">Apagar Carrinho</string>
 
 </resources>

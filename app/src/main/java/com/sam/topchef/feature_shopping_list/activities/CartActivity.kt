@@ -15,30 +15,42 @@ class CartActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCartBinding
     private lateinit var cartItemAdapter: CartItemAdapter
 
+    private val cartItems = mutableListOf<CartItem>()
+    private var currentCart: Cart? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCartBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        val i = intent
-        val cartId = i.extras?.getInt("id") ?: throw NullPointerException()
+        val cartId = intent.extras?.getInt("id") ?: throw NullPointerException()
 
         cartItemAdapter = CartItemAdapter()
         val rvCartItems = binding.rvCartItems
         rvCartItems.layoutManager = LinearLayoutManager(this)
         rvCartItems.adapter = cartItemAdapter
 
+        // Criar novo item
         binding.btnCreateNewCartItem.setOnClickListener {
-            val txtCreateNewCartItem = binding.createNewCartItem
-            val txtItem =
-                txtCreateNewCartItem.text.toString().trim().ifEmpty { return@setOnClickListener }
-            txtCreateNewCartItem.text.clear()
+            val txtItem = binding.createNewCartItem.text.toString().trim()
+            if (txtItem.isEmpty()) return@setOnClickListener
 
-            val cartItem = CartItem(itemName = txtItem)
-            setItems(cartItem)
+            val newItem = CartItem(itemName = txtItem)
+            binding.createNewCartItem.text.clear()
 
-            rvCartItems.smoothScrollToPosition(cartItemAdapter.getLastPosition())
+            cartItems.add(newItem)
+            cartItemAdapter.setItem(newItem)
+
+            saveChanges()
+
+            rvCartItems.smoothScrollToPosition(cartItemAdapter.itemCount - 1)
+            setResult(RESULT_OK)
+        }
+
+        cartItemAdapter.onCartItemChecked = { checkBoxState, itemPosition ->
+            cartItems[itemPosition].isChecked = checkBoxState
+            saveChanges()
         }
 
         binding.btnBack.setOnClickListener { finish() }
@@ -46,36 +58,35 @@ class CartActivity : AppCompatActivity() {
         loadData(cartId)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
+    // Carrega os dados do carrinho no início
     private fun loadData(id: Int) {
         thread {
-            val app = application as App
-            val dao = app.db.cartDao()
+            val dao = (application as App).db.cartDao()
             val cart = dao.getCart(id)
 
-            if (cart.cartItems.isEmpty()) return@thread
-
             runOnUiThread {
-                val cartItems = cart.cartItems
+                currentCart = cart // ← Salva o carrinho atual
+                cartItems.clear()
+                cartItems.addAll(cart.cartItems)
                 cartItemAdapter.setData(cartItems)
             }
         }
     }
 
+    // Atualiza o carrinho no banco
     private fun updateCart(cart: Cart) {
         thread {
-            val app = application as App
-            val dao = app.db.cartDao()
-            val cart = dao.update(cart)
+            val dao = (application as App).db.cartDao()
+            dao.update(cart)
         }
     }
 
-    private fun setItems(item: CartItem) {
-        cartItemAdapter.setItem(item)
+    // Salva mudanças no carrinho
+    private fun saveChanges() {
+        val cart = currentCart ?: return 
+        val updated = cart.copy(cartItems = cartItems)
+
+        currentCart = updated
+        updateCart(updated)
     }
-
-
 }

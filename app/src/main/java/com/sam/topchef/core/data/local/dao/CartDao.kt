@@ -1,7 +1,6 @@
 package com.sam.topchef.core.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -12,8 +11,8 @@ interface CartDao {
     @Insert
     fun insert(cart: Cart): Long
 
-    @Delete
-    fun delete(cart: Cart): Int
+    @Query("DELETE FROM Cart WHERE id = :id")
+    fun delete(id: Int)
 
     @Query("SELECT * FROM  Cart")
     fun getAllCarts(): List<Cart>

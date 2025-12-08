@@ -81,5 +81,13 @@ class CartsAdapter(val adapterChanges: AdapterChanges) :
         return carts.size
     }
 
+   fun onDeleteNotify(id: Int){
+       val index = carts.indexOfFirst { it.id == id }
+
+       if (index != -1) {
+           carts.removeAt(index)
+           notifyItemRemoved(index)
+       }
+   }
 
 }

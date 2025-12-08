@@ -5,10 +5,17 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.utils.LoadImages
@@ -22,6 +29,8 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
     private lateinit var cartsAdapter: CartsAdapter
     private lateinit var binding: ActivityShoppingListBinding
     private var cartImage: String? = null
+
+    private lateinit var result: ActivityResultLauncher<Intent>
 
     private val pickImages =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -39,6 +48,15 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         binding = ActivityShoppingListBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
+
+        result = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
+           if (result.resultCode == RESULT_OK){
+               loadData()
+           }
+        }
+
+
+
 
         cartsAdapter = CartsAdapter(this)
         val rvCarts = binding.rvCarts
@@ -86,15 +104,63 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         cartImage = null
     }
 
+    private fun deleteRecipe(id: Int) {
+        thread {
+            val dao = (application as App).db.cartDao()
+            dao.delete(id)
+
+            runOnUiThread {
+                cartsAdapter.onDeleteNotify(id)
+
+                Toast.makeText(this, "Carrinho deletado", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun showDeleteCartDialog(id: Int) {
+        AlertDialog.Builder(this)
+            // todo: create custom view to this AlertDialog
+            .setTitle("Deletar esse Carrinho?")
+
+            .setNegativeButton("Cancelar") { p0, p1 -> p0.dismiss() }
+
+            .setPositiveButton("Deletar") { p0, _ ->
+                deleteRecipe(id)
+                p0.dismiss()
+            }
+            .show()
+    }
+
+    private fun showBottomSheetsDialog(id: Int){
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.layout_tools_shopping_list, null)
+        dialog.setContentView(view)
+        dialog.show()
+
+
+        val delete: LinearLayout = view.findViewById(R.id.tools_delete)
+        val edit: LinearLayout = view.findViewById(R.id.tools_edit)
+        val share: LinearLayout = view.findViewById(R.id.tools_share)
+
+        delete.setOnClickListener {
+            showDeleteCartDialog(id)
+            dialog.dismiss()
+        }
+
+
+        dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        dialog.behavior.skipCollapsed = true
+    }
+
 
     override fun onCartClick(id: Int) {
         val i = Intent(this, CartActivity::class.java)
         i.putExtra("id", id)
-        startActivity(i)
+        result.launch(i)
     }
 
     override fun onCartTools(id: Int) {
-
+        showBottomSheetsDialog(id)
     }
 
     override fun onCartImageClick(imageUri: String?, view: View) {
