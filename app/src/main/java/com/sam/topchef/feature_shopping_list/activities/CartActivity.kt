@@ -1,11 +1,13 @@
 package com.sam.topchef.feature_shopping_list.activities
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Cart
+import com.sam.topchef.core.utils.Utils.swap
 import com.sam.topchef.databinding.ActivityCartBinding
 import com.sam.topchef.feature_shopping_list.adpters.CartItemAdapter
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
@@ -26,7 +28,8 @@ class CartActivity : AppCompatActivity() {
 
         val cartId = intent.extras?.getInt("id") ?: throw NullPointerException()
 
-        cartItemAdapter = CartItemAdapter()
+        cartItemAdapter = CartItemAdapter(cartItems)
+
         val rvCartItems = binding.rvCartItems
         rvCartItems.layoutManager = LinearLayoutManager(this)
         rvCartItems.adapter = cartItemAdapter
@@ -40,7 +43,7 @@ class CartActivity : AppCompatActivity() {
             binding.createNewCartItem.text.clear()
 
             cartItems.add(newItem)
-            cartItemAdapter.setItem(newItem)
+            cartItemAdapter.notifyItemInserted(cartItems.size -1)
 
             saveChanges()
 
@@ -50,6 +53,13 @@ class CartActivity : AppCompatActivity() {
 
         cartItemAdapter.onCartItemChecked = { checkBoxState, itemPosition ->
             cartItems[itemPosition].isChecked = checkBoxState
+            if(checkBoxState){
+                cartItems.swap(itemPosition, cartItems.lastIndex)
+                cartItemAdapter.notifyItemMoved(itemPosition, cartItems.lastIndex)
+            }else{
+                cartItems.swap(itemPosition, 0)
+                cartItemAdapter.notifyItemMoved(itemPosition, 0)
+            }
             saveChanges()
         }
 
@@ -59,6 +69,7 @@ class CartActivity : AppCompatActivity() {
     }
 
     // Carrega os dados do carrinho no início
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadData(id: Int) {
         thread {
             val dao = (application as App).db.cartDao()
@@ -68,7 +79,7 @@ class CartActivity : AppCompatActivity() {
                 currentCart = cart // ← Salva o carrinho atual
                 cartItems.clear()
                 cartItems.addAll(cart.cartItems)
-                cartItemAdapter.setData(cartItems)
+                cartItemAdapter.notifyDataSetChanged()
             }
         }
     }

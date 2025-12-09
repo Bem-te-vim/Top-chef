@@ -1,6 +1,5 @@
 package com.sam.topchef.feature_shopping_list.adpters
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -11,24 +10,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
 
-class CartItemAdapter() :
+class CartItemAdapter(val cartItems:  MutableList<CartItem>) :
     RecyclerView.Adapter<CartItemAdapter.CartItemViewHolder>() {
 
     var onCartItemChecked: ((checkBoxState: Boolean, itemPosition: Int) -> Unit)? = null
 
-    private val cartItems = mutableListOf<CartItem>()
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun setData(items: List<CartItem>) {
-        cartItems.clear()
-        cartItems.addAll(items)
-        notifyDataSetChanged()
-    }
-
-    fun setItem(cartItem: CartItem) {
-        cartItems.add(cartItem)
-        notifyItemInserted(cartItems.lastIndex)
-    }
 
 
     inner class CartItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -37,14 +23,17 @@ class CartItemAdapter() :
         val itemCheckBox: CheckBox = view.findViewById(R.id.cart_item_checkBox)
 
         fun bind(item: CartItem) {
+            itemCheckBox.setOnCheckedChangeListener(null)
+
             itemName.text = item.itemName
             itemCheckBox.isChecked = item.isChecked
+
             setTextColor(item.isChecked, itemName, context)
 
-            itemCheckBox.setOnClickListener {
-                item.isChecked = !item.isChecked
-                setTextColor(item.isChecked, itemName, context)
-                onCartItemChecked?.invoke(item.isChecked, adapterPosition)
+            itemCheckBox.setOnCheckedChangeListener { _, isChecked ->
+                item.isChecked = isChecked
+                setTextColor(isChecked, itemName, context)
+                onCartItemChecked?.invoke(isChecked, adapterPosition)
             }
         }
     }
