@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -49,11 +50,12 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        result = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
-           if (result.resultCode == RESULT_OK){
-               loadData()
-           }
-        }
+        result =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    loadData()
+                }
+            }
 
 
 
@@ -104,7 +106,19 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         cartImage = null
     }
 
-    private fun deleteRecipe(id: Int) {
+    private fun updateCart(cart: Cart) {
+        thread {
+            val dao = (application as App).db.cartDao()
+            dao.update(cart)
+        }
+    }
+
+    private fun editCart(updated: Cart) {
+        updateCart(updated)
+        cartsAdapter.onItemChange(updated)
+    }
+
+    private fun deleteCart(id: Int) {
         thread {
             val dao = (application as App).db.cartDao()
             dao.delete(id)
@@ -117,21 +131,62 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         }
     }
 
-    private fun showDeleteCartDialog(id: Int) {
-        AlertDialog.Builder(this)
-            // todo: create custom view to this AlertDialog
-            .setTitle("Deletar esse Carrinho?")
+    private fun getCart(id: Int, callback: (Cart) -> Unit) {
+        thread {
+            val dao = (application as App).db.cartDao()
+            val cart = dao.getCart(id)
 
-            .setNegativeButton("Cancelar") { p0, p1 -> p0.dismiss() }
-
-            .setPositiveButton("Deletar") { p0, _ ->
-                deleteRecipe(id)
-                p0.dismiss()
+            if (cart != null) {
+                runOnUiThread { callback(cart) }
             }
-            .show()
+        }
     }
 
-    private fun showBottomSheetsDialog(id: Int){
+    private fun showDeleteCartDialog(id: Int) {
+        getCart(id) { cart ->
+
+            AlertDialog.Builder(this)
+                // todo: create custom view to this AlertDialog
+
+                .setTitle("Deletar: ${cart.title}?")
+
+                .setNegativeButton("Cancelar") { p0, p1 -> p0.dismiss() }
+
+                .setPositiveButton("Deletar") { p0, _ ->
+                    deleteCart(id)
+                    p0.dismiss()
+                }
+                .show()
+        }
+
+
+    }
+
+    private fun showEditCart(id: Int) {
+        getCart(id) { cart ->
+            val editText = EditText(this)
+            editText.hint = "Novo nome"
+            AlertDialog.Builder(this)
+                // todo: create custom view to this AlertDialog
+                .setTitle("Editar: ${cart.title}?")
+                .setView(editText)
+                .setNegativeButton("Cancelar") { p0, p1 -> p0.dismiss() }
+
+                .setPositiveButton("Ok") { p0, _ ->
+                    val newCartName = editText.text.toString().trim()
+                    if (newCartName.isNotEmpty()) {
+                        val updated = cart.copy(title = newCartName)
+                        editCart(updated)
+                        p0.dismiss()
+                    }
+                }
+                .show()
+        }
+
+
+    }
+
+    private fun showBottomSheetsDialog(id: Int) {
         val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.layout_tools_shopping_list, null)
         dialog.setContentView(view)
@@ -144,6 +199,11 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
 
         delete.setOnClickListener {
             showDeleteCartDialog(id)
+            dialog.dismiss()
+        }
+
+        edit.setOnClickListener {
+            showEditCart(id)
             dialog.dismiss()
         }
 
@@ -164,7 +224,7 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
     }
 
     override fun onCartImageClick(imageUri: String?, view: View) {
-       val i = Intent(this, FullscreenImageActivity::class.java)
+        val i = Intent(this, FullscreenImageActivity::class.java)
         i.putExtra("imageUri", imageUri)
 
         val options = ActivityOptions

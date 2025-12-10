@@ -90,4 +90,14 @@ class CartsAdapter(val adapterChanges: AdapterChanges) :
        }
    }
 
+    fun onItemChange(itemUpdated: Cart){
+        val index = carts.indexOfFirst { it.id == itemUpdated.id }
+
+        if (index != -1) {
+            carts[index] = itemUpdated
+            notifyItemChanged(index)
+        }
+    }
+
+
 }
