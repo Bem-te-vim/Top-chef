@@ -2,9 +2,12 @@ package com.sam.topchef.feature_recipe_detail.ui.activity
 
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
+import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -104,7 +107,7 @@ class RecipeDetailActivity : AppCompatActivity() {
                 val difficult = recipe.difficult
                 val ingredients = recipe.ingredients
                 val cookingTime = recipe.cookingTime
-
+                val isFavorite = recipe.isFavorite
                 val preparationMode = recipe.preparationMode
                 val preparationTime = recipe.preparationTime
 
@@ -123,6 +126,8 @@ class RecipeDetailActivity : AppCompatActivity() {
                 val imgCover = binding.coverImageRecipe
                 currentImageUri = imgUriList.firstOrNull()
                 setImage(imgUriList.firstOrNull(), imgCover)
+
+                setButtonState(isFavorite, binding.btnFavorite, this)
 
                 binding.txtRecipeType.text = type
                 binding.txtRecipeTitle.text = title
@@ -180,6 +185,15 @@ class RecipeDetailActivity : AppCompatActivity() {
         val min = totalMinutes % 60
 
         return String.format("%dh:%02dmin", h, min)
+    }
+
+    private fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
+        if (isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(context, R.color.default_color_app)
+        ) else btnFavorite.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(context, R.color.myGray)
+        )
+
     }
 
 }

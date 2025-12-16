@@ -56,13 +56,14 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
+            android:id="@+id/btn_favorite"
             style="@style/btnRoundedForm"
             android:layout_width="40dp"
             android:layout_height="0dp"
             android:layout_marginEnd="20dp"
             android:backgroundTint="@color/background"
             android:contentDescription="@string/back"
-            android:src="@drawable/round_favorite_border_24"
+            android:src="@drawable/round_favorite_fill_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btn_share"
             app:layout_constraintTop_toTopOf="parent" />

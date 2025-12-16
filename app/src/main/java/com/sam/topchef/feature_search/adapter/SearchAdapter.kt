@@ -20,9 +20,10 @@ class SearchAdapter() :
 
     var onItemClickListener: ((id: Int) -> Unit)? = null
 
-    private val recipes =  mutableListOf<Recipe>()
+    private val recipes = mutableListOf<Recipe>()
+
     @SuppressLint("NotifyDataSetChanged")
-    fun submitList(list: List<Recipe>){
+    fun submitList(list: List<Recipe>) {
         recipes.clear()
         recipes.addAll(list)
         notifyDataSetChanged()
@@ -85,10 +86,10 @@ class SearchAdapter() :
     }
 
     override fun getItemCount(): Int {
-       return recipes.size
+        return recipes.size
     }
 
-    fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
+    private fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
         if (isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
             ContextCompat.getColor(context, R.color.default_color_app)
         ) else btnFavorite.imageTintList = ColorStateList.valueOf(
