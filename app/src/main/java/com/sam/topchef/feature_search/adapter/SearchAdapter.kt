@@ -1,5 +1,7 @@
 package com.sam.topchef.feature_search.adapter
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +21,7 @@ class SearchAdapter() :
     var onItemClickListener: ((id: Int) -> Unit)? = null
 
     private val recipes =  mutableListOf<Recipe>()
+    @SuppressLint("NotifyDataSetChanged")
     fun submitList(list: List<Recipe>){
         recipes.clear()
         recipes.addAll(list)
@@ -48,18 +51,14 @@ class SearchAdapter() :
                 // TODO: add feature review
             }
 
+            setButtonState(item.isFavorite, btnFavorite, context)
+
             btnFavorite.setOnClickListener {
                 item.isFavorite = !item.isFavorite
 
-                if (item.isFavorite) {
-                    btnFavorite.imageTintList = ColorStateList.valueOf(
-                        ContextCompat.getColor(context, R.color.default_color_app)
-                    )
-                } else {
-                    btnFavorite.imageTintList = ColorStateList.valueOf(
-                        ContextCompat.getColor(context, R.color.myGray)
-                    )
-                }
+                setButtonState(item.isFavorite, btnFavorite, context)
+
+                //todo  notify dataBase
             }
             txtTitle.text = item.title
             txtReviews.text = context.getString(R.string.reviews, item.reviews)
@@ -87,5 +86,14 @@ class SearchAdapter() :
 
     override fun getItemCount(): Int {
        return recipes.size
+    }
+
+    fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
+        if (isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(context, R.color.default_color_app)
+        ) else btnFavorite.imageTintList = ColorStateList.valueOf(
+            ContextCompat.getColor(context, R.color.myGray)
+        )
+
     }
 }

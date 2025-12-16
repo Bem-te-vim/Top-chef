@@ -310,7 +310,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
                     recipe.reviews,
                     recipe.isFavorite
                 )
-            }
+            }.sortedBy { it.reviews }
 
             val categories = allRecipes.take(10).map { recipe ->
                 RecipeCategory(

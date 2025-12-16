@@ -141,7 +141,7 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
         return String.format("%dh:%02dmin", h, min)
     }
 
-    fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
+  private  fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
         if (isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
             ContextCompat.getColor(context, R.color.default_color_app)
         ) else btnFavorite.imageTintList = ColorStateList.valueOf(

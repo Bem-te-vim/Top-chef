@@ -81,5 +81,10 @@
     <string name="share_cart">Compartilhar Carrinho</string>
     <string name="edit_cart">Editar</string>
     <string name="delete_cart">Apagar Carrinho</string>
+    <string name="delete_items">Apagar Items Selecionados</string>
+    <string name="delete_all">Esvaziar Lista</string>
+    <string name="deselect_items">Desmarcar Todos os Items</string>
+    <string name="share_list">Compartilhar</string>
+    <string name="sort_items">Ordenar em Ordem Alfabetica</string>
 
 </resources>

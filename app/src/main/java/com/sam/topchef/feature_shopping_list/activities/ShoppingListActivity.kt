@@ -20,6 +20,8 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.Utils
+import com.sam.topchef.core.utils.Utils.toShareText
 import com.sam.topchef.databinding.ActivityShoppingListBinding
 import com.sam.topchef.feature_fullscreen_image.FullscreenImageActivity
 import com.sam.topchef.feature_shopping_list.adapter_interface.AdapterChanges
@@ -146,7 +148,6 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         getCart(id) { cart ->
 
             AlertDialog.Builder(this)
-                // todo: create custom view to this AlertDialog
 
                 .setTitle("Deletar: ${cart.title}?")
 
@@ -183,8 +184,15 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
                 .show()
         }
 
-
     }
+
+    private fun shareCart(id: Int){
+        getCart(id){
+            val  text = it.toShareText()
+            Utils.shareText(this, text )
+        }
+    }
+
 
     private fun showBottomSheetsDialog(id: Int) {
         val dialog = BottomSheetDialog(this)
@@ -207,6 +215,10 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
             dialog.dismiss()
         }
 
+        share.setOnClickListener {
+            shareCart(id)
+            dialog.dismiss()
+        }
 
         dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
         dialog.behavior.skipCollapsed = true
