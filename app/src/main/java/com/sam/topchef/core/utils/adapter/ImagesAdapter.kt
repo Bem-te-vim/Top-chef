@@ -15,7 +15,7 @@ class ImagesAdapter(private val images: List<String>) :
     var onImgLongClickListener:((position: Int)-> Boolean)? = null
 
     inner class ImagesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imgDetail: ShapeableImageView = view.findViewById(R.id.image_item_from_detail)
+        val imgDetail: ShapeableImageView = view.findViewById(R.id.image_item)
 
         fun bing(img: String) {
             Glide.with(itemView.context)

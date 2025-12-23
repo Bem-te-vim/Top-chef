@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
 
         binding.imageProfile.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
 
         binding.btnCart.setOnClickListener {

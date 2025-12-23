@@ -41,14 +41,17 @@ android {
 dependencies {
     implementation(libs.glide)
     //kapt("")
-    implementation("jp.wasabeef:glide-transformations:4.3.0")
+    implementation(libs.glide.transformations)
     annotationProcessor(libs.compiler)
     implementation(libs.gson)
     implementation(libs.androidx.room.runtime)
     kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.viewpager2)
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
