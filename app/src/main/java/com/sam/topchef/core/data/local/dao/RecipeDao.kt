@@ -24,6 +24,10 @@ interface RecipeDao {
     @Query("SELECT * FROM Recipe WHERE id = :id")
     fun getRecipe(id: Int): Recipe?
 
+
+    @Query("SELECT * FROM recipe WHERE is_favorite = 1")
+    fun getAllFavorites(): List<Recipe>
+
     @Query("SELECT * FROM Recipe")
     fun getAllRecipes(): List<Recipe>
 

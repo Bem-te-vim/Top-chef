@@ -41,7 +41,7 @@ class FavoriteRecipeFragment : Fragment() {
             val recipes = withContext(Dispatchers.IO) {
                 (requireContext().applicationContext as App)
                     .recipeDao
-                    .getAllRecipes().filter { it.isFavorite }
+                    .getAllFavorites()
             }
 
 
