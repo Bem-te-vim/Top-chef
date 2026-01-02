@@ -16,8 +16,9 @@ class ProfileActivity : AppCompatActivity() {
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
+        val include =  binding.includeHeader
 
-        binding.btnBack.setOnClickListener { finish() }
+        include.btnBack.setOnClickListener { finish() }
 
 
         val viewPager = binding.viewPager

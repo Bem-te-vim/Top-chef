@@ -33,7 +33,7 @@ class FavoriteRecipeFragment : Fragment() {
 
         val rvAllRecipes = view.findViewById<RecyclerView>(R.id.rv_favorites_recipes)
         rvAllRecipes.layoutManager = GridLayoutManager(requireContext(), 3)
-        allForProfileAdapter = AllForProfileAdapter(R.layout.row_images_square)
+        allForProfileAdapter = AllForProfileAdapter()//You can inflate a row layout (but check out the class)
         rvAllRecipes.adapter = allForProfileAdapter
 
         lifecycleScope.launch {

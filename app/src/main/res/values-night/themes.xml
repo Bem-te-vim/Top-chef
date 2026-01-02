@@ -15,4 +15,12 @@
 
         <item name="android:windowContentTransitions">true</item>
     </style>
+
+    <style name="Theme.TopChef.Profile"
+        parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/default_color_app</item>
+        <item name="colorOnPrimary">@color/WhiteForTxt</item>
+        <item name="android:statusBarColor">@color/background</item>
+    </style>
 </resources>
