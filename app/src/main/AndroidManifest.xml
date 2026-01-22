@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".core.data.local.app.App"
         android:allowBackup="true"
@@ -14,11 +16,23 @@
         android:theme="@style/Theme.TopChef"
         tools:targetApi="31">
         <activity
+            android:name=".fature_import_recipe.activities.ImportRecipeActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".feature_fullscreen_image.FullscreenImageActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".feature_shopping_list.activities.CartActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".feature_edit_recipe.EditRecipeActivity"
             android:exported="false"

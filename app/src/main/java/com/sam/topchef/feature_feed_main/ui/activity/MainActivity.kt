@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
 
     private fun startActivityEditor(id: Int) {
         val i = Intent(this, EditRecipeActivity::class.java)
-        i.putExtra("recipe_for_editing_id", id)
+        i.putExtra("id", id)
         startActivity(i)
     }
 

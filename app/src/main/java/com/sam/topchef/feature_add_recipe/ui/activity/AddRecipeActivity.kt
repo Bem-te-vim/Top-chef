@@ -63,6 +63,7 @@ class AddRecipeActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         val imgCover = binding.imgCoverAddRecipe
+
         val rvImg = binding.rvImagesAddRecipe
         rvImg.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         imagesAdapter = ImagesAdapter(selectedUris)
@@ -161,7 +162,7 @@ class AddRecipeActivity : AppCompatActivity() {
         val rvIngredients = binding.rvIngredients
         rvIngredients.layoutManager = LinearLayoutManager(this)
 
-        val ingredientAdapter = TextsAdapter(ingredientList)
+        val ingredientAdapter = TextsAdapter(ingredientList, true)
         rvIngredients.adapter = ingredientAdapter
 
         val addIngredient = binding.addIngredient
@@ -180,7 +181,7 @@ class AddRecipeActivity : AppCompatActivity() {
         val rvPreparation = binding.rvPreparation
         rvPreparation.layoutManager = LinearLayoutManager(this)
 
-        val stepsAdapter = TextsAdapter(stepsList)
+        val stepsAdapter = TextsAdapter(stepsList, true)
         rvPreparation.adapter = stepsAdapter
 
         val addStep = binding.addStep

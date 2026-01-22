@@ -47,6 +47,7 @@ class ProfileActivity : AppCompatActivity() {
             tab.icon = when (position) {
                 0 -> ContextCompat.getDrawable(this, R.drawable.grid_on_24dp)
                 1 -> ContextCompat.getDrawable(this, R.drawable.round_favorite_border_24)
+                2 -> ContextCompat.getDrawable(this, R.drawable.web_stories_24dp)
                 else -> throw IllegalStateException()
             }
         }.attach()
