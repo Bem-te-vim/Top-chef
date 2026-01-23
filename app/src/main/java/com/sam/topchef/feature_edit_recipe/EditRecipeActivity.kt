@@ -60,6 +60,8 @@ class EditRecipeActivity : AppCompatActivity() {
             preparationAdapter.notifyItemRemoved(position)
         }
 
+
+
         binding.btnSave.setOnClickListener {
             val dialog = AlertDialog.Builder(this)
                 .setTitle("Alerta")

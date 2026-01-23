@@ -249,7 +249,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:textAlignment="viewStart"
                         android:textColor="@color/LtGrayFoTxt"
-                        android:textSize="14sp"
+                        android:textSize="16sp"
                         tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec suscipit aliquam mattis. Maecenas et lacinia lacus. In nisl orci, placerat id ultrices at, finibus at odio. Sed lacus nisl, ullamcorper consectetur tortor sed, egestas consectetur augue. Nunc egestas et sem sed iaculis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. " />
                 </LinearLayout>
 

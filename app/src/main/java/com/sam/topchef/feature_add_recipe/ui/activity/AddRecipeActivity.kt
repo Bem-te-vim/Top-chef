@@ -3,6 +3,7 @@ package com.sam.topchef.feature_add_recipe.ui.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputFilter
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.TextView
@@ -18,11 +19,11 @@ import com.bumptech.glide.Glide
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
-import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
+import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlin.concurrent.thread
 
 class AddRecipeActivity : AppCompatActivity() {
@@ -104,12 +105,7 @@ class AddRecipeActivity : AppCompatActivity() {
             val allTypes = typeDao.getAllTypes()
 
             runOnUiThread {
-                val defaultLatItem = listOf(Type(0, "Add+"))
-                val all = listOf(allTypes.take(4), defaultLatItem).flatten()
-                val items = mutableListOf<String>()
-                all.forEach {
-                    items.add(it.type)
-                }
+                val items = allTypes.map { it.type }
                 dbItems.addAll(items)
             }
         }
@@ -246,7 +242,8 @@ class AddRecipeActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    setResult(RESULT_OK)
+                    intent.putExtra(MainActivity.EXTRA_RELOAD, true)
+                    setResult(RESULT_OK, intent)
                     finish()
                 }
             }
@@ -261,6 +258,8 @@ class AddRecipeActivity : AppCompatActivity() {
      **/
     private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
         textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
+        editText.filters = arrayOf(InputFilter.LengthFilter(maxValueCont))
+
         editText.addTextChangedListener { text ->
             val length = text?.length ?: 0
             textView.text = getString(R.string.value_bar_value, length, maxValueCont)

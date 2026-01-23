@@ -44,6 +44,12 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     private lateinit var categoryRecipeAdapter: CategoryRecipeAdapter
     private lateinit var recipePostAdapter: RecipePostAdapter
 
+    companion object{
+        const val EXTRA_RECIPE_ID = "id"
+        const val EXTRA_IS_FAVORITE = "isFavorite"
+        const val EXTRA_RELOAD = "reload"
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,12 +57,30 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        result =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
+        result = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+
+            if (result.resultCode != RESULT_OK) return@registerForActivityResult
+
+            val data = result.data ?: return@registerForActivityResult
+
+            when {
+                data.hasExtra(EXTRA_IS_FAVORITE) -> {
+                    val id = data.getIntExtra(EXTRA_RECIPE_ID, -1)
+                    if (id != -1) {
+                        val isFavorite = data.getBooleanExtra(EXTRA_IS_FAVORITE, false)
+                        notifyLike(id, isFavorite)
+                    }
+
+                }
+
+                data.hasExtra(EXTRA_RELOAD) -> {
                     loadData()
                 }
             }
+        }
+
 
 
         // splash to next activity for show all popular recipes
@@ -235,10 +259,14 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }.start()
     }
 
-    override fun onRecipeLiked(id: Int, isFavorite: Boolean) {
+    private fun notifyLike(id: Int, isFavorite: Boolean) {
         saveLikeUpdate(id, isFavorite)
         popularRecipesAdapter.onLikeNotify(id, isFavorite)
         recipePostAdapter.onLikeNotify(id, isFavorite)
+    }
+
+    override fun onRecipeLiked(id: Int, isFavorite: Boolean) {
+        notifyLike(id, isFavorite)
     }
 
     override fun onRecipeReview(id: Int, review: Double) {
@@ -248,7 +276,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     override fun onRecipeClicked(id: Int) {
         val i = Intent(this, RecipeDetailActivity::class.java)
         i.putExtra("id", id)
-        startActivity(i)
+        result.launch(i)
     }
 
     @SuppressLint("InflateParams")

@@ -1,12 +1,16 @@
 package com.sam.topchef.feature_shopping_list.activities
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -24,15 +28,22 @@ import kotlin.concurrent.thread
 class CartActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCartBinding
     private lateinit var cartItemAdapter: CartItemAdapter
+    private lateinit var backCallback: OnBackPressedCallback
+
 
     private val cartItems = mutableListOf<CartItem>()
     private var currentCart: Cart? = null
+
+    private var editableState: Boolean = false
+    private var editingPosition: Int? = null
+
 
     companion object {
         private const val OK = 1
         private const val CANCELED = 2
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCartBinding.inflate(layoutInflater)
@@ -40,6 +51,16 @@ class CartActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         val cartId = intent.extras?.getInt("id") ?: throw NullPointerException()
+
+
+        backCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                exitEditMode()
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, backCallback)
+
 
         cartItemAdapter = CartItemAdapter(cartItems)
 
@@ -49,22 +70,60 @@ class CartActivity : AppCompatActivity() {
 
         // Criar novo item
         binding.btnCreateNewCartItem.setOnClickListener {
-            val txtItem = binding.createNewCartItem.text.toString().trim()
-            if (txtItem.isEmpty()) return@setOnClickListener
+            val text = binding.createNewCartItem.text.toString().trim()
+            if (text.isEmpty()) return@setOnClickListener
 
-            val newItem = CartItem(itemName = txtItem)
-            binding.createNewCartItem.text.clear()
-
-            cartItems.add(newItem)
-            cartItemAdapter.notifyItemInserted(cartItems.size - 1)
-
-            saveChanges()
-
-            rvCartItems.smoothScrollToPosition(cartItemAdapter.itemCount - 1)
-            setResult(RESULT_OK)
+            if (editableState && editingPosition != null) {
+                // ✏️ EDITAR ITEM
+                cartItems[editingPosition!!].itemName = text
+                cartItemAdapter.notifyItemChanged(editingPosition!!)
+                saveChanges()
+                exitEditMode()
+            } else {
+                // ➕ NOVO ITEM
+                val newItem = CartItem(itemName = text)
+                cartItems.add(newItem)
+                cartItemAdapter.notifyItemInserted(cartItems.size - 1)
+                saveChanges()
+                binding.createNewCartItem.text.clear()
+                binding.rvCartItems.smoothScrollToPosition(cartItems.lastIndex)
+                setResult(RESULT_OK)
+            }
         }
 
+        cartItemAdapter.onCartItemLongClickListener = { position ->
+            editableState = true
+            editingPosition = position
+            backCallback.isEnabled = true
+
+            cartItemAdapter.editingPosition = position
+            cartItemAdapter.notifyItemChanged(position)
+
+            binding.rvCartItems.smoothScrollToPosition(position)
+
+
+            binding.btnCreateNewCartItem.setImageDrawable(
+                AppCompatResources.getDrawable(
+                    this,
+                    R.drawable.edit_24dp
+                )
+            )
+
+
+
+
+            val editText = binding.createNewCartItem
+            editText.setText(cartItems[position].itemName)
+            editText.requestFocus()
+            editText.setSelection(editText.text.length)
+
+            showKeyboard(editText)
+        }
+
+
+
         cartItemAdapter.onCartItemChecked = { checkBoxState, itemPosition ->
+            exitEditMode()
             cartItems[itemPosition].isChecked = checkBoxState
             if (checkBoxState) {
                 cartItems.swap(itemPosition, cartItems.lastIndex)
@@ -75,6 +134,8 @@ class CartActivity : AppCompatActivity() {
             }
             saveChanges()
         }
+
+
 
         binding.btnBack.setOnClickListener { finish() }
         binding.btnMoreOptions.setOnClickListener {
@@ -140,13 +201,13 @@ class CartActivity : AppCompatActivity() {
         saveChanges()
     }
 
-    private fun shareCart(){
+    private fun shareCart() {
         val text = currentCart?.toShareText() ?: "Lista esta vazia :("
-        Utils.shareText(this, text )
+        Utils.shareText(this, text)
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun sortItems(){
+    private fun sortItems() {
         cartItems.sortWith(
             compareBy(String.CASE_INSENSITIVE_ORDER) { it.itemName }
         )
@@ -228,4 +289,43 @@ class CartActivity : AppCompatActivity() {
         currentCart = updated
         updateCart(updated)
     }
+
+    private fun exitEditMode() {
+        editableState = false
+        editingPosition = null
+
+        cartItemAdapter.editingPosition?.let {
+            cartItemAdapter.notifyItemChanged(it)
+        }
+        cartItemAdapter.editingPosition = null
+
+
+        binding.btnCreateNewCartItem.setImageDrawable(
+            AppCompatResources.getDrawable(
+                this,
+                R.drawable.baseline_add_24
+            )
+        )
+        val editText = binding.createNewCartItem
+        editText.text.clear()
+        editText.clearFocus()
+
+        hideKeyboard(editText)
+
+        backCallback.isEnabled = false
+    }
+
+    private fun showKeyboard(view: android.view.View) {
+        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE)
+                as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun hideKeyboard(view: android.view.View) {
+        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE)
+                as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+
 }

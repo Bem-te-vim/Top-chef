@@ -13,5 +13,7 @@
         android:layout_height="match_parent"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="3"
-        tools:listitem="@layout/row_images_square"/>
+        tools:listitem="@layout/row_images_square"
+        android:paddingBottom="30dp"
+        android:clipToPadding="false"/>
 </LinearLayout>

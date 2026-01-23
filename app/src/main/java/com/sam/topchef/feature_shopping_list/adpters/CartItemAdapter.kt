@@ -10,11 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
 
-class CartItemAdapter(val cartItems:  MutableList<CartItem>) :
+class CartItemAdapter(val cartItems: MutableList<CartItem>) :
     RecyclerView.Adapter<CartItemAdapter.CartItemViewHolder>() {
 
-    var onCartItemChecked: ((checkBoxState: Boolean, itemPosition: Int) -> Unit)? = null
+    var editingPosition: Int? = null
 
+
+    var onCartItemChecked: ((checkBoxState: Boolean, itemPosition: Int) -> Unit)? = null
+    var onCartItemLongClickListener: ((itemPosition: Int) -> Unit)? = null
 
 
     inner class CartItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -34,6 +37,19 @@ class CartItemAdapter(val cartItems:  MutableList<CartItem>) :
                 item.isChecked = isChecked
                 setTextColor(isChecked, itemName, context)
                 onCartItemChecked?.invoke(isChecked, adapterPosition)
+
+            }
+            itemView.setOnLongClickListener {
+                onCartItemLongClickListener?.invoke(adapterPosition)
+                true
+            }
+
+            if (editingPosition == adapterPosition) {
+                itemView.setBackgroundResource(R.drawable.bg_item_editing)
+                itemView.elevation = 20f
+            } else {
+                itemView.setBackgroundResource(R.drawable.bg_item_normal)
+                itemView.elevation = 0f
             }
         }
     }

@@ -12,17 +12,23 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityRecipeDetailBinding
+import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_fullscreen_image.FullscreenImageActivity
 import com.sam.topchef.feature_recipe_detail.adapter.StepsAdapter
 import com.sam.topchef.feature_recipe_detail.model.Step
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.concurrent.thread
 
 class RecipeDetailActivity : AppCompatActivity() {
@@ -30,6 +36,8 @@ class RecipeDetailActivity : AppCompatActivity() {
     private var recipeCookingTimerInSeconds: Int? = null
     private var currentImageUri: String? = null
 
+    private var currentRecipe: Recipe? = null
+    @SuppressLint("InternalInsetResource")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeDetailBinding.inflate(layoutInflater)
@@ -46,7 +54,7 @@ class RecipeDetailActivity : AppCompatActivity() {
         loadData(recipeId)
 
 
-        val items = listOf("1 Service", "2 Services", "3 Services")
+        val items = listOf("1/2 da receita", "2x a receita")
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
         val autoCompleteService = binding.autoCompleteService
         autoCompleteService.apply {
@@ -55,11 +63,23 @@ class RecipeDetailActivity : AppCompatActivity() {
             setDropDownBackgroundDrawable(
                 ContextCompat.getDrawable(
                     this@RecipeDetailActivity,
-                    com.sam.topchef.R.drawable.bg_dropdown_dark
+                    R.drawable.bg_dropdown_dark
                 )
             )
         }
         binding.btnBack.setOnClickListener { finish() }
+
+        binding.btnFavorite.setOnClickListener { view ->
+            val recipe = currentRecipe ?: return@setOnClickListener
+
+            recipe.isFavorite = !recipe.isFavorite
+            setButtonState(recipe.isFavorite, view as ImageButton, this)
+
+            i.putExtra(MainActivity.EXTRA_RECIPE_ID, recipeId)
+            i.putExtra(MainActivity.EXTRA_IS_FAVORITE, recipe.isFavorite)
+            setResult(RESULT_OK, i)
+        }
+
 
 
         binding.goTimer.setOnClickListener {
@@ -98,6 +118,7 @@ class RecipeDetailActivity : AppCompatActivity() {
                     finish()
                     return@runOnUiThread
                 }
+                currentRecipe = recipe
 
                 val imgUriList = recipe.imageUriString
                 val title = recipe.title
@@ -178,6 +199,15 @@ class RecipeDetailActivity : AppCompatActivity() {
             else -> "empty"
         }
     }
+
+    private fun updateRecipe(recipe: Recipe) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                (application as App).recipeDao.update(recipe)
+            }
+        }
+    }
+
 
     @SuppressLint("DefaultLocale")
     private fun timeFormater(totalMinutes: Int): String {
