@@ -3,28 +3,27 @@ package com.sam.topchef.feature_profile.adaper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
-import com.sam.topchef.core.retrofit.model.WebRecipe
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.fature_import_recipe.model.WebRecipeModel
 
-class WebRecipeAdapter(val webRecipes: List<WebRecipe>) :
+class WebRecipeAdapter(val webRecipes: List<WebRecipeModel>) :
     RecyclerView.Adapter<WebRecipeAdapter.WebRecipeViewHolder>() {
 
+    var onClick: ((recipeLinkPath: String)-> Unit)? = null
 
-    class WebRecipeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class WebRecipeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ShapeableImageView = view.findViewById(R.id.web_image_item)
-        val btnSave: ImageButton = view.findViewById(R.id.btn_save_web_recipe)
-        val txtRecipeName: TextView = view.findViewById(R.id.txt_title_post)
+        //val btnSave: ImageButton = view.findViewById(R.id.btn_save_web_recipe)
+        //val txtRecipeName: TextView = view.findViewById(R.id.txt_title_post)
 
-        fun bind(item: WebRecipe) {
+        fun bind(item: WebRecipeModel) {
             LoadImages().loadImagesWithBlur(item.imageUrl, image)
-            txtRecipeName.text = item.recipeName
+            //txtRecipeName.text = item.title
 
-            btnSave.setOnClickListener {  }
+            itemView.setOnClickListener { onClick?.invoke(item.recipeLinksPath) }
         }
 
     }

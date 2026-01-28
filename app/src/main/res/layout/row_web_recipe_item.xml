@@ -3,41 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingBottom="24dp"
     xmlns:tools="http://schemas.android.com/tools"
-    android:paddingBottom="24dp">
+ >
 
     <com.google.android.material.imageview.ShapeableImageView
+        android:layout_marginTop="8dp"
         android:id="@+id/web_image_item"
+        style="@style/ShapeableImageViewRoundedSquareForm"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="400dp"
-
-        android:src="@drawable/food_image_test"
+        android:layout_height="0dp"
+        android:src="@drawable/pexels"
+        app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
-    <ImageButton
-        android:id="@+id/btn_save_web_recipe"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@android:color/transparent"
-        android:contentDescription="@string/save"
-        android:src="@drawable/bookmark_48dp"
-        app:layout_constraintEnd_toEndOf="@id/web_image_item"
-        app:layout_constraintTop_toTopOf="@id/web_image_item" />
 
-    <TextView
-        android:layout_marginHorizontal="4dp"
-        android:id="@+id/txt_title_post"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:singleLine="true"
-        android:textAlignment="viewStart"
-        android:textColor="@color/WhiteForTxt"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/web_image_item"
-        tools:text="Burst Tomato Pasta" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

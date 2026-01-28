@@ -1,34 +1,31 @@
 package com.sam.topchef.feature_profile.fragments
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
-import com.sam.topchef.core.retrofit.model.WebRecipe
-import com.sam.topchef.core.retrofit.model.WebRecipePage
-import com.sam.topchef.core.retrofit.presentation.WebRecipePresenter
+import com.sam.topchef.fature_import_recipe.activities.ImportRecipeActivity
+import com.sam.topchef.fature_import_recipe.importer.TudoGostosoImporter
+import com.sam.topchef.fature_import_recipe.model.WebRecipeModel
 import com.sam.topchef.feature_profile.adaper.WebRecipeAdapter
+import kotlinx.coroutines.launch
 
 
-class WebRecipesFragment : Fragment(), WebRecipePresenter.WebRecipeCallBack {
+class WebRecipesFragment : Fragment() {
 
-    private lateinit var webRecipePresenter: WebRecipePresenter
     private lateinit var webRecipeAdapter: WebRecipeAdapter
     private lateinit var progressBar: ProgressBar
 
-    private val recipes = mutableListOf<WebRecipe>()
+    private val recipes = mutableListOf<WebRecipeModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        webRecipePresenter = WebRecipePresenter(this)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,6 +34,7 @@ class WebRecipesFragment : Fragment(), WebRecipePresenter.WebRecipeCallBack {
         return inflater.inflate(R.layout.fragment_web_recipes, container, false)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -47,28 +45,30 @@ class WebRecipesFragment : Fragment(), WebRecipePresenter.WebRecipeCallBack {
         webRecipeAdapter = WebRecipeAdapter(recipes)
         rvMain.adapter = webRecipeAdapter
 
+        webRecipeAdapter.onClick = { recipeLinkPath ->
+            val i = Intent(requireContext(), ImportRecipeActivity::class.java)
+            i.putExtra("urlPath", recipeLinkPath)
+            startActivity(i)
+        }
 
 
-        webRecipePresenter.getWebRecipePage()
 
+        lifecycleScope.launch {
+            showProgress()
+            val result = TudoGostosoImporter.getFeed()
+            recipes.clear()
+            recipes.addAll(result)
+            webRecipeAdapter.notifyDataSetChanged()
+            hideProgress()
+        }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    override fun showWebRecipePage(response: WebRecipePage) {
-        recipes.clear()
-        recipes.addAll(response.data)
-        webRecipeAdapter.notifyDataSetChanged()
-    }
 
-    override fun showFailure(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-    }
-
-    override fun showProgress() {
+    fun showProgress() {
         progressBar.visibility = View.VISIBLE
     }
 
-    override fun hideProgress() {
+    fun hideProgress() {
         progressBar.visibility = View.GONE
     }
 

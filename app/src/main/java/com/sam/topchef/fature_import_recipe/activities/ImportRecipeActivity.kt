@@ -73,6 +73,9 @@ class ImportRecipeActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
+        val urlIntent = intent.extras?.getString("urlPath")
+
+
         ingredientsAdapter = TextsAdapter(ingredients, true)
         preparationAdapter = TextsAdapter(preparations, true)
         imagesAdapter = ImagesAdapter(imageUris)
@@ -90,30 +93,8 @@ class ImportRecipeActivity : AppCompatActivity() {
 
         val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
         val url = sharedText?.let { extractUrlFromSharedText(it) }
-        if (url != null) {
-            lifecycleScope.launch {
+        if (url != null) { startImport(url) } else if (urlIntent != null) { startImport(urlIntent) }
 
-                binding.progressBar.visibility = View.VISIBLE
-
-                val recipe = TudoGostosoImporter().import(url)
-                Log.i("test", url)
-
-                if (recipe == null) {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(
-                        this@ImportRecipeActivity, "Não foi possível carregar a receita.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@launch
-                }
-                binding.progressBar.visibility = View.GONE
-                currentRecipe = recipe
-                setData(recipe)
-
-            }
-
-
-        }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -254,8 +235,14 @@ class ImportRecipeActivity : AppCompatActivity() {
         lifecycleScope.launch() {
             withContext(Dispatchers.IO) {
                 val type = Type(type = newType)
-                (application as App).typeDao.insert(type)
-                Log.i("test", "New type inserted $type")
+                val dao = (application as App).typeDao
+
+                if (!dao.getAllTypes().contains(type)) {
+                    dao.insert(type)
+                    Log.i("test", "New type inserted $type")
+                }
+
+
             }
         }
     }
@@ -305,6 +292,29 @@ class ImportRecipeActivity : AppCompatActivity() {
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes
+    }
+
+    private fun startImport(url: String) {
+        lifecycleScope.launch {
+
+            binding.progressBar.visibility = View.VISIBLE
+
+            val recipe = TudoGostosoImporter.import(url)
+            Log.i("test", url)
+
+            if (recipe == null) {
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(
+                    this@ImportRecipeActivity, "Não foi possível carregar a receita.",
+                    Toast.LENGTH_LONG
+                ).show()
+                return@launch
+            }
+            binding.progressBar.visibility = View.GONE
+            currentRecipe = recipe
+            setData(recipe)
+
+        }
     }
 
 }
