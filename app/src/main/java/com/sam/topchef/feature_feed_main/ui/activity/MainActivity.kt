@@ -18,6 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.databinding.ActivityMainBinding
 import com.sam.topchef.feature_add_recipe.ui.activity.AddRecipeActivity
 import com.sam.topchef.feature_edit_recipe.EditRecipeActivity
@@ -269,9 +270,6 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         notifyLike(id, isFavorite)
     }
 
-    override fun onRecipeReview(id: Int, review: Double) {
-        TODO("Not yet implemented")
-    }
 
     override fun onRecipeClicked(id: Int) {
         val i = Intent(this, RecipeDetailActivity::class.java)
@@ -327,6 +325,9 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
             val dao = app.db.recipeDao()
             val allRecipes = dao.getAllRecipes()
 
+            val user = app.userDao.getUser()
+
+
 
             val popularRecipes = allRecipes.shuffled().take(10).map { recipe ->
                 PopularRecipe(
@@ -367,6 +368,9 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
                 popularRecipesAdapter.setItems(popularRecipes)
                 categoryRecipeAdapter.setItems(categories)
                 recipePostAdapter.setItems(mainPosts)
+
+                LoadImages().loadImagesWithBlur(user?.imageUri, binding.imageProfile)
+                binding.HeloProfile.text = if(user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
             }
         }
     }

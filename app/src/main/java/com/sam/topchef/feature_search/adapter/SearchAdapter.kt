@@ -36,7 +36,6 @@ class SearchAdapter() :
         val imgRecipePost: ShapeableImageView = view.findViewById(R.id.img_recipe_post)
         val btnFavorite: ImageButton = view.findViewById(R.id.btn_favorite_post)
         val txtTitle: TextView = view.findViewById(R.id.txt_title_post)
-        val txtReviews: TextView = view.findViewById(R.id.txt_reviews_post)
 
         fun bind(item: Recipe) {
             Glide.with(context)
@@ -48,10 +47,6 @@ class SearchAdapter() :
                 onItemClickListener?.invoke(item.id)
             }
 
-            txtReviews.setOnClickListener {
-                // TODO: add feature review
-            }
-
             setButtonState(item.isFavorite, btnFavorite, context)
 
             btnFavorite.setOnClickListener {
@@ -59,10 +54,8 @@ class SearchAdapter() :
 
                 setButtonState(item.isFavorite, btnFavorite, context)
 
-                //todo  notify dataBase
             }
             txtTitle.text = item.title
-            txtReviews.text = context.getString(R.string.reviews, item.reviews)
         }
 
     }

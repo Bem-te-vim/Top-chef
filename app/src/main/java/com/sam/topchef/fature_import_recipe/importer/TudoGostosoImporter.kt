@@ -23,7 +23,7 @@ object TudoGostosoImporter {
                 "Query not math"
             )
 
-            Log.i("searchRecipe", "$doc $callBack")
+           Log.i("searchRecipe", "$doc $callBack")
 
             null
         } catch (e: Exception) {
@@ -68,7 +68,7 @@ object TudoGostosoImporter {
 
                 Log.i("getFeed", "$webRecipes")
 
-               webRecipes
+                webRecipes
 
             } catch (e: Exception) {
                 e.printStackTrace()

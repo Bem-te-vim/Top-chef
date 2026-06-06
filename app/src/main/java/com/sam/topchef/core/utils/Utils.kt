@@ -5,15 +5,15 @@ import android.content.Intent
 import com.sam.topchef.core.data.model.Cart
 
 object Utils {
-    fun <T> MutableList<T>.swap(index1: Int, index2: Int){
+    fun <T> MutableList<T>.swap(index1: Int, index2: Int) {
         val element = this[index1]
         this.removeAt(index1)
         this.add(index2, element)
     }
 
 
-    fun Cart.toShareText(): String{
-        val builder= StringBuilder()
+    fun Cart.toShareText(): String {
+        val builder = StringBuilder()
 
         builder.append(title)
         builder.append("\n\n")
@@ -25,7 +25,7 @@ object Utils {
         return builder.toString()
     }
 
-    fun shareText(context: Context, text: String){
+    fun shareText(context: Context, text: String) {
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, text)

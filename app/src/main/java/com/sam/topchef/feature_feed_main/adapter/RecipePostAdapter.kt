@@ -34,7 +34,7 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
         val imgRecipePost: ShapeableImageView = view.findViewById(R.id.img_recipe_post)
         val btnFavorite: ImageButton = view.findViewById(R.id.btn_favorite_post)
         val txtTitle: TextView = view.findViewById(R.id.txt_title_post)
-        val txtReviews: TextView = view.findViewById(R.id.txt_reviews_post)
+
 
         fun bind(
             item: RecipePost,
@@ -52,10 +52,6 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
             }
 
 
-            txtReviews.setOnClickListener {
-                adapterChanges.onRecipeReview(item.id, item.reviews)
-            }
-
             setButtonState(item.isFavorite, btnFavorite, context)
 
             btnFavorite.setOnClickListener {
@@ -64,7 +60,7 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
             }
 
             txtTitle.text = item.title
-            txtReviews.text = context.getString(R.string.reviews, item.reviews)
+
         }
     }
 
@@ -97,9 +93,6 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
         }
     }
 
-    fun onReviewNotify() {
-        TODO("Not yet implemented")
-    }
 
 
     fun onDeleteNotify(id: Int) {

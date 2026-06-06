@@ -17,26 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/txt_reviews"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/rounded_square_shape"
-        android:backgroundTint="@color/backgroundIc"
-        android:fontFamily="sans-serif-medium"
-        android:gravity="center"
-        android:paddingStart="4dp"
-        android:paddingEnd="8dp"
-        android:singleLine="true"
-        android:text="@string/reviews"
-        android:textColor="@color/WhiteForTxt"
-        android:textSize="14sp"
-        app:drawableStartCompat="@drawable/star_24dp_fill"
-        app:layout_constraintStart_toStartOf="@id/img_popular_recipe"
-        app:layout_constraintTop_toTopOf="@id/img_popular_recipe" />
+    
 
     <ImageButton
         android:id="@+id/btn_favorite_popular_recipe"

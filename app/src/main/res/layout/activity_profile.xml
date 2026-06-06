@@ -15,19 +15,21 @@
         android:layout_height="wrap_content">
 
         <!-- HEADER QUE COLAPSA (SEM BUG) -->
+
+        <!-- TABS FIXAS -->
         <androidx.constraintlayout.motion.widget.MotionLayout
             android:id="@+id/profileHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            app:layoutDescription="@xml/motion_profile_header">
+            app:layoutDescription="@xml/motion_profile_header"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <include android:id="@+id/includeHeader"
-                layout="@layout/layout_profile_header"/>
+            <include
+                android:id="@+id/includeHeader"
+                layout="@layout/layout_profile_header" />
 
         </androidx.constraintlayout.motion.widget.MotionLayout>
 
-        <!-- TABS FIXAS -->
         <com.google.android.material.tabs.TabLayout
             android:theme="@style/Theme.TopChef.Profile"
             android:id="@+id/tabLayout"
