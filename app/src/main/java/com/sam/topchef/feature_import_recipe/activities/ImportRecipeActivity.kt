@@ -1,4 +1,4 @@
-package com.sam.topchef.fature_import_recipe.activities
+package com.sam.topchef.feature_import_recipe.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -22,7 +22,7 @@ import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
-import com.sam.topchef.fature_import_recipe.importer.TudoGostosoImporter
+import com.sam.topchef.feature_import_recipe.importer.TudoGostosoImporter
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlinx.coroutines.Dispatchers

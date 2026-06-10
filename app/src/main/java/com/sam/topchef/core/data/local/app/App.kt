@@ -23,4 +23,5 @@ class App : Application() {
     val userDao by lazy {
         db.UserDao()
     }
+
 }

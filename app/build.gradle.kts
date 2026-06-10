@@ -63,6 +63,9 @@ dependencies {
     implementation("org.jsoup:jsoup:1.17.2")
 
 
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-ui:1.8.0")
+
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)

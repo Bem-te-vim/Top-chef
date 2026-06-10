@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.core.utils.LoadImages
-import com.sam.topchef.fature_import_recipe.model.WebRecipeModel
+import com.sam.topchef.feature_import_recipe.model.WebRecipeModel
 
 class WebRecipeAdapter(val webRecipes: List<WebRecipeModel>) :
     RecyclerView.Adapter<WebRecipeAdapter.WebRecipeViewHolder>() {

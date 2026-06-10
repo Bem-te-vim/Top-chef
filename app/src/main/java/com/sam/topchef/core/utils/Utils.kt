@@ -2,6 +2,8 @@ package com.sam.topchef.core.utils
 
 import android.content.Context
 import android.content.Intent
+import android.view.View
+import android.widget.ProgressBar
 import com.sam.topchef.core.data.model.Cart
 
 object Utils {
@@ -34,5 +36,13 @@ object Utils {
         context.startActivity(
             Intent.createChooser(intent, "Compartilhar via")
         )
+    }
+
+    fun ProgressBar.hide() {
+        this.visibility = View.GONE
+    }
+
+    fun ProgressBar.show() {
+        this.visibility = View.VISIBLE
     }
 }

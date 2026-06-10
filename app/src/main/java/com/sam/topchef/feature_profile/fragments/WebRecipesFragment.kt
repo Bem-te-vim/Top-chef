@@ -12,9 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
-import com.sam.topchef.fature_import_recipe.activities.ImportRecipeActivity
-import com.sam.topchef.fature_import_recipe.importer.TudoGostosoImporter
-import com.sam.topchef.fature_import_recipe.model.WebRecipeModel
+import com.sam.topchef.feature_import_recipe.activities.ImportRecipeActivity
+import com.sam.topchef.feature_import_recipe.importer.TudoGostosoImporter
+import com.sam.topchef.feature_import_recipe.model.WebRecipeModel
 import com.sam.topchef.feature_profile.adaper.WebRecipeAdapter
 import kotlinx.coroutines.launch
 

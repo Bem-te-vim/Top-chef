@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-permission android:name="android.permission.INTERNET" />
-
 
     <application
         android:name=".core.data.local.app.App"
@@ -15,64 +14,80 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TopChef"
-        tools:targetApi="31">
+        tools:targetApi="31" >
         <activity
-            android:name=".fature_import_recipe.activities.ImportRecipeActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".feature_fullscreen_image.FullscreenImageActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_shopping_list.activities.CartActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_edit_recipe.EditRecipeActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_profile.activities.ProfileActivity"
-            android:exported="true"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_shopping_list.activities.ShoppingListActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_add_recipe.ui.activity.AddRecipeActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".feature_see_all.ui.activity.SeeAllActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_recipe_detail.ui.activity.RecipeDetailActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_search.activities.SearchActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".feature_feed_main.ui.activity.MainActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
+            android:name=".feature_import_recipe_from_tiktok.view.TiktokImporterActivity"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".feature_import_recipe.activities.ImportRecipeActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".feature_fullscreen_image.FullscreenImageActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_shopping_list.activities.CartActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_edit_recipe.EditRecipeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_profile.activities.ProfileActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_shopping_list.activities.ShoppingListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_add_recipe.ui.activity.AddRecipeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".feature_see_all.ui.activity.SeeAllActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_recipe_detail.ui.activity.RecipeDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_search.activities.SearchActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".feature_feed_main.ui.activity.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

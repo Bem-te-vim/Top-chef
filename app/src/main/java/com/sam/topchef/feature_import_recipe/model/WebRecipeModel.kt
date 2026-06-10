@@ -1,4 +1,4 @@
-package com.sam.topchef.fature_import_recipe.model
+package com.sam.topchef.feature_import_recipe.model
 
 data class WebRecipeModel(
     val title: String,

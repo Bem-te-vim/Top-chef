@@ -1,8 +1,8 @@
-package com.sam.topchef.fature_import_recipe.importer
+package com.sam.topchef.feature_import_recipe.importer
 
 import android.util.Log
 import com.sam.topchef.core.data.model.Recipe
-import com.sam.topchef.fature_import_recipe.model.WebRecipeModel
+import com.sam.topchef.feature_import_recipe.model.WebRecipeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
