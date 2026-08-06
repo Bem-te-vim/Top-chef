@@ -1,4 +1,4 @@
-package com.sam.topchef.feature_import_recipe_from_tiktok.model
+package com.sam.topchef.feature_import_from_tiktok.model
 
 import com.google.gson.annotations.SerializedName
 

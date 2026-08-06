@@ -1,4 +1,4 @@
-package com.sam.topchef.feature_import_recipe.activities
+package com.sam.topchef.feature_import_from_tudogostoso.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -22,14 +22,14 @@ import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
-import com.sam.topchef.feature_import_recipe.importer.TudoGostosoImporter
+import com.sam.topchef.feature_import_from_tudogostoso.importer.TudoGostosoImporter
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ImportRecipeActivity : AppCompatActivity() {
+class TudoGostosoImportActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddRecipeBinding
 
     private lateinit var imagesAdapter: ImagesAdapter
@@ -73,9 +73,6 @@ class ImportRecipeActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        val urlIntent = intent.extras?.getString("urlPath")
-
-
         ingredientsAdapter = TextsAdapter(ingredients, true)
         preparationAdapter = TextsAdapter(preparations, true)
         imagesAdapter = ImagesAdapter(imageUris)
@@ -91,14 +88,19 @@ class ImportRecipeActivity : AppCompatActivity() {
             preparationAdapter.notifyItemRemoved(position)
         }
 
-        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+        val sharedText = intent.getStringExtra("urlPath")
         val url = sharedText?.let { extractUrlFromSharedText(it) }
-        if (url != null) { startImport(url) } else if (urlIntent != null) { startImport(urlIntent) }
+        if (url != null) {
+            startImport(url)
+        } else {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
 
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                AlertDialog.Builder(this@ImportRecipeActivity)
+                AlertDialog.Builder(this@TudoGostosoImportActivity)
                     .setTitle("Alerta")
                     .setMessage("Deseja continuar com a edição?")
                     .setPositiveButton("Sim") { dialog, _ ->
@@ -176,7 +178,7 @@ class ImportRecipeActivity : AppCompatActivity() {
         )
         val rvImg = binding.rvImagesAddRecipe
         rvImg.layoutManager = LinearLayoutManager(
-            this@ImportRecipeActivity,
+            this@TudoGostosoImportActivity,
             LinearLayoutManager.HORIZONTAL,
             false
         )
@@ -193,7 +195,7 @@ class ImportRecipeActivity : AppCompatActivity() {
         difficultAdapter.setDifficultyLevel(recipe.difficult)
         val rvDifficult = binding.rvRecipeDifficult
         val layoutManager =
-            object : LinearLayoutManager(this@ImportRecipeActivity, HORIZONTAL, false) {
+            object : LinearLayoutManager(this@TudoGostosoImportActivity, HORIZONTAL, false) {
                 override fun canScrollHorizontally(): Boolean {
                     return false
                 }
@@ -216,7 +218,7 @@ class ImportRecipeActivity : AppCompatActivity() {
         )
 
         val rvIngredients = binding.rvIngredients
-        rvIngredients.layoutManager = LinearLayoutManager(this@ImportRecipeActivity)
+        rvIngredients.layoutManager = LinearLayoutManager(this@TudoGostosoImportActivity)
         ingredients.clear()
         ingredients.addAll(recipe.ingredients)
         ingredientsAdapter.notifyDataSetChanged()
@@ -224,7 +226,7 @@ class ImportRecipeActivity : AppCompatActivity() {
 
 
         val rvPreparation = binding.rvPreparation
-        rvPreparation.layoutManager = LinearLayoutManager(this@ImportRecipeActivity)
+        rvPreparation.layoutManager = LinearLayoutManager(this@TudoGostosoImportActivity)
         preparations.clear()
         preparations.addAll(recipe.preparationMode)
         preparationAdapter.notifyDataSetChanged()
@@ -253,7 +255,11 @@ class ImportRecipeActivity : AppCompatActivity() {
                 (application as App).recipeDao.insert(recipe)
             }
 
-            Toast.makeText(this@ImportRecipeActivity, "Sua receita foi salva", Toast.LENGTH_SHORT)
+            Toast.makeText(
+                this@TudoGostosoImportActivity,
+                "Sua receita foi salva",
+                Toast.LENGTH_SHORT
+            )
                 .show()
         }
     }
@@ -305,7 +311,7 @@ class ImportRecipeActivity : AppCompatActivity() {
             if (recipe == null) {
                 binding.progressBar.visibility = View.GONE
                 Toast.makeText(
-                    this@ImportRecipeActivity, "Não foi possível carregar a receita.",
+                    this@TudoGostosoImportActivity, "Não foi possível carregar a receita.",
                     Toast.LENGTH_LONG
                 ).show()
                 return@launch

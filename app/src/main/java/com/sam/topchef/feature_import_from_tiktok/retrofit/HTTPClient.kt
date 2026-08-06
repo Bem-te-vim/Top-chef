@@ -1,4 +1,4 @@
-package com.sam.topchef.feature_import_recipe_from_tiktok.retrofit
+package com.sam.topchef.feature_import_from_tiktok.retrofit
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

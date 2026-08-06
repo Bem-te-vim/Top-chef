@@ -1,8 +1,8 @@
-package com.sam.topchef.feature_import_recipe_from_tiktok.presenter
+package com.sam.topchef.feature_import_from_tiktok.presenter
 
-import com.sam.topchef.feature_import_recipe_from_tiktok.model.TikTokData
-import com.sam.topchef.feature_import_recipe_from_tiktok.retrofit.TikWmCallBack
-import com.sam.topchef.feature_import_recipe_from_tiktok.retrofit.TikWmRemoteDataSource
+import com.sam.topchef.feature_import_from_tiktok.model.TikTokData
+import com.sam.topchef.feature_import_from_tiktok.retrofit.TikWmCallBack
+import com.sam.topchef.feature_import_from_tiktok.retrofit.TikWmRemoteDataSource
 
 
 class TikTokImportPresenter(

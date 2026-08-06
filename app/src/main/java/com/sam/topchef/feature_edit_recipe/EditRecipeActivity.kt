@@ -1,13 +1,23 @@
 package com.sam.topchef.feature_edit_recipe
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
+import android.text.InputFilter
+import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
@@ -16,6 +26,7 @@ import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
+import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,6 +45,29 @@ class EditRecipeActivity : AppCompatActivity() {
 
 
     private var currentRecipe: Recipe? = null
+
+    @SuppressLint("NotifyDataSetChanged")
+    private val pickImages =
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+            if (uris.isNotEmpty()) {
+                if (uris.size <= 5) {
+                    Glide.with(this).load(uris.first()).into(binding.imgCoverAddRecipe)
+                    imageUris.clear()
+                    imageUris.addAll(uris.map { it.toString() })
+                    imagesAdapter.notifyDataSetChanged()
+
+
+                    uris.forEach {
+                        contentResolver.takePersistableUriPermission(
+                            it,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    }
+                } else {
+                    Toast.makeText(this, "Selecione no máximo 5 imagens", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,22 +94,69 @@ class EditRecipeActivity : AppCompatActivity() {
             preparationAdapter.notifyItemRemoved(position)
         }
 
+        imagesAdapter.onImgClickListener = { img ->
+            Glide.with(this)
+                .load(img)
+                .placeholder(R.drawable.placeholder_item)
+                .into(binding.imgCoverAddRecipe)
+        }
 
+        imagesAdapter.onImgLongClickListener = { position ->
+            AlertDialog.Builder(this)
+                .setTitle("Remover imagem?")
+                .setNegativeButton("Cancelar") { p0, _ -> p0.dismiss() }
+                .setPositiveButton("Remover") { _, _ ->
+                    imageUris.removeAt(position)
+                    imagesAdapter.notifyItemRemoved(position)
+
+                    Glide.with(this)
+                        .load(imageUris.firstOrNull())
+                        .placeholder(R.drawable.placeholder_item)
+                        .into(binding.imgCoverAddRecipe)
+
+                }.show()
+            true
+        }
+
+        binding.btnAddImages.setOnClickListener {
+            pickImages.launch("image/*")
+        }
+
+        binding.addIngredient.setOnClickListener {
+            val ingredient = binding.edtxIngredient.text.toString().trim()
+            if (ingredient.isNotEmpty()) {
+                ingredients.add(ingredient)
+                ingredientsAdapter.notifyItemInserted(ingredients.size - 1)
+                binding.edtxIngredient.text.clear()
+            }
+        }
+
+        binding.addStep.setOnClickListener {
+            val step = binding.edtxStep.text.toString().trim()
+            if (step.isNotEmpty()) {
+                preparations.add(step)
+                preparationAdapter.notifyItemInserted(preparations.size - 1)
+                binding.edtxStep.text.clear()
+            }
+        }
 
         binding.btnSave.setOnClickListener {
-            val dialog = AlertDialog.Builder(this)
+            AlertDialog.Builder(this)
                 .setTitle("Alerta")
                 .setMessage("Deseja salvar as alterações?")
-                .setPositiveButton("Sim") { p0, p1 ->
-
+                .setPositiveButton("Sim") { _, _ ->
+                    val updatedRecipe = getNewRecipeData()
+                    if (updatedRecipe != null) {
+                        updateRecipe(updatedRecipe)
+                    }
                 }
-                .setNegativeButton("Não") { p0, p1 ->
+                .setNegativeButton("Não") { p0, _ ->
                     p0.dismiss()
                 }
                 .show()
         }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true){
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
 
                 AlertDialog.Builder(this@EditRecipeActivity)
@@ -94,24 +175,44 @@ class EditRecipeActivity : AppCompatActivity() {
 
         })
 
+        setViewCount(binding.edtxRecipeTitle, binding.characterCountTitle, 45)
+        setViewCount(binding.edtxRecipeDescription, binding.characterCountDescription, 300)
 
-
-
-
+        setupTypeSpinner()
         getRecipe(id) {
             currentRecipe = it
             setData(it)
         }
     }
 
+    private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
+        textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
+        editText.filters = arrayOf(InputFilter.LengthFilter(maxValueCont))
+
+        editText.addTextChangedListener { text ->
+            val length = text?.length ?: 0
+            textView.text = getString(R.string.value_bar_value, length, maxValueCont)
+        }
+    }
+
+    private fun setupTypeSpinner() {
+        lifecycleScope.launch {
+            val types = withContext(Dispatchers.IO) {
+                (application as App).typeDao.getAllTypes().map { it.type }
+            }
+            val adapter = ArrayAdapter(this@EditRecipeActivity, android.R.layout.simple_dropdown_item_1line, types)
+            binding.autoCompleteType.setAdapter(adapter)
+        }
+    }
+
 
     private fun getRecipe(id: Int, recipe: (Recipe) -> Unit) {
         lifecycleScope.launch {
-            val recipe = withContext(Dispatchers.IO) {
+            val recipeResult = withContext(Dispatchers.IO) {
                 (application as App).recipeDao.getRecipe(id)
             }
 
-            if (recipe != null) recipe(recipe)
+            if (recipeResult != null) recipe(recipeResult)
         }
     }
 
@@ -127,14 +228,14 @@ class EditRecipeActivity : AppCompatActivity() {
         imagesAdapter.notifyDataSetChanged()
         rvImg.adapter = imagesAdapter
 
-        binding.autoCompleteType.setText(recipe.type)
+        binding.autoCompleteType.setText(recipe.type, false)
         binding.edtxRecipeTitle.setText(recipe.title)
         binding.edtxRecipeDescription.setText(recipe.description)
 
 
         difficultAdapter.setDifficultyLevel(recipe.difficult)
         val rvDifficult = binding.rvRecipeDifficult
-        val layoutManager = object : LinearLayoutManager(this, HORIZONTAL, false) {
+        val layoutManager = object : LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false) {
             override fun canScrollHorizontally(): Boolean {
                 return false
             }
@@ -178,6 +279,11 @@ class EditRecipeActivity : AppCompatActivity() {
             withContext(Dispatchers.IO) {
                 (application as App).recipeDao.update(newRecipe)
             }
+
+            intent.putExtra(MainActivity.EXTRA_RELOAD, true)
+            setResult(RESULT_OK, intent)
+            Toast.makeText(this@EditRecipeActivity, "Receita atualizada com sucesso!", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -209,7 +315,7 @@ class EditRecipeActivity : AppCompatActivity() {
             binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
         val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
 
-        val recipe = Recipe(
+        return currentRecipe?.copy(
             title = title,
             description = description,
             difficult = difficult,
@@ -217,10 +323,9 @@ class EditRecipeActivity : AppCompatActivity() {
             ingredients = ingredients,
             preparationMode = preparations,
             cookingTime = cookingTime,
-            preparationTime = preparationTime
-
+            preparationTime = preparationTime,
+            type = binding.autoCompleteType.text.toString()
         )
-        return recipe
     }
 
     private fun timeFormater(totalMinutes: Int): Map<String, Int> {

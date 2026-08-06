@@ -12,9 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
-import com.sam.topchef.feature_import_recipe.activities.ImportRecipeActivity
-import com.sam.topchef.feature_import_recipe.importer.TudoGostosoImporter
-import com.sam.topchef.feature_import_recipe.model.WebRecipeModel
+import com.sam.topchef.feature_import_from_tudogostoso.activities.TudoGostosoImportActivity
+import com.sam.topchef.feature_import_from_tudogostoso.importer.TudoGostosoImporter
+import com.sam.topchef.feature_import_from_tudogostoso.model.WebRecipeModel
 import com.sam.topchef.feature_profile.adaper.WebRecipeAdapter
 import kotlinx.coroutines.launch
 
@@ -46,7 +46,7 @@ class WebRecipesFragment : Fragment() {
         rvMain.adapter = webRecipeAdapter
 
         webRecipeAdapter.onClick = { recipeLinkPath ->
-            val i = Intent(requireContext(), ImportRecipeActivity::class.java)
+            val i = Intent(requireContext(), TudoGostosoImportActivity::class.java)
             i.putExtra("urlPath", recipeLinkPath)
             startActivity(i)
         }

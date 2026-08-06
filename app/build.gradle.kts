@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -40,11 +43,26 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
+    }
+
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(FileInputStream(localPropertiesFile))
+    }
+
+    // 3. Lê a chave e a injeta no BuildConfig
+    val apiKey = localProperties.getProperty("GEMINI_FLASH") ?: "\"CHAVE_PADRAO_VAZIA\""
+
+    defaultConfig {
+        buildConfigField("String", "GEMINI_FLASH", apiKey)
     }
 
 }
 
 dependencies {
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.glide)
     implementation(libs.glide.transformations)
     annotationProcessor(libs.compiler)
@@ -59,12 +77,15 @@ dependencies {
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.2.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("org.jsoup:jsoup:1.17.2")
 
 
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
+
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
     implementation(libs.material)
     implementation(libs.androidx.activity)

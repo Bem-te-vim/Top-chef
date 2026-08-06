@@ -27,4 +27,9 @@
         <item name="colorOnPrimary">@color/WhiteForTxt</item>
         <item name="android:statusBarColor">@color/background</item>
     </style>
+
+    <style name="TransparentBottomSheetDialog" parent="Theme.Material3.DayNight.BottomSheetDialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
 </resources>

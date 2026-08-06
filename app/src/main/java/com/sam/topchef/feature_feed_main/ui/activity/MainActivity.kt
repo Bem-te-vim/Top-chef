@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     private fun startActivityEditor(id: Int) {
         val i = Intent(this, EditRecipeActivity::class.java)
         i.putExtra("id", id)
-        startActivity(i)
+        result.launch(i)
     }
 
     private fun moveIngredientsToCart(id: Int) {

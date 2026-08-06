@@ -1,6 +1,6 @@
-package com.sam.topchef.feature_import_recipe_from_tiktok.retrofit
+package com.sam.topchef.feature_import_from_tiktok.retrofit
 
-import com.sam.topchef.feature_import_recipe_from_tiktok.model.TikTokData
+import com.sam.topchef.feature_import_from_tiktok.model.TikTokData
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

@@ -21,4 +21,6 @@
 
     <color name="ic_launcher_background">#fff</color>
     <color name="read">#ff0000</color>
+    <color name="black_transparent">#29000000</color>
+
 </resources>
