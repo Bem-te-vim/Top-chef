@@ -5,5 +5,6 @@ data class RecipePost(
     val title: String,
     val coverUrl: String? = null,
     var isFavorite: Boolean,
-    val reviews: Double
+    val reviews: Double,
+    val isTikTok: Boolean = false
 )

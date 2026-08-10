@@ -21,7 +21,11 @@ class App : Application() {
     }
 
     val userDao by lazy {
-        db.UserDao()
+        db.userDao()
+    }
+
+    val tiktokDao by lazy {
+        db.tiktokDao()
     }
 
 }

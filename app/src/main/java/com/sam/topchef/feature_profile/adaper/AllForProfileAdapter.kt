@@ -11,7 +11,7 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.utils.LoadImages
 
-class AllForProfileAdapter(@LayoutRes private val layout: Int = R.layout.row_images) :
+class AllForProfileAdapter(@param:LayoutRes private val layout: Int = R.layout.row_images) :
     RecyclerView.Adapter<AllForProfileAdapter.AllForProfileViewHolder>() {
 
     var itemClick: ((id: Int) -> Unit)? = null

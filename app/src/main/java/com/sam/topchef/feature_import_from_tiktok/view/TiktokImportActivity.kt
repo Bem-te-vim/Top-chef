@@ -24,7 +24,10 @@ import com.sam.topchef.feature_import_from_tiktok.ia.RecipeInfoByIA
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokData
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokImportPresenter
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokUICallBack
+import com.sam.topchef.feature_import_from_tudogostoso.importer.TudoGostosoImporter.searchRecipe
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -64,9 +67,18 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         message = binding.message
 
         val sharedText = intent.getStringExtra("urlPath")
-        val url = sharedText?.let { extractUrlFromSharedText(it) }
-        if (url != null) {
-            presenter.getTikTokData(url)
+        val tiktokId = intent.getIntExtra("tiktokId", -1)
+
+        if (tiktokId != -1) {
+            loadSavedTiktokRecipe(tiktokId)
+        } else if (sharedText != null) {
+            val url = extractUrlFromSharedText(sharedText)
+            if (url != null) {
+                presenter.getTikTokData(url)
+            } else {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
         } else {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
@@ -95,6 +107,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         player.prepare()
         player.play()
 
+        Log.i("thumbNail", response.data.thumbnail)
         importRecipeWithIA(response)
     }
 
@@ -109,12 +122,16 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 val audioFile = recipeInfoByIA.downloadAudio(response.data.videoUrl, tempFile)
 
                 val recipe = recipeInfoByIA.importRecipe(listOf(response.data.title), audioFile)
+                recipe.copy(
+                    thumbnail = response.data.thumbnail,
+                    videoUrl = response.data.videoUrl
+                ).also { updatedRecipe ->
+                    Log.d("RecipeIA", "Recipe imported successfully: $updatedRecipe")
+                    message.visibility = View.GONE
+                    messageLoadAnimation(false)
 
-                Log.d("RecipeIA", "Recipe imported successfully: $recipe")
-                message.visibility = View.GONE
-                messageLoadAnimation(false)
-
-                showRecipeDialog(recipe)
+                    showRecipeDialog(updatedRecipe)
+                }
             } catch (e: Exception) {
                 message.visibility = View.GONE
                 messageLoadAnimation(false)
@@ -140,10 +157,10 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private fun messageLoadAnimation(start: Boolean) {
         if (start) {
             if (pulseAnimator == null) {
-                val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.08f)
-                val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.08f)
+                val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.02f)
+                val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.02f)
                 pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(message, scaleX, scaleY).apply {
-                    duration = 1200
+                    duration = 1000
                     repeatCount = ObjectAnimator.INFINITE
                     repeatMode = ObjectAnimator.REVERSE
                     start()
@@ -179,6 +196,24 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      */
     override fun hideProgress() {
         binding.progressBarImport.hide()
+    }
+
+    private fun loadSavedTiktokRecipe(id: Int) {
+        lifecycleScope.launch {
+            val db = com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
+            val recipe = withContext(Dispatchers.IO) {
+                db.tiktokDao().getById(id)
+            }
+            if (recipe != null) {
+                recipe.videoUrl?.let { url ->
+                    val mediaItem = MediaItem.fromUri(url)
+                    player.setMediaItem(mediaItem)
+                    player.prepare()
+                    player.play()
+                }
+                showRecipeDialog(recipe)
+            }
+        }
     }
 
     /**

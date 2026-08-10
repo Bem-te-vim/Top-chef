@@ -70,8 +70,8 @@ class CategoryRecipeAdapter() :
     override fun getItemCount(): Int = categories.size
 
 
-    fun onDeleteNotify(id: Int) {
-        val index = categories.indexOfFirst { it.id == id }
+    fun onDeleteNotify(id: Int, isTikTok: Boolean = false) {
+        val index = categories.indexOfFirst { it.id == id && it.isTikTok == isTikTok }
 
         if (index != -1) {
             categories.removeAt(index)

@@ -43,11 +43,15 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
 
 
             itemView.setOnClickListener {
-                adapterChanges.onRecipeClicked(item.id)
+                if (item.isTikTok) {
+                    adapterChanges.onTikTokRecipeClicked(item.id)
+                } else {
+                    adapterChanges.onRecipeClicked(item.id)
+                }
             }
 
             itemView.setOnLongClickListener {
-                adapterChanges.onRecipeTools(item.id)
+                adapterChanges.onRecipeTools(item.id, item.isTikTok)
                 true
             }
 
@@ -56,7 +60,7 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
 
             btnFavorite.setOnClickListener {
                 item.isFavorite = !item.isFavorite
-                adapterChanges.onRecipeLiked(item.id, item.isFavorite)
+                adapterChanges.onRecipeLiked(item.id, item.isFavorite, item.isTikTok)
             }
 
             txtTitle.text = item.title
@@ -84,8 +88,8 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
     }
 
 
-    fun onLikeNotify(id: Int, isFavorite: Boolean) {
-        val index = recipePosts.indexOfFirst { it.id == id }
+    fun onLikeNotify(id: Int, isFavorite: Boolean, isTikTok: Boolean = false) {
+        val index = recipePosts.indexOfFirst { it.id == id && it.isTikTok == isTikTok }
 
         if (index != -1) {
             recipePosts[index].isFavorite = isFavorite
@@ -95,8 +99,8 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
 
 
 
-    fun onDeleteNotify(id: Int) {
-        val index = recipePosts.indexOfFirst { it.id == id }
+    fun onDeleteNotify(id: Int, isTikTok: Boolean = false) {
+        val index = recipePosts.indexOfFirst { it.id == id && it.isTikTok == isTikTok }
 
         if (index != -1) {
             recipePosts.removeAt(index)
@@ -104,9 +108,6 @@ class RecipePostAdapter(val adapterChanges: AdapterChanges) :
         }
     }
 
-     fun onEditNotify() {
-        TODO("Not yet implemented")
-    }
 
     fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
         if (isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(

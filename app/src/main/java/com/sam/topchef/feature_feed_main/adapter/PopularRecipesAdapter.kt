@@ -48,9 +48,15 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
             LoadImages().loadImagesWithBlur(item.coverUrl, imgCover)
 
 
-            itemView.setOnClickListener { adapterChanges.onRecipeClicked(item.id) }
+            itemView.setOnClickListener {
+                if (item.isTikTok) {
+                    adapterChanges.onTikTokRecipeClicked(item.id)
+                } else {
+                    adapterChanges.onRecipeClicked(item.id)
+                }
+            }
             itemView.setOnLongClickListener {
-                adapterChanges.onRecipeTools(item.id)
+                adapterChanges.onRecipeTools(item.id, item.isTikTok)
                 true
             }
 
@@ -75,7 +81,7 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
 
             btnFavorite.setOnClickListener {
                 item.isFavorite = !item.isFavorite
-                adapterChanges.onRecipeLiked(item.id, item.isFavorite)
+                adapterChanges.onRecipeLiked(item.id, item.isFavorite, item.isTikTok)
             }
         }
     }
@@ -101,8 +107,8 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
     override fun getItemCount(): Int = popularRecipes.size
 
 
-    fun onLikeNotify(id: Int, isFavorite: Boolean) {
-        val index = popularRecipes.indexOfFirst { it.id == id }
+    fun onLikeNotify(id: Int, isFavorite: Boolean, isTikTok: Boolean = false) {
+        val index = popularRecipes.indexOfFirst { it.id == id && it.isTikTok == isTikTok }
 
         if (index != -1) {
             popularRecipes[index].isFavorite = isFavorite
@@ -111,8 +117,8 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
     }
 
 
-    fun onDeleteNotify(id: Int) {
-        val index = popularRecipes.indexOfFirst { it.id == id }
+    fun onDeleteNotify(id: Int, isTikTok: Boolean = false) {
+        val index = popularRecipes.indexOfFirst { it.id == id && it.isTikTok == isTikTok }
 
         if (index != -1) {
             popularRecipes.removeAt(index)

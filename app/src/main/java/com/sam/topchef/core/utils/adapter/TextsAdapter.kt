@@ -42,7 +42,7 @@ class TextsAdapter(private val texts: List<String>, var showDeleteBottom: Boolea
         viewType: Int
     ): TextsViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.row_simple_list_item_1_cunstom, parent, false)
+            .inflate(R.layout.row_simple_list_item_1_custom, parent, false)
         return TextsViewHolder(view)
     }
 

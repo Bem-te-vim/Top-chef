@@ -9,4 +9,5 @@ data class PopularRecipe(
     val coverUrl: String? = null,
     val reviews: Double,
     var isFavorite: Boolean = false,
+    val isTikTok: Boolean = false
 )

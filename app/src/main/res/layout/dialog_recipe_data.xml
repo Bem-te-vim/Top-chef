@@ -7,10 +7,23 @@
     android:background="@drawable/glass_background"
     >
 
+    <View
+        android:id="@+id/pickup_view"
+        android:layout_width="40dp"
+        android:layout_height="6dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/rounded_square"
+        android:backgroundTint="@color/default_color_app"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <!--Main container-->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pickup_view"
         android:paddingTop="16dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -154,7 +167,7 @@
 
 
                 <Button
-                    android:id="@+id/go_timer"
+                    android:id="@+id/save"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"

@@ -9,6 +9,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
 import com.sam.topchef.databinding.ActivityRedirectorBinding
+import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 
 import com.sam.topchef.feature_import_from_tudogostoso.activities.TudoGostosoImportActivity
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
@@ -42,12 +43,17 @@ class RedirectorActivity : AppCompatActivity() {
             url.contains("tudogostoso.com") -> {
                 Intent(this, TudoGostosoImportActivity::class.java)
             }
-            else -> null
+            else -> {
+                null
+            }
         }
 
-        intent?.let {
-            it.putExtra("urlPath", url)
-            startActivity(it)
+        if (intent != null){
+            intent.putExtra("urlPath", url)
+            startActivity(intent)
+            finish()
+        }else{
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
     }

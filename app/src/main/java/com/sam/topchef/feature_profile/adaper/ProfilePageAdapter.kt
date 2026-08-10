@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.sam.topchef.feature_profile.fragments.AllRecipesFragment
 import com.sam.topchef.feature_profile.fragments.FavoriteRecipeFragment
+import com.sam.topchef.feature_profile.fragments.VideoRecipeFragment
 import com.sam.topchef.feature_profile.fragments.WebRecipesFragment
 
 class ProfilePageAdapter(activity: FragmentActivity): FragmentStateAdapter(activity) {
@@ -13,9 +14,10 @@ class ProfilePageAdapter(activity: FragmentActivity): FragmentStateAdapter(activ
           0 -> AllRecipesFragment()
           1 -> FavoriteRecipeFragment()
           2 -> WebRecipesFragment()
+          3 -> VideoRecipeFragment()
           else -> throw IllegalStateException()
       }
     }
 
-    override fun getItemCount(): Int = 3
+    override fun getItemCount(): Int = 4
 }

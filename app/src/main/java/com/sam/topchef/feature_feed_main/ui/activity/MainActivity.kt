@@ -29,6 +29,7 @@ import com.sam.topchef.feature_feed_main.adapter_interface.AdapterChanges
 import com.sam.topchef.feature_feed_main.data.model.PopularRecipe
 import com.sam.topchef.feature_feed_main.data.model.RecipeCategory
 import com.sam.topchef.feature_feed_main.data.model.RecipePost
+import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_profile.activities.ProfileActivity
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import com.sam.topchef.feature_search.activities.SearchActivity
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     private lateinit var categoryRecipeAdapter: CategoryRecipeAdapter
     private lateinit var recipePostAdapter: RecipePostAdapter
 
-    companion object{
+    companion object {
         const val EXTRA_RECIPE_ID = "id"
         const val EXTRA_IS_FAVORITE = "isFavorite"
         const val EXTRA_RELOAD = "reload"
@@ -81,7 +82,6 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
                 }
             }
         }
-
 
 
         // splash to next activity for show all popular recipes
@@ -180,9 +180,28 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         return recipe
     }
 
+    private fun deleteTikTokRecipe(id: Int) {
+        AlertDialog.Builder(this)
+            .setTitle("Deletar essa recaita?")
+
+            .setNegativeButton("Cancelar") { p0, p1 -> p0.dismiss() }
+            .setPositiveButton("Deletar") { p0, _ ->
+                thread {
+                    val app = application as App
+                    val dao = app.db.tiktokDao()
+                    dao.delete(id)
+                    runOnUiThread {
+                        recipePostAdapter.onDeleteNotify(id, true)
+                        Toast.makeText(this, "Receita do Tiktok deletada", Toast.LENGTH_LONG).show()
+                    }
+                }
+                p0.dismiss()
+            }.show()
+
+    }
+
     private fun showDeleteRecipeDialog(id: Int) {
         AlertDialog.Builder(this)
-            // todo: create custom view to this AlertDialog
             .setTitle("Deletar essa recaita?")
 
             .setNegativeButton("Cancelar") { p0, p1 -> p0.dismiss() }
@@ -200,9 +219,9 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
             val dao = app.db.recipeDao()
             dao.delete(id)
             runOnUiThread {
-                popularRecipesAdapter.onDeleteNotify(id)
-                categoryRecipeAdapter.onDeleteNotify(id)
-                recipePostAdapter.onDeleteNotify(id)
+                popularRecipesAdapter.onDeleteNotify(id, false)
+                categoryRecipeAdapter.onDeleteNotify(id, false)
+                recipePostAdapter.onDeleteNotify(id, false)
 
                 Toast.makeText(this, "Receita deletada", Toast.LENGTH_LONG).show()
             }
@@ -237,37 +256,45 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }
     }
 
-    private fun saveLikeUpdate(id: Int, isFavorite: Boolean) {
+    private fun saveLikeUpdate(id: Int, isFavorite: Boolean, isTikTok: Boolean = false) {
         Thread {
             val app = application as App
-            val recipeDao = app.db.recipeDao()
-            val recipe = recipeDao.getRecipe(id)
-
-            if (recipe == null) {
-                runOnUiThread {
-
-                    Toast.makeText(
-                        applicationContext,
-                        "Essa receita foi excluida recentemente, ela desapareceara em breve.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
+            if (isTikTok) {
+                val tiktokDao = app.db.tiktokDao()
+                val recipe = tiktokDao.getById(id)
+                if (recipe != null) {
+                    tiktokDao.update(recipe.copy(isFavorite = isFavorite))
                 }
-                return@Thread
-            }
+            } else {
+                val recipeDao = app.db.recipeDao()
+                val recipe = recipeDao.getRecipe(id)
 
-            recipeDao.update(recipe.copy(isFavorite = isFavorite))
+                if (recipe == null) {
+                    runOnUiThread {
+
+                        Toast.makeText(
+                            applicationContext,
+                            "Essa receita foi excluida recentemente, ela desapareceara em breve.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                    }
+                    return@Thread
+                }
+
+                recipeDao.update(recipe.copy(isFavorite = isFavorite))
+            }
         }.start()
     }
 
-    private fun notifyLike(id: Int, isFavorite: Boolean) {
-        saveLikeUpdate(id, isFavorite)
-        popularRecipesAdapter.onLikeNotify(id, isFavorite)
-        recipePostAdapter.onLikeNotify(id, isFavorite)
+    private fun notifyLike(id: Int, isFavorite: Boolean, isTikTok: Boolean = false) {
+        saveLikeUpdate(id, isFavorite, isTikTok)
+        popularRecipesAdapter.onLikeNotify(id, isFavorite, isTikTok)
+        recipePostAdapter.onLikeNotify(id, isFavorite, isTikTok)
     }
 
-    override fun onRecipeLiked(id: Int, isFavorite: Boolean) {
-        notifyLike(id, isFavorite)
+    override fun onRecipeLiked(id: Int, isFavorite: Boolean, isTikTok: Boolean) {
+        notifyLike(id, isFavorite, isTikTok)
     }
 
 
@@ -277,8 +304,14 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         result.launch(i)
     }
 
+    override fun onTikTokRecipeClicked(id: Int) {
+        val i = Intent(this, TiktokImportActivity::class.java)
+        i.putExtra("tiktokId", id)
+        startActivity(i)
+    }
+
     @SuppressLint("InflateParams")
-    private fun showBottomSheetsDialog(id: Int) {
+    private fun showBottomSheetsDialog(id: Int, isTikTok: Boolean = false) {
         val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.layout_tools_bottom_sheet, null)
         dialog.setContentView(view)
@@ -290,8 +323,17 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         val share: LinearLayout = view.findViewById(R.id.tools_share)
         val moveToCart: LinearLayout = view.findViewById(R.id.tools_move_to_cart)
 
+        if (isTikTok) {
+            edit.visibility = View.GONE
+            moveToCart.visibility = View.GONE
+        }
+
         delete.setOnClickListener {
-            showDeleteRecipeDialog(id)
+            if (isTikTok) {
+                deleteTikTokRecipe(id)
+            } else {
+                showDeleteRecipeDialog(id)
+            }
             dialog.dismiss()
         }
 
@@ -315,8 +357,8 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         dialog.behavior.skipCollapsed = true
     }
 
-    override fun onRecipeTools(id: Int) {
-        showBottomSheetsDialog(id)
+    override fun onRecipeTools(id: Int, isTikTok: Boolean) {
+        showBottomSheetsDialog(id, isTikTok)
     }
 
     private fun loadData() {
@@ -324,9 +366,9 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
             val app = application as App
             val dao = app.db.recipeDao()
             val allRecipes = dao.getAllRecipes()
+            val tiktokRecipes = app.db.tiktokDao().getAll()
 
             val user = app.userDao.getUser()
-
 
 
             val popularRecipes = allRecipes.shuffled().take(10).map { recipe ->
@@ -359,18 +401,31 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
                     recipe.isFavorite,
                     recipe.reviews
                 )
+            }.toMutableList()
+
+            val tiktokPosts = tiktokRecipes.map { tiktok ->
+                RecipePost(
+                    tiktok.id,
+                    tiktok.name,
+                    tiktok.thumbnail,
+                    tiktok.isFavorite,
+                    0.0,
+                    isTikTok = true
+                )
             }
 
-
+            mainPosts.addAll(tiktokPosts)
+            val combinedPosts = mainPosts.shuffled()
 
             runOnUiThread {
-                validateList(allRecipes.isEmpty())
+                validateList(allRecipes.isEmpty() && tiktokRecipes.isEmpty())
                 popularRecipesAdapter.setItems(popularRecipes)
                 categoryRecipeAdapter.setItems(categories)
-                recipePostAdapter.setItems(mainPosts)
+                recipePostAdapter.setItems(combinedPosts)
 
                 LoadImages().loadImagesWithBlur(user?.imageUri, binding.imageProfile)
-                binding.HeloProfile.text = if(user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
+                binding.HeloProfile.text =
+                    if (user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
             }
         }
     }

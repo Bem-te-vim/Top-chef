@@ -45,4 +45,10 @@ object Utils {
     fun ProgressBar.show() {
         this.visibility = View.VISIBLE
     }
+
+    fun View.clickAnimation(){
+        this.animate().scaleX(0.99f).scaleY(0.99f).setDuration(100).withEndAction {
+            animate().scaleX(1f).scaleY(1f).duration = 100
+        }
+    }
 }

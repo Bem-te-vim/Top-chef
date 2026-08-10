@@ -18,6 +18,7 @@
         <activity
             android:name=".feature_import_from_tiktok.view.TiktokImportActivity"
             android:exported="true"
+
             android:screenOrientation="portrait"/>
         <activity
             android:name=".feature_import_from_tudogostoso.activities.TudoGostosoImportActivity"
