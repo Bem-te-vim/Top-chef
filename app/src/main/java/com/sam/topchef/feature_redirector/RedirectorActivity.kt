@@ -14,8 +14,16 @@ import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_import_from_tudogostoso.activities.TudoGostosoImportActivity
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 
+/**
+ * Entry point for shared content from other apps.
+ * Analyzes the incoming URL (e.g., from TikTok or browser) and redirects the user
+ * to the appropriate import activity.
+ */
 class RedirectorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRedirectorBinding
+    /**
+     * Initializes the redirector, extracts the shared text, and triggers redirection logic.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -33,6 +41,11 @@ class RedirectorActivity : AppCompatActivity() {
         redirectUrl(sharedUrl)
     }
 
+    /**
+     * Analyzes the provided URL and redirects the user to the corresponding import activity
+     * (TikTok or TudoGostoso) or back to MainActivity if unsupported.
+     * @param url The shared URL string.
+     */
     private fun redirectUrl(url: String?) {
         if (url == null) return
 

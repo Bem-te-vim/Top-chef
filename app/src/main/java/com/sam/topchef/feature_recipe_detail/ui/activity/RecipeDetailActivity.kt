@@ -31,12 +31,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.concurrent.thread
 
+/**
+ * Activity for displaying detailed information about a specific recipe.
+ * Shows ingredients, preparation steps, images, and provides a cooking timer.
+ */
 class RecipeDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecipeDetailBinding
     private var recipeCookingTimerInSeconds: Int? = null
     private var currentImageUri: String? = null
 
     private var currentRecipe: Recipe? = null
+    /**
+     * Initializes the detail view, extracts the recipe ID from intent, and initiates data loading.
+     */
     @SuppressLint("InternalInsetResource")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +111,10 @@ class RecipeDetailActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Loads recipe data from the database and updates all UI components (title, images, ingredients, etc.).
+     * @param recipeId The ID of the recipe to display.
+     */
     private fun loadData(recipeId: Int) {
         thread {
             val app = application as App
@@ -188,6 +199,11 @@ class RecipeDetailActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Converts a difficulty level (1-5) into a localized string.
+     * @param difficult The difficulty integer.
+     * @return A string representation like "Very Easy" or "Hard".
+     */
     private fun difficultFormater(difficult: Int): String {
 
         return when (difficult) {
@@ -200,6 +216,10 @@ class RecipeDetailActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Updates the recipe's favorite status or other fields in the database.
+     * @param recipe The recipe object to update.
+     */
     private fun updateRecipe(recipe: Recipe) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
@@ -209,6 +229,10 @@ class RecipeDetailActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Formats total minutes into a displayable "Xh:XXmin" string.
+     * @param totalMinutes Total time in minutes.
+     */
     @SuppressLint("DefaultLocale")
     private fun timeFormater(totalMinutes: Int): String {
         val h = totalMinutes / 60
@@ -217,6 +241,12 @@ class RecipeDetailActivity : AppCompatActivity() {
         return String.format("%dh:%02dmin", h, min)
     }
 
+    /**
+     * Updates the visual state (tint) of the favorite button based on the recipe's favorite status.
+     * @param isFavorite Whether the recipe is marked as favorite.
+     * @param btnFavorite The button view to update.
+     * @param context The context for retrieving colors.
+     */
     private fun setButtonState(isFavorite: Boolean, btnFavorite: ImageButton, context: Context) {
         if (isFavorite) btnFavorite.imageTintList = ColorStateList.valueOf(
             ContextCompat.getColor(context, R.color.default_color_app)

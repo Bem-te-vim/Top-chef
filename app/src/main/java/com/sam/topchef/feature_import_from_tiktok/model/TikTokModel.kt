@@ -20,6 +20,9 @@ data class TikTokModel(
     @ColumnInfo("video_url")
     val videoUrl: String? = null,
 
+    @ColumnInfo("origin_url")
+    val originUrl: String? = null,
+
     @SerializedName("name")
     @ColumnInfo(name = "name")
     val name: String,

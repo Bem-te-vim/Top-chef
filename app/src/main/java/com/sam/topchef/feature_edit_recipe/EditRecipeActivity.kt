@@ -31,6 +31,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Activity responsible for editing existing recipes.
+ * Pre-fills fields with existing recipe data and allows updates to all recipe components.
+ */
 class EditRecipeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddRecipeBinding
     private lateinit var imagesAdapter: ImagesAdapter
@@ -69,6 +73,9 @@ class EditRecipeActivity : AppCompatActivity() {
             }
         }
 
+    /**
+     * Initializes the activity, loads existing recipe data, and sets up UI listeners for editing.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddRecipeBinding.inflate(layoutInflater)
@@ -185,6 +192,12 @@ class EditRecipeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Sets up a character counter for an EditText.
+     * @param editText The EditText to monitor.
+     * @param textView The TextView to display the count.
+     * @param maxValueCont The character limit.
+     */
     private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
         textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
         editText.filters = arrayOf(InputFilter.LengthFilter(maxValueCont))
@@ -195,6 +208,9 @@ class EditRecipeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Populates the category spinner with available recipe types from the database.
+     */
     private fun setupTypeSpinner() {
         lifecycleScope.launch {
             val types = withContext(Dispatchers.IO) {
@@ -206,6 +222,11 @@ class EditRecipeActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Retrieves a single recipe from the database and executes a callback.
+     * @param id The recipe ID.
+     * @param recipe Callback to handle the retrieved recipe.
+     */
     private fun getRecipe(id: Int, recipe: (Recipe) -> Unit) {
         lifecycleScope.launch {
             val recipeResult = withContext(Dispatchers.IO) {
@@ -216,6 +237,10 @@ class EditRecipeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Populates the activity's fields with data from a [Recipe] object.
+     * @param recipe The recipe to display.
+     */
     @SuppressLint("NotifyDataSetChanged")
     private fun setData(recipe: Recipe) {
         LoadImages().loadImagesWithBlur(
@@ -274,6 +299,10 @@ class EditRecipeActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * Updates an existing recipe in the database.
+     * @param newRecipe The updated recipe object.
+     */
     private fun updateRecipe(newRecipe: Recipe) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
@@ -287,6 +316,10 @@ class EditRecipeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Collects data from all input fields and returns a new [Recipe] object.
+     * @return A [Recipe] object with the new data, or null if validation fails.
+     */
     private fun getNewRecipeData(): Recipe? {
         val title = binding.edtxRecipeTitle.text.toString().trim().ifEmpty {
             binding.edtxRecipeTitle.error = getString(R.string.required_field)
@@ -328,6 +361,11 @@ class EditRecipeActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Formats total minutes into hours and minutes.
+     * @param totalMinutes Total time in minutes.
+     * @return A map containing "hour" and "min" keys.
+     */
     private fun timeFormater(totalMinutes: Int): Map<String, Int> {
         val h = totalMinutes / 60
         val min = totalMinutes % 60
@@ -337,6 +375,12 @@ class EditRecipeActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Calculates total minutes from hours and minutes.
+     * @param hour Hours.
+     * @param minutes Minutes.
+     * @return Total minutes.
+     */
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes

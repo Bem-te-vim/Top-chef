@@ -25,6 +25,10 @@ import com.sam.topchef.feature_shopping_list.adpters.CartItemAdapter
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
 import kotlin.concurrent.thread
 
+/**
+ * Activity for managing a specific shopping cart/list.
+ * Allows users to view ingredients, mark them as purchased, and share the list.
+ */
 class CartActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCartBinding
     private lateinit var cartItemAdapter: CartItemAdapter
@@ -43,6 +47,10 @@ class CartActivity : AppCompatActivity() {
         private const val CANCELED = 2
     }
 
+    /**
+     * Initializes the cart view, sets up listeners for item creation, editing, and checking,
+     * and handles the back press logic for exiting edit mode.
+     */
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,6 +153,11 @@ class CartActivity : AppCompatActivity() {
         loadData(cartId)
     }
 
+    /**
+     * Shows a confirmation dialog for deletion actions.
+     * @param message The dialog message.
+     * @param onResult Callback receiving the user's choice (OK or CANCELED).
+     */
     private fun showDeleteDialog(message: String = "Deletar?", onResult: (Int) -> Unit) {
         AlertDialog.Builder(this)
 
@@ -162,6 +175,9 @@ class CartActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * Removes all items that are marked as checked from the cart.
+     */
     @SuppressLint("NotifyDataSetChanged")
     private fun deleteSelectedItems() {
         showDeleteDialog("Deletar items selecionados?") { userAction ->
@@ -176,6 +192,9 @@ class CartActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Clears all items from the current cart.
+     */
     @SuppressLint("NotifyDataSetChanged")
     private fun deleteAllItems() {
 
@@ -191,6 +210,9 @@ class CartActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Unchecks all items in the cart.
+     */
     private fun deselectItems() {
         cartItems.forEachIndexed { index, item ->
             if (item.isChecked) {
@@ -201,11 +223,17 @@ class CartActivity : AppCompatActivity() {
         saveChanges()
     }
 
+    /**
+     * Shares the current cart's items as a plain text string.
+     */
     private fun shareCart() {
         val text = currentCart?.toShareText() ?: "Lista esta vazia :("
         Utils.shareText(this, text)
     }
 
+    /**
+     * Sorts the cart items alphabetically by name.
+     */
     @SuppressLint("NotifyDataSetChanged")
     private fun sortItems() {
         cartItems.sortWith(
@@ -215,6 +243,9 @@ class CartActivity : AppCompatActivity() {
         saveChanges()
     }
 
+    /**
+     * Shows a bottom sheet dialog with batch actions for the cart items.
+     */
     private fun showBottomSheetsDialog() {
         val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.layout_tools_cart_item, null)
@@ -258,6 +289,10 @@ class CartActivity : AppCompatActivity() {
     }
 
     // Carrega os dados do carrinho no início
+    /**
+     * Loads the items for a specific cart from the database.
+     * @param id The cart ID.
+     */
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData(id: Int) {
         thread {
@@ -274,6 +309,10 @@ class CartActivity : AppCompatActivity() {
     }
 
     // Atualiza o carrinho no banco
+    /**
+     * Updates the cart's data in the database.
+     * @param cart The cart object to update.
+     */
     private fun updateCart(cart: Cart) {
         thread {
             val dao = (application as App).db.cartDao()
@@ -282,6 +321,9 @@ class CartActivity : AppCompatActivity() {
     }
 
     // Salva mudanças no carrinho
+    /**
+     * Saves the current list of items to the database.
+     */
     private fun saveChanges() {
         val cart = currentCart ?: return
         val updated = cart.copy(cartItems = cartItems)
@@ -290,6 +332,9 @@ class CartActivity : AppCompatActivity() {
         updateCart(updated)
     }
 
+    /**
+     * Exits the inline edit mode for cart items and hides the keyboard.
+     */
     private fun exitEditMode() {
         editableState = false
         editingPosition = null
@@ -315,12 +360,18 @@ class CartActivity : AppCompatActivity() {
         backCallback.isEnabled = false
     }
 
+    /**
+     * Utility to show the soft keyboard for a specific view.
+     */
     private fun showKeyboard(view: android.view.View) {
         val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE)
                 as android.view.inputmethod.InputMethodManager
         imm.showSoftInput(view, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
     }
 
+    /**
+     * Utility to hide the soft keyboard.
+     */
     private fun hideKeyboard(view: android.view.View) {
         val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE)
                 as android.view.inputmethod.InputMethodManager

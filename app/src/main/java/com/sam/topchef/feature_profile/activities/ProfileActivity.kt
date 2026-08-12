@@ -22,6 +22,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Activity for displaying and managing the user's profile.
+ * Shows user-created recipes, favorites, and profile settings.
+ */
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
 
@@ -41,6 +45,9 @@ class ProfileActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Initializes the profile view, loads user data, recipe counts, and sets up the tabbed layout.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
@@ -134,6 +141,9 @@ class ProfileActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Overrides finish to provide a custom transition animation.
+     */
     override fun finish() {
         super.finish()
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)

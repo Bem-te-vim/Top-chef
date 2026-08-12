@@ -17,6 +17,10 @@ import com.sam.topchef.feature_search.adapter.SearchAdapter
 import kotlinx.coroutines.Runnable
 import kotlin.concurrent.thread
 
+/**
+ * Activity providing global search functionality for recipes.
+ * Allows users to find recipes by name or ingredients.
+ */
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private lateinit var searchAdapter: SearchAdapter
@@ -24,6 +28,9 @@ class SearchActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var searchRunnable: Runnable? = null
 
+    /**
+     * Initializes the search UI and sets up a debounced TextWatcher for real-time searching.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
@@ -73,6 +80,10 @@ class SearchActivity : AppCompatActivity() {
         rvSearch.adapter = searchAdapter
     }
 
+    /**
+     * Performs a database search for recipes matching the query string and updates the results adapter.
+     * @param search The search query.
+     */
     private fun search(search: String) {
         thread {
             val app = application as App

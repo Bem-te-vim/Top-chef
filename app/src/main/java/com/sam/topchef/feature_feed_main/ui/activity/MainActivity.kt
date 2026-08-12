@@ -39,6 +39,11 @@ import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.ALL_
 import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
 import kotlin.concurrent.thread
 
+/**
+ * Main entry point of the application.
+ * Displays the recipe feed, categories, popular recipes, and handles navigation to core features
+ * like profile, search, shopping list, and recipe creation/import.
+ */
 class MainActivity : AppCompatActivity(), AdapterChanges {
     private lateinit var result: ActivityResultLauncher<Intent>
     private lateinit var binding: ActivityMainBinding
@@ -53,6 +58,9 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
 
     }
 
+    /**
+     * Initializes the activity, sets up the UI components, and loads the recipe data.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -149,12 +157,20 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     }
 
 
+    /**
+     * Starts the EditRecipeActivity to modify an existing recipe.
+     * @param id The ID of the recipe to edit.
+     */
     private fun startActivityEditor(id: Int) {
         val i = Intent(this, EditRecipeActivity::class.java)
         i.putExtra("id", id)
         result.launch(i)
     }
 
+    /**
+     * Redirects to the shopping list activity and pre-fills it with ingredients from the specified recipe.
+     * @param id The ID of the recipe whose ingredients should be added to the cart.
+     */
     private fun moveIngredientsToCart(id: Int) {
         val recipe = getRecipe(id)
         val ingredientsList = recipe?.ingredients
@@ -164,6 +180,11 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         startActivity(i)
     }
 
+    /**
+     * Retrieves a recipe from the database by its ID.
+     * @param id The ID of the recipe to retrieve.
+     * @return The recipe object if found, null otherwise.
+     */
     private fun getRecipe(id: Int): Recipe? {
         var recipe: Recipe? = null
         thread {
@@ -180,6 +201,10 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         return recipe
     }
 
+    /**
+     * Deletes a TikTok-imported recipe from the database.
+     * @param id The ID of the TikTok recipe to delete.
+     */
     private fun deleteTikTokRecipe(id: Int) {
         AlertDialog.Builder(this)
             .setTitle("Deletar essa recaita?")
@@ -200,6 +225,10 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
 
     }
 
+    /**
+     * Shows a confirmation dialog before deleting a standard recipe.
+     * @param id The ID of the recipe to delete.
+     */
     private fun showDeleteRecipeDialog(id: Int) {
         AlertDialog.Builder(this)
             .setTitle("Deletar essa recaita?")
@@ -213,6 +242,10 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
             .show()
     }
 
+    /**
+     * Deletes a standard recipe from the database and updates the UI.
+     * @param id The ID of the recipe to delete.
+     */
     private fun deleteRecipe(id: Int) {
         thread {
             val app = application as App
@@ -228,6 +261,13 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }
     }
 
+    /**
+     * Displays an error layout when no recipes are found.
+     * @param show Whether to show the error layout.
+     * @param title The title of the error message.
+     * @param message The main body of the error message.
+     * @param buttonText The text for the retry/action button.
+     */
     private fun showRecipesNotFoundError(
         show: Boolean = false,
         title: String = "Oops...",
@@ -256,6 +296,12 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }
     }
 
+    /**
+     * Updates the favorite status of a recipe in the database.
+     * @param id The ID of the recipe.
+     * @param isFavorite The new favorite status.
+     * @param isTikTok Whether the recipe is a TikTok-imported recipe.
+     */
     private fun saveLikeUpdate(id: Int, isFavorite: Boolean, isTikTok: Boolean = false) {
         Thread {
             val app = application as App
@@ -287,29 +333,51 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }.start()
     }
 
+    /**
+     * Notifies adapters and updates the database when a recipe's favorite status changes.
+     * @param id The ID of the recipe.
+     * @param isFavorite The new favorite status.
+     * @param isTikTok Whether the recipe is a TikTok-imported recipe.
+     */
     private fun notifyLike(id: Int, isFavorite: Boolean, isTikTok: Boolean = false) {
         saveLikeUpdate(id, isFavorite, isTikTok)
         popularRecipesAdapter.onLikeNotify(id, isFavorite, isTikTok)
         recipePostAdapter.onLikeNotify(id, isFavorite, isTikTok)
     }
 
+    /**
+     * Callback from the adapter when a recipe is liked or unliked.
+     */
     override fun onRecipeLiked(id: Int, isFavorite: Boolean, isTikTok: Boolean) {
         notifyLike(id, isFavorite, isTikTok)
     }
 
 
+    /**
+     * Callback from the adapter when a standard recipe is clicked.
+     * @param id The ID of the clicked recipe.
+     */
     override fun onRecipeClicked(id: Int) {
         val i = Intent(this, RecipeDetailActivity::class.java)
         i.putExtra("id", id)
         result.launch(i)
     }
 
+    /**
+     * Callback from the adapter when a TikTok recipe is clicked.
+     * @param id The ID of the clicked TikTok recipe.
+     */
     override fun onTikTokRecipeClicked(id: Int) {
         val i = Intent(this, TiktokImportActivity::class.java)
         i.putExtra("tiktokId", id)
         startActivity(i)
     }
 
+    /**
+     * Shows a bottom sheet dialog with various tools (edit, delete, share, move to cart) for a recipe.
+     * @param id The ID of the recipe.
+     * @param isTikTok Whether the recipe is a TikTok-imported recipe.
+     */
     @SuppressLint("InflateParams")
     private fun showBottomSheetsDialog(id: Int, isTikTok: Boolean = false) {
         val dialog = BottomSheetDialog(this)
@@ -357,10 +425,16 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         dialog.behavior.skipCollapsed = true
     }
 
+    /**
+     * Callback from the adapter when the tools/options menu for a recipe is requested.
+     */
     override fun onRecipeTools(id: Int, isTikTok: Boolean) {
         showBottomSheetsDialog(id, isTikTok)
     }
 
+    /**
+     * Asynchronously loads all recipe data (standard and TikTok) and updates the UI adapters.
+     */
     private fun loadData() {
         thread {
             val app = application as App
@@ -430,6 +504,10 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }
     }
 
+    /**
+     * Validates if the recipe lists are empty and toggles the empty state UI accordingly.
+     * @param isEmpty True if all lists are empty, false otherwise.
+     */
     private fun validateList(isEmpty: Boolean) {
         if (isEmpty) {
             showRecipesNotFoundError(

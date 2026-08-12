@@ -29,7 +29,11 @@ class RecipeInfoByIA {
     )
 
     suspend fun downloadAudio(url: String, outputFile: File): File = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(url).build()
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
+            .header("Referer", "https://www.tiktok.com/")
+            .build()
         httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) throw IOException("Falha ao baixar áudio: ${response.code}")
             val body = response.body ?: throw IOException("Corpo da resposta vazio")

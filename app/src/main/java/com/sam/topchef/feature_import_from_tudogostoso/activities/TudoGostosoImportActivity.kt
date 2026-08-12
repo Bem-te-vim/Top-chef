@@ -29,6 +29,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Activity for importing recipes from the TudoGostoso website.
+ * Uses a URL to fetch and parse recipe data, then presents it for confirmation/editing before saving.
+ */
 class TudoGostosoImportActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddRecipeBinding
 
@@ -67,6 +71,9 @@ class TudoGostosoImportActivity : AppCompatActivity() {
             }
         }
 
+    /**
+     * Initializes the activity, sets up adapters, and triggers the import process from a shared URL.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddRecipeBinding.inflate(layoutInflater)
@@ -171,6 +178,10 @@ class TudoGostosoImportActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * Populates the UI fields with data extracted from the TudoGostoso website.
+     * @param recipe The extracted recipe data.
+     */
     @SuppressLint("NotifyDataSetChanged")
     private fun setData(recipe: Recipe) {
         LoadImages().loadImagesWithBlur(
@@ -233,6 +244,10 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         rvPreparation.adapter = preparationAdapter
     }
 
+    /**
+     * Saves a new recipe category/type to the database if it doesn't already exist.
+     * @param newType The name of the category to save.
+     */
     private fun saveType(newType: String) {
         lifecycleScope.launch() {
             withContext(Dispatchers.IO) {
@@ -249,6 +264,10 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Saves the imported recipe to the local database.
+     * @param recipe The recipe object to persist.
+     */
     private fun saveRecipe(recipe: Recipe) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
@@ -265,6 +284,11 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Extracts a URL from a shared text snippet.
+     * @param text The input text.
+     * @return The extracted URL, or null.
+     */
     private fun extractUrlFromSharedText(text: String): String? {
 
         // remove espaços estranhos tipo "https://www .site.com"
@@ -276,6 +300,11 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Splits total minutes into an hour/minute map for the UI fields.
+     * @param totalMinutes Total time in minutes.
+     * @return A map with "hour" and "min".
+     */
     private fun timeFormater(totalMinutes: Int): Map<String, Int> {
         val h = totalMinutes / 60
         val min = totalMinutes % 60
@@ -285,6 +314,9 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * Navigates the user back to the MainActivity after a successful import or cancellation.
+     */
     private fun goToMain() {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -295,11 +327,18 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * Sums hours and minutes into total minutes.
+     */
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes
     }
 
+    /**
+     * Initiates the TudoGostoso import process by fetching and parsing the web page.
+     * @param url The URL of the recipe to import.
+     */
     private fun startImport(url: String) {
         lifecycleScope.launch {
 

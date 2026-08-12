@@ -39,4 +39,10 @@ object DataBaseMigration {
             )
         }
     }
+
+    val MIGRATION_15_16 = object : Migration(15, 16) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `origin_url` TEXT")
+        }
+    }
 }

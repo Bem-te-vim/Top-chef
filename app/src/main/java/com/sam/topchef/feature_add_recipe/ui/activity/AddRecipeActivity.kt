@@ -26,6 +26,10 @@ import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlin.concurrent.thread
 
+/**
+ * Activity responsible for creating new recipes.
+ * Handles image selection, difficulty setting, and input of ingredients and preparation steps.
+ */
 class AddRecipeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddRecipeBinding
     private lateinit var imagesAdapter: ImagesAdapter
@@ -57,6 +61,9 @@ class AddRecipeActivity : AppCompatActivity() {
             }
         }
 
+    /**
+     * Initializes the activity, sets up adapters for images, difficulty, and lists, and handles save actions.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddRecipeBinding.inflate(layoutInflater)
@@ -256,6 +263,12 @@ class AddRecipeActivity : AppCompatActivity() {
      * take the length of a editText and set the value in
      * one textview
      **/
+    /**
+     * Monitors character count in an EditText and updates a corresponding TextView.
+     * @param editText The input field to monitor.
+     * @param textView The display for the current count.
+     * @param maxValueCont The maximum allowed characters.
+     */
     private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
         textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
         editText.filters = arrayOf(InputFilter.LengthFilter(maxValueCont))
@@ -266,6 +279,12 @@ class AddRecipeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Converts hours and minutes into total minutes.
+     * @param hour The number of hours.
+     * @param minutes The number of minutes.
+     * @return Total time in minutes.
+     */
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes

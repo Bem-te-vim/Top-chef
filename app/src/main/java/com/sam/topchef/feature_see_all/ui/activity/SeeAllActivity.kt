@@ -16,6 +16,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Activity for displaying a scrollable list of recipes from a specific category or collection.
+ * Triggered from "See All" buttons in the main feed.
+ */
 class SeeAllActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySeeAllBinding
@@ -26,6 +30,10 @@ class SeeAllActivity : AppCompatActivity() {
         const val ALL_CATEGORIES = "AllCategories"
     }
 
+    /**
+     * Initializes the activity, determines whether to show popular recipes or categories,
+     * and sets up the grid layout and adapter.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySeeAllBinding.inflate(layoutInflater)
@@ -51,6 +59,9 @@ class SeeAllActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
     }
 
+    /**
+     * Loads and displays all recipes sorted by their review scores.
+     */
     private fun loadPopularRecipe() {
         lifecycleScope.launch {
             val popularRecipe = withContext(Dispatchers.IO) {
@@ -63,6 +74,9 @@ class SeeAllActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Loads and displays all recipes filtered by category.
+     */
     private fun loadCategories() {
         lifecycleScope.launch {
             val allCategories = withContext(Dispatchers.IO) {
@@ -75,6 +89,10 @@ class SeeAllActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Toggles the visibility of the progress bar or empty state message.
+     * @param result The number of items loaded.
+     */
     private fun showProgressBar(result: Int) {
         if (result > 1) {
             binding.progressBar.visibility = View.GONE
