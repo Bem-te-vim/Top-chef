@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputFilter
-import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.TextView
@@ -260,7 +259,7 @@ class EditRecipeActivity : AppCompatActivity() {
 
         difficultAdapter.setDifficultyLevel(recipe.difficult)
         val rvDifficult = binding.rvRecipeDifficult
-        val layoutManager = object : LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false) {
+        val layoutManager = object : LinearLayoutManager(this, HORIZONTAL, false) {
             override fun canScrollHorizontally(): Boolean {
                 return false
             }

@@ -19,7 +19,8 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.0"
+        app:use_controller="false" />
 
     <TextView
         android:id="@+id/message"
@@ -42,7 +43,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="6dp"
+        android:layout_marginEnd="8dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -55,7 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@null"
-            android:src="@drawable/round_favorite_fill_48dp"
+            android:src="@drawable/favorite_heart_love_svgrepo_com"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -67,7 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:background="@null"
-            android:src="@drawable/mobile_share_38dp"
+            android:src="@drawable/share_2_svgrepo_com"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_cart"
             app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +80,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:background="@null"
-            android:src="@drawable/shopping_cart_48dp"
+            android:src="@drawable/cart_shopping_svgrepo_com"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_favorite"
@@ -91,7 +92,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:background="@null"
-            android:src="@drawable/bottom_panel_open_48dp"
+            android:src="@drawable/up_square"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_share"
@@ -108,4 +109,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/play_ic"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:src="@drawable/play_arrow_24dp"
+        app:tint="@color/white_transparent"
+        app:layout_constraintBottom_toBottomOf="@+id/playerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

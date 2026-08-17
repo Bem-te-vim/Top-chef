@@ -20,18 +20,20 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
 import com.sam.topchef.core.utils.Utils.hide
+import com.sam.topchef.core.utils.Utils.setClicksListener
 import com.sam.topchef.core.utils.Utils.show
 import com.sam.topchef.databinding.ActivityTiktokImportBinding
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_import_from_tiktok.ia.RecipeInfoByIA
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokData
+import com.sam.topchef.feature_import_from_tiktok.player.PlayerListener
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokImportPresenter
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokUICallBack
-import com.sam.topchef.feature_import_from_tudogostoso.importer.TudoGostosoImporter.searchRecipe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,6 +55,8 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private var isRefreshing = false
     private var currentRecipeId: Int? = null
 
+    private lateinit var playerListener: PlayerListener
+
     /**
      * Initializes the activity, sets up edge-to-edge display, binding,
      * presenter, and ExoPlayer. Initiates data fetching for a sample TikTok URL.
@@ -68,30 +72,60 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         binding = ActivityTiktokImportBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
-            .setUserAgent("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
-            .setDefaultRequestProperties(mapOf("Referer" to "https://www.tiktok.com/"))
-            .setAllowCrossProtocolRedirects(true)
-
-        player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(this).setDataSourceFactory(dataSourceFactory))
-            .build()
-        binding.playerView.player = player
-
-        player.addListener(object : Player.Listener {
-            override fun onPlayerError(error: PlaybackException) {
-                val cause = error.cause
-                if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
-                    handle403Error()
-                }
-            }
-        })
-
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+
+        val dataSourceFactory = DefaultHttpDataSource.Factory()
+            .setUserAgent("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
+            .setDefaultRequestProperties(mapOf("Referer" to "https://www.tiktok.com/"))
+            .setAllowCrossProtocolRedirects(true)
+
+
+        playerListener = PlayerListener()
+
+        player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(this).setDataSourceFactory(
+                    dataSourceFactory
+                )
+            )
+            .build()
+
+        player.repeatMode = Player.REPEAT_MODE_ALL
+
+        val playerView = binding.playerView
+        playerView.player = player
+
+
+
+
+        /** Pause and play the video Player on single click, show toast on double click **/
+        playerView.setClicksListener(
+            onSingleClick = {
+                if (player.isPlaying) {
+                    player.pause()
+                } else {
+                    player.play()
+                }
+            },
+            onDoubleClick = {
+                Toast.makeText(this, "DoubleClick", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+
+        player.addListener(playerListener)
+
+        playerListener.onPlayerError {   val cause = it.cause
+            if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
+                handle403Error()
+            } }
+
+        playerListener.isPlaying { showPlayerIc(it) }
 
         presenter = TikTokImportPresenter(this)
         recipeInfoByIA = RecipeInfoByIA()
@@ -116,9 +150,15 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             finish()
         }
 
-//        player = ExoPlayer.Builder(this).build()
-//        binding.playerView.player = player
     }
+    private fun showPlayerIc(isPlaying: Boolean){
+        if(isPlaying){
+            binding.playIc.hide()
+        }else{
+            binding.playIc.show()
+        }
+    }
+
 
     /**
      * Regex utility to extract a URL from a shared string of text.
@@ -161,7 +201,8 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      */
     private fun updateVideoUrlInDb(id: Int, newVideoUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val db = com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
+            val db =
+                com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
             val recipe = db.tiktokDao().getById(id)
             if (recipe != null) {
                 db.tiktokDao().update(recipe.copy(videoUrl = newVideoUrl))
@@ -231,12 +272,13 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             if (pulseAnimator == null) {
                 val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.02f)
                 val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.02f)
-                pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(message, scaleX, scaleY).apply {
-                    duration = 1000
-                    repeatCount = ObjectAnimator.INFINITE
-                    repeatMode = ObjectAnimator.REVERSE
-                    start()
-                }
+                pulseAnimator =
+                    ObjectAnimator.ofPropertyValuesHolder(message, scaleX, scaleY).apply {
+                        duration = 1000
+                        repeatCount = ObjectAnimator.INFINITE
+                        repeatMode = ObjectAnimator.REVERSE
+                        start()
+                    }
             }
         } else {
             pulseAnimator?.cancel()
@@ -277,7 +319,8 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private fun loadSavedTiktokRecipe(id: Int) {
         currentRecipeId = id
         lifecycleScope.launch {
-            val db = com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
+            val db =
+                com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
             val recipe = withContext(Dispatchers.IO) {
                 db.tiktokDao().getById(id)
             }
@@ -300,7 +343,10 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         if (isRefreshing || currentOriginUrl == null) return
 
         isRefreshing = true
-        Log.d("TiktokImport", "403 error detected, attempting to refresh URL from: $currentOriginUrl")
+        Log.d(
+            "TiktokImport",
+            "403 error detected, attempting to refresh URL from: $currentOriginUrl"
+        )
         presenter.getTikTokData(currentOriginUrl!!)
     }
 

@@ -131,7 +131,7 @@ class ProfileActivity : AppCompatActivity() {
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.icon = when (position) {
                 0 -> ContextCompat.getDrawable(this, R.drawable.grid_on_24dp)
-                1 -> ContextCompat.getDrawable(this, R.drawable.round_favorite_border_24)
+                1 -> ContextCompat.getDrawable(this, R.drawable.favorite_24dp)
                 2 -> ContextCompat.getDrawable(this, R.drawable.web_stories_24dp)
                 3 -> ContextCompat.getDrawable(this, R.drawable.play_circle_24dp)
                 else -> throw IllegalStateException()

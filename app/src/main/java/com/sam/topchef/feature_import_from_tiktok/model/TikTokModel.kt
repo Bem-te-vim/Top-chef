@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import com.sam.topchef.feature_profile.model.VideoThumbnail
+
 
 @Entity(tableName = "Tiktok")
 data class TikTokModel(
