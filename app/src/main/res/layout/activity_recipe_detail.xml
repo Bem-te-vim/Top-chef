@@ -119,27 +119,18 @@
                     app:layout_constraintTop_toTopOf="parent">
 
                     <TextView
+                        android:layout_marginTop="8dp"
                         android:id="@+id/txt_recipe_type"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="6"
                         android:ellipsize="end"
                         android:fontFamily="sans-serif-medium"
                         android:maxLines="1"
                         android:text="Pasta"
-                        android:textAlignment="viewStart"
+                        android:textAlignment="textStart"
                         android:textColor="@color/LtGrayFoTxt"
                         android:textSize="16sp" />
 
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/btn_evaluate_recipe"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@null"
-                        android:drawableStart="@drawable/star_24"
-                        android:text="4.9"
-                        android:textColor="@color/myGray" />
                 </LinearLayout>
 
                 <!--Recipe title-->
@@ -187,7 +178,7 @@
                         style="@style/ShapeableImageViewCircleForm"
                         android:layout_width="50dp"
                         android:layout_height="0dp"
-                        android:src="@drawable/sam"
+                        android:src="@drawable/web_svgrepo_com"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent" />
 
@@ -197,7 +188,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="8dp"
                         android:fontFamily="sans-serif-medium"
-                        android:text="Sam Keller"
+                        android:text="Tudo Gostoso"
                         android:textAlignment="viewStart"
                         android:textColor="@color/WhiteForTxt"
                         android:textSize="16sp"
@@ -211,7 +202,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="8dp"
-                        android:text="Aspiring chef"
+                        android:text="by web"
                         android:textAlignment="viewStart"
                         android:textColor="@color/LtGrayFoTxt"
                         android:textSize="14sp"
@@ -384,6 +375,7 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:padding="8dp"
                         android:layout_gravity="top">
 
                         <ImageView
@@ -414,32 +406,7 @@
                             app:layout_constraintStart_toEndOf="@id/img_washoku_ignore"
                             app:layout_constraintTop_toTopOf="@+id/img_washoku_ignore" />
 
-                        <com.google.android.material.textfield.TextInputLayout
-                            style="@style/AutoCompleteTextViewForm"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="100dp"
-                            app:boxBackgroundColor="@color/background"
-                            app:boxStrokeColor="@color/background"
-                            app:endIconMode="dropdown_menu"
-                            app:endIconTint="@color/default_color_app"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@+id/txt_ingredients_ignore"
-                            app:layout_constraintTop_toTopOf="parent">
 
-                            <AutoCompleteTextView
-                                android:id="@+id/autoCompleteService"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@null"
-                                android:ellipsize="end"
-                                android:inputType="none"
-                                android:popupBackground="@color/backgroundIc"
-                                android:singleLine="true"
-                                android:textColor="@color/LtGrayFoTxt" />
-
-                        </com.google.android.material.textfield.TextInputLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </LinearLayout>

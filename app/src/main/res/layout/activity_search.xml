@@ -43,6 +43,44 @@
         app:layout_constraintTop_toBottomOf="@+id/text_input_search"
         app:spanCount="2" />
 
+    <LinearLayout
+        android:fitsSystemWindows="true"
+        android:id="@+id/layout_not_found"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_input_search"
+        tools:visibility="visible">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/search_svgrepo_com"
+            app:tint="@color/myGray" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Receita não encontrada"
+            android:textColor="@color/myGray"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tente buscar por outro nome"
+            android:textColor="@color/myGray"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
     <View
         android:id="@+id/statusBarOverlay"
         android:layout_width="match_parent"

@@ -13,17 +13,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
-import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.feature_feed_main.data.model.RecipePost
 
 class SearchAdapter() :
     RecyclerView.Adapter<SearchAdapter.SearchViewHolder>() {
 
-    var onItemClickListener: ((id: Int) -> Unit)? = null
+    var onItemClickListener: ((id: Int, isTikTok: Boolean) -> Unit)? = null
 
-    private val recipes = mutableListOf<Recipe>()
+    private val recipes = mutableListOf<RecipePost>()
 
     @SuppressLint("NotifyDataSetChanged")
-    fun submitList(list: List<Recipe>) {
+    fun submitList(list: List<RecipePost>) {
         recipes.clear()
         recipes.addAll(list)
         notifyDataSetChanged()
@@ -37,14 +37,14 @@ class SearchAdapter() :
         val btnFavorite: ImageButton = view.findViewById(R.id.btn_favorite_post)
         val txtTitle: TextView = view.findViewById(R.id.txt_title_post)
 
-        fun bind(item: Recipe) {
+        fun bind(item: RecipePost) {
             Glide.with(context)
-                .load(item.imageUriString.firstOrNull())
+                .load(item.coverUrl)
                 .placeholder(R.drawable.placeholder_item)
                 .into(imgRecipePost)
 
             itemView.setOnClickListener {
-                onItemClickListener?.invoke(item.id)
+                onItemClickListener?.invoke(item.id, item.isTikTok)
             }
 
             setButtonState(item.isFavorite, btnFavorite, context)

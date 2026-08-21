@@ -19,6 +19,9 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.utils.Utils.clickAnimation
+import com.sam.topchef.core.utils.Utils.shareText
+import com.sam.topchef.core.utils.Utils.toShareText
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityRecipeDetailBinding
@@ -61,22 +64,10 @@ class RecipeDetailActivity : AppCompatActivity() {
         loadData(recipeId)
 
 
-        val items = listOf("1/2 da receita", "2x a receita")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
-        val autoCompleteService = binding.autoCompleteService
-        autoCompleteService.apply {
-            setText(items[0])
-            setAdapter(adapter)
-            setDropDownBackgroundDrawable(
-                ContextCompat.getDrawable(
-                    this@RecipeDetailActivity,
-                    R.drawable.bg_dropdown_dark
-                )
-            )
-        }
         binding.btnBack.setOnClickListener { finish() }
 
         binding.btnFavorite.setOnClickListener { view ->
+            view.clickAnimation()
             val recipe = currentRecipe ?: return@setOnClickListener
 
             recipe.isFavorite = !recipe.isFavorite
@@ -90,13 +81,14 @@ class RecipeDetailActivity : AppCompatActivity() {
 
 
         binding.goTimer.setOnClickListener {
-
+            it.clickAnimation()
             recipeCookingTimerInSeconds?.let {
 
             }
         }
 
         binding.coverImageRecipe.setOnClickListener {
+            it.clickAnimation()
             val i = Intent(this, FullscreenImageActivity::class.java)
             i.putExtra("imageUri", currentImageUri)
 
@@ -107,6 +99,30 @@ class RecipeDetailActivity : AppCompatActivity() {
                     "image_transition"
                 )
             startActivity(i, options.toBundle())
+        }
+
+        binding.btnShare.setOnClickListener {
+            it.clickAnimation()
+            shareRecipe(recipeId)
+        }
+    }
+
+    private fun shareRecipe(id: Int, isTikTok: Boolean = false) {
+        thread {
+            val app = application as App
+            val text = if (isTikTok) {
+                val tiktok = app.db.tiktokDao().getById(id)
+                tiktok?.toShareText()
+            } else {
+                val recipe = app.db.recipeDao().getRecipe(id)
+                recipe?.toShareText()
+            }
+
+            text?.let {
+                runOnUiThread {
+                    shareText(this, it)
+                }
+            }
         }
     }
 
@@ -164,7 +180,6 @@ class RecipeDetailActivity : AppCompatActivity() {
                 binding.txtRecipeType.text = type
                 binding.txtRecipeTitle.text = title
                 binding.txtRecipeDescription.text = description
-                binding.btnEvaluateRecipe.text = reviews.toString()
                 binding.txtDifficult.text = difficultFormater(difficult)
                 binding.txtRecipeCookingTime.text = timeFormater(cookingTime)
                 binding.txtRecipePreparationTime.text = timeFormater(preparationTime)

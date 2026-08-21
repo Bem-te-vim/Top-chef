@@ -8,19 +8,19 @@ import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
-import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.feature_feed_main.data.model.RecipePost
 
 class AllForProfileAdapter(@param:LayoutRes private val layout: Int = R.layout.row_images) :
     RecyclerView.Adapter<AllForProfileAdapter.AllForProfileViewHolder>() {
 
-    var itemClick: ((id: Int) -> Unit)? = null
-    var itemLongClick: ((id: Int) -> Unit)? = null
+    var itemClick: ((id: Int, isTikTok: Boolean) -> Unit)? = null
+    var itemLongClick: ((id: Int, isTikTok: Boolean) -> Unit)? = null
 
-    private val recipes = mutableListOf<Recipe>()
+    private val recipes = mutableListOf<RecipePost>()
 
     @SuppressLint("NotifyDataSetChanged")
-    fun submitList(list: List<Recipe>) {
+    fun submitList(list: List<RecipePost>) {
         recipes.clear()
         recipes.addAll(list)
         notifyDataSetChanged()
@@ -29,12 +29,12 @@ class AllForProfileAdapter(@param:LayoutRes private val layout: Int = R.layout.r
     inner class AllForProfileViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         val imageview: ShapeableImageView = view.findViewById(R.id.image_item)
-        fun bind(item: Recipe) {
-            LoadImages().loadImagesWithBlur(item.imageUriString.firstOrNull(), imageview)
+        fun bind(item: RecipePost) {
+            LoadImages().loadImagesWithBlur(item.coverUrl, imageview)
 
-            itemView.setOnClickListener { itemClick?.invoke(item.id) }
+            itemView.setOnClickListener { itemClick?.invoke(item.id, item.isTikTok) }
             itemView.setOnLongClickListener {
-                itemLongClick?.invoke(item.id)
+                itemLongClick?.invoke(item.id, item.isTikTok)
                 true
             }
         }

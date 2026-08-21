@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.feature_feed_main.data.model.RecipePost
+import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_profile.adaper.AllForProfileAdapter
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import kotlinx.coroutines.Dispatchers
@@ -42,20 +44,29 @@ class AllRecipesFragment : Fragment() {
             val recipes = withContext(Dispatchers.IO) {
                 (requireContext().applicationContext as App)
                     .recipeDao
-                    .getAllRecipes()
+                    .getAllRecipes().map {
+                        RecipePost(
+                            id = it.id,
+                            title = it.title,
+                            coverUrl = it.imageUriString.firstOrNull(),
+                            isFavorite = it.isFavorite,
+                            reviews = it.reviews,
+                            isTikTok = false
+                        )
+                    }
             }
 
 
             allForProfileAdapter.submitList(recipes)
         }
 
-        allForProfileAdapter.itemClick = { id ->
+        allForProfileAdapter.itemClick = { id, isTikTok ->
             val i = Intent(requireContext(), RecipeDetailActivity::class.java)
             i.putExtra("id", id)
             startActivity(i)
         }
 
-        allForProfileAdapter.itemLongClick = { id ->
+        allForProfileAdapter.itemLongClick = { id, isTikTok ->
             //TODO: tools
         }
 

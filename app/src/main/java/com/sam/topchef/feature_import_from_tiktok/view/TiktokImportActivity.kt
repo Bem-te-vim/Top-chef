@@ -24,16 +24,26 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
+import com.sam.topchef.core.data.local.appDataBase.AppDataBase
+import com.sam.topchef.core.data.model.Cart
+import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.core.utils.Utils.hide
 import com.sam.topchef.core.utils.Utils.setClicksListener
+import com.sam.topchef.core.utils.Utils.shareText
 import com.sam.topchef.core.utils.Utils.show
+import com.sam.topchef.core.utils.Utils.toShareText
 import com.sam.topchef.databinding.ActivityTiktokImportBinding
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_import_from_tiktok.ia.RecipeInfoByIA
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokData
+import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
 import com.sam.topchef.feature_import_from_tiktok.player.PlayerListener
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokImportPresenter
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokUICallBack
+import com.sam.topchef.feature_shopping_list.activities.CartActivity
+import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
+import com.sam.topchef.feature_shopping_list.data.model.CartItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,6 +64,8 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private var currentOriginUrl: String? = null
     private var isRefreshing = false
     private var currentRecipeId: Int? = null
+
+    private var currentTikTokModel: TikTokModel? = null
 
     private lateinit var playerListener: PlayerListener
 
@@ -114,8 +126,41 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             },
             onDoubleClick = {
                 Toast.makeText(this, "DoubleClick", Toast.LENGTH_SHORT).show()
+            },
+            onHold = {
+                player.setPlaybackSpeed(2f)
+                binding.message.show()
+                binding.message.text = "2x Speed"
+            },
+            onRelease = {
+                player.setPlaybackSpeed(1f)
+                binding.message.hide()
             }
         )
+
+        /** video interactions **/
+        binding.btnFavorite.setOnClickListener {
+            it.clickAnimation()
+        }
+
+        binding.btnCart.setOnClickListener {
+            it.clickAnimation()
+            moveToCart()
+        }
+
+        binding.btnShare.setOnClickListener {
+            it.clickAnimation()
+            share()
+        }
+
+        binding.btnReopenDialog.setOnClickListener {
+            it.clickAnimation()
+            currentTikTokModel?.let { recipe ->
+                showRecipeDialog(recipe)
+            } ?: run {
+                Toast.makeText(this, "Nenhuma receita carregada ainda", Toast.LENGTH_SHORT).show()
+            }
+        }
 
 
         player.addListener(playerListener)
@@ -150,6 +195,48 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             finish()
         }
 
+    }
+    /**
+     * Shares the current TikTok recipe's information using the system share sheet.
+     */
+    fun share(){
+        currentTikTokModel?.let { recipe ->
+            shareText(this, recipe.toShareText())
+        } ?: run {
+            Toast.makeText(this, "Nenhuma receita carregada ainda", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Converts the current TikTok recipe's ingredients into a shopping cart and redirects the user
+     * to the shopping list view.
+     */
+    fun moveToCart(){
+        currentTikTokModel?.let { recipe ->
+            val cartItems = recipe.ingredients.flatMap { section ->
+                section.sectionItems.map { item -> CartItem(itemName = item) }
+            }
+
+            val newCart = Cart(
+                title = recipe.name,
+                cartImage = recipe.thumbnail,
+                cartItems = cartItems
+            )
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+                val cartId = db.cartDao().insert(newCart).toInt()
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@TiktokImportActivity, "Ingredientes movidos para o carrinho!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@TiktokImportActivity, ShoppingListActivity::class.java)
+                    intent.putExtra("id", cartId)
+                    startActivity(intent)
+                }
+            }
+        } ?: run {
+            Toast.makeText(this, "Aguarde o carregamento da receita", Toast.LENGTH_SHORT).show()
+        }
     }
     private fun showPlayerIc(isPlaying: Boolean){
         if(isPlaying){
@@ -201,11 +288,16 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      */
     private fun updateVideoUrlInDb(id: Int, newVideoUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val db =
-                com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
+            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
             val recipe = db.tiktokDao().getById(id)
             if (recipe != null) {
-                db.tiktokDao().update(recipe.copy(videoUrl = newVideoUrl))
+                val updated = recipe.copy(videoUrl = newVideoUrl)
+                db.tiktokDao().update(updated)
+                withContext(Dispatchers.Main) {
+                    if (currentRecipeId == id) {
+                        currentTikTokModel = updated
+                    }
+                }
                 Log.d("TiktokImport", "Updated video URL in DB for recipe $id")
             }
         }
@@ -232,6 +324,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     originUrl = currentOriginUrl
                 ).also { updatedRecipe ->
                     Log.d("RecipeIA", "Recipe imported successfully: $updatedRecipe")
+                    currentTikTokModel = updatedRecipe
                     message.visibility = View.GONE
                     messageLoadAnimation(false)
 
@@ -258,7 +351,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * Displays a dialog showing the parsed/imported recipe data for user confirmation.
      * @param recipe The imported TikTok recipe data to show.
      */
-    private fun showRecipeDialog(recipe: com.sam.topchef.feature_import_from_tiktok.model.TikTokModel) {
+    private fun showRecipeDialog(recipe: TikTokModel) {
         val dialog = TiktokRecipeDataDialog.newInstance(recipe)
         dialog.show(supportFragmentManager, TiktokRecipeDataDialog.TAG)
     }
@@ -319,12 +412,12 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private fun loadSavedTiktokRecipe(id: Int) {
         currentRecipeId = id
         lifecycleScope.launch {
-            val db =
-                com.sam.topchef.core.data.local.appDataBase.AppDataBase.getDataBase(this@TiktokImportActivity)
+            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
             val recipe = withContext(Dispatchers.IO) {
                 db.tiktokDao().getById(id)
             }
             if (recipe != null) {
+                currentTikTokModel = recipe
                 currentOriginUrl = recipe.originUrl
                 val mediaItem = MediaItem.fromUri(recipe.videoUrl ?: "")
 

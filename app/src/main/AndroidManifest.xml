@@ -18,12 +18,11 @@
         <activity
             android:name=".feature_import_from_tiktok.view.TiktokImportActivity"
             android:exported="true"
-
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".feature_import_from_tudogostoso.activities.TudoGostosoImportActivity"
             android:exported="true"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".feature_fullscreen_image.FullscreenImageActivity"
             android:exported="false"
@@ -74,6 +73,7 @@
         <activity
             android:name=".feature_redirector.RedirectorActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -83,6 +83,11 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".feature_settings.view.SettingsActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

@@ -16,8 +16,10 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.User
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.databinding.ActivityProfileBinding
 import com.sam.topchef.feature_profile.adaper.ProfilePageAdapter
+import com.sam.topchef.feature_settings.view.SettingsActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,6 +58,11 @@ class ProfileActivity : AppCompatActivity() {
 
         val include = binding.includeHeader
         include.btnBack.setOnClickListener { finish() }
+
+        include.btnSettings.setOnClickListener {
+            it.clickAnimation()
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         include.editProfileBtn.setOnClickListener {
             val dialog = BottomSheetDialog(this)
@@ -98,21 +105,27 @@ class ProfileActivity : AppCompatActivity() {
                 }
             }
 
-
         }
 
 
         lifecycleScope.launch {
-            val recipesCount = withContext(Dispatchers.IO) {
-                (application as App).recipeDao.getAllRecipes()
+            val app = application as App
+            val recipesData = withContext(Dispatchers.IO) {
+                val recipes = app.recipeDao.getAllRecipes()
+                val tiktokRecipes = app.db.tiktokDao().getAll()
+                
+                val totalCount = recipes.size + tiktokRecipes.size
+                val totalFavorites = recipes.count { it.isFavorite } + tiktokRecipes.count { it.isFavorite }
+                
+                Pair(totalCount, totalFavorites)
             }
 
-            include.recipesCount.text = recipesCount.size.toString()
-            include.favoritesCount.text = recipesCount.filter { it.isFavorite }.size.toString()
+            include.recipesCount.text = recipesData.first.toString()
+            include.favoritesCount.text = recipesData.second.toString()
 
 
             val user = withContext(Dispatchers.IO) {
-                (application as App).userDao.getUser()
+                app.userDao.getUser()
             }
             include.profileUserName.text = if( user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
             LoadImages().loadImagesWithBlur(user?.imageUri, include.imageProfile)

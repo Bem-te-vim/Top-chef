@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.feature_feed_main.data.model.RecipePost
+import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_profile.adaper.AllForProfileAdapter
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import kotlinx.coroutines.Dispatchers
@@ -39,22 +41,48 @@ class FavoriteRecipeFragment : Fragment() {
         lifecycleScope.launch {
 
             val recipes = withContext(Dispatchers.IO) {
-                (requireContext().applicationContext as App)
-                    .recipeDao
-                    .getAllFavorites()
+                val app = requireContext().applicationContext as App
+                val normalFavorites = app.db.recipeDao().getAllFavorites().map {
+                    RecipePost(
+                        id = it.id,
+                        title = it.title,
+                        coverUrl = it.imageUriString.firstOrNull(),
+                        isFavorite = it.isFavorite,
+                        reviews = it.reviews,
+                        isTikTok = false
+                    )
+                }
+                val tiktokFavorites = app.db.tiktokDao().getAllFavorites().map {
+                    RecipePost(
+                        id = it.id,
+                        title = it.name,
+                        coverUrl = it.thumbnail,
+                        isFavorite = it.isFavorite,
+                        reviews = 0.0,
+                        isTikTok = true
+                    )
+                }
+                (normalFavorites + tiktokFavorites).shuffled()
             }
 
 
             allForProfileAdapter.submitList(recipes)
         }
 
-        allForProfileAdapter.itemClick = { id ->
-            val i = Intent(requireContext(), RecipeDetailActivity::class.java)
-            i.putExtra("id", id)
+        allForProfileAdapter.itemClick = { id, isTikTok ->
+            val i = if (isTikTok) {
+                Intent(requireContext(), TiktokImportActivity::class.java).apply {
+                    putExtra("tiktokId", id)
+                }
+            } else {
+                Intent(requireContext(), RecipeDetailActivity::class.java).apply {
+                    putExtra("id", id)
+                }
+            }
             startActivity(i)
         }
 
-        allForProfileAdapter.itemLongClick = { id ->
+        allForProfileAdapter.itemLongClick = { id, isTikTok ->
             //TODO: tools
         }
     }

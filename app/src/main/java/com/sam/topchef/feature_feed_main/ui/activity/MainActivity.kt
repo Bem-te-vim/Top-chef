@@ -17,8 +17,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.Utils.shareText
+import com.sam.topchef.core.utils.Utils.toShareText
 import com.sam.topchef.databinding.ActivityMainBinding
 import com.sam.topchef.feature_add_recipe.ui.activity.AddRecipeActivity
 import com.sam.topchef.feature_edit_recipe.EditRecipeActivity
@@ -36,7 +39,9 @@ import com.sam.topchef.feature_search.activities.SearchActivity
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.ALL_CATEGORIES
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.ALL_POPULAR_RECIPES
+import com.sam.topchef.feature_shopping_list.activities.CartActivity
 import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
+import com.sam.topchef.feature_shopping_list.data.model.CartItem
 import kotlin.concurrent.thread
 
 /**
@@ -168,38 +173,34 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     }
 
     /**
-     * Redirects to the shopping list activity and pre-fills it with ingredients from the specified recipe.
-     * @param id The ID of the recipe whose ingredients should be added to the cart.
+     * Extracts ingredients from a recipe and moves them into a new shopping cart.
+     * Automatically saves the cart and redirects to the [CartActivity].
+     * @param id The ID of the recipe.
      */
     private fun moveIngredientsToCart(id: Int) {
-        val recipe = getRecipe(id)
-        val ingredientsList = recipe?.ingredients
-
-        val i = Intent(this, ShoppingListActivity::class.java)
-        i.putExtra("ingredients", ingredientsList?.toTypedArray())
-        startActivity(i)
-    }
-
-    /**
-     * Retrieves a recipe from the database by its ID.
-     * @param id The ID of the recipe to retrieve.
-     * @return The recipe object if found, null otherwise.
-     */
-    private fun getRecipe(id: Int): Recipe? {
-        var recipe: Recipe? = null
         thread {
             val app = application as App
-            val dao = app.db.recipeDao()
-            val recipeGet = dao.getRecipe(id)
+            val recipe = app.db.recipeDao().getRecipe(id)
 
-            if (recipeGet == null) return@thread
+            if (recipe != null) {
+                val cartItems = recipe.ingredients.map { CartItem(itemName = it) }
+                val newCart = Cart(
+                    title = recipe.title,
+                    cartImage = recipe.imageUriString.firstOrNull(),
+                    cartItems = cartItems
+                )
+                val cartId = app.db.cartDao().insert(newCart).toInt()
 
-            runOnUiThread {
-                recipe = recipeGet
+                runOnUiThread {
+                    Toast.makeText(this, "Ingredientes movidos para o carrinho!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, ShoppingListActivity::class.java)
+                    intent.putExtra("id", cartId)
+                    startActivity(intent)
+                }
             }
         }
-        return recipe
     }
+
 
     /**
      * Deletes a TikTok-imported recipe from the database.
@@ -411,7 +412,7 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         }
 
         share.setOnClickListener {
-
+            shareRecipe(id, isTikTok)
             dialog.dismiss()
         }
 
@@ -426,8 +427,28 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     }
 
     /**
-     * Callback from the adapter when the tools/options menu for a recipe is requested.
+     * Fetches a recipe (standard or TikTok) and opens the system share sheet with its details.
+     * @param id The ID of the recipe.
+     * @param isTikTok Whether the recipe is from TikTok.
      */
+    private fun shareRecipe(id: Int, isTikTok: Boolean = false) {
+        thread {
+            val app = application as App
+            val text = if (isTikTok) {
+                val tiktok = app.db.tiktokDao().getById(id)
+                tiktok?.toShareText()
+            } else {
+                val recipe = app.db.recipeDao().getRecipe(id)
+                recipe?.toShareText()
+            }
+
+            text?.let {
+                runOnUiThread {
+                    shareText(this, it)
+                }
+            }
+        }
+    }
     override fun onRecipeTools(id: Int, isTikTok: Boolean) {
         showBottomSheetsDialog(id, isTikTok)
     }

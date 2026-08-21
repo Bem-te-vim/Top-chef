@@ -6,12 +6,14 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.widget.Toast
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.databinding.ActivitySearchBinding
+import com.sam.topchef.feature_feed_main.data.model.RecipePost
+import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import com.sam.topchef.feature_search.adapter.SearchAdapter
 import kotlinx.coroutines.Runnable
@@ -58,6 +60,9 @@ class SearchActivity : AppCompatActivity() {
 
                     if (searchText.isNotEmpty()) {
                         search(searchText)
+                    } else {
+                        searchAdapter.submitList(emptyList())
+                        binding.layoutNotFound.visibility = View.GONE
                     }
                 }
 
@@ -71,9 +76,16 @@ class SearchActivity : AppCompatActivity() {
 
         val rvSearch = binding.rvSearch
         searchAdapter = SearchAdapter()
-        searchAdapter.onItemClickListener = {id ->
-            val i = Intent(this, RecipeDetailActivity::class.java)
-            i.putExtra("id", id)
+        searchAdapter.onItemClickListener = { id, isTikTok ->
+            val i = if (isTikTok) {
+                Intent(this, TiktokImportActivity::class.java).apply {
+                    putExtra("tiktokId", id)
+                }
+            } else {
+                Intent(this, RecipeDetailActivity::class.java).apply {
+                    putExtra("id", id)
+                }
+            }
             this.startActivity(i)
         }
         rvSearch.layoutManager = LinearLayoutManager(this)
@@ -87,16 +99,37 @@ class SearchActivity : AppCompatActivity() {
     private fun search(search: String) {
         thread {
             val app = application as App
-            val dao = app.db.recipeDao()
-            val results = dao.search(search)
+            val recipeResults = app.db.recipeDao().search(search).map {
+                RecipePost(
+                    id = it.id,
+                    title = it.title,
+                    coverUrl = it.imageUriString.firstOrNull(),
+                    isFavorite = it.isFavorite,
+                    reviews = it.reviews,
+                    isTikTok = false
+                )
+            }
+            val tiktokResults = app.db.tiktokDao().search(search).map {
+                RecipePost(
+                    id = it.id,
+                    title = it.name,
+                    coverUrl = it.thumbnail,
+                    isFavorite = it.isFavorite,
+                    reviews = 0.0,
+                    isTikTok = true
+                )
+            }
+
+            val combinedResults = recipeResults + tiktokResults
 
             runOnUiThread {
-              if (results.isNotEmpty()){
-                  searchAdapter.submitList(results)
-              }else{
-                  searchAdapter.submitList(emptyList())
-                  Toast.makeText(applicationContext, "Not Results Found", Toast.LENGTH_SHORT).show()
-              }
+                if (combinedResults.isNotEmpty()) {
+                    searchAdapter.submitList(combinedResults)
+                    binding.layoutNotFound.visibility = View.GONE
+                } else {
+                    searchAdapter.submitList(emptyList())
+                    binding.layoutNotFound.visibility = View.VISIBLE
+                }
             }
         }
     }
