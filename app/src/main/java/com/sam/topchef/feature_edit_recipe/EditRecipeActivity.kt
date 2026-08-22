@@ -15,15 +15,21 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
+import com.sam.topchef.databinding.DialogAddTypeBinding
+import com.sam.topchef.databinding.DialogEditTextItemBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +51,9 @@ class EditRecipeActivity : AppCompatActivity() {
     private val imageUris = mutableListOf<String>()
     private val ingredients = mutableListOf<String>()
     private val preparations = mutableListOf<String>()
+
+    private val typeItems = mutableListOf<String>()
+    private lateinit var typeAdapter: ArrayAdapter<String>
 
 
     private var currentRecipe: Recipe? = null
@@ -98,6 +107,17 @@ class EditRecipeActivity : AppCompatActivity() {
         preparationAdapter.onDeleteItemClickListener = { position ->
             preparations.removeAt(position)
             preparationAdapter.notifyItemRemoved(position)
+        }
+
+        setupItemTouchHelper(binding.rvIngredients, ingredients, ingredientsAdapter)
+        setupItemTouchHelper(binding.rvPreparation, preparations, preparationAdapter)
+
+        ingredientsAdapter.onTextDoubleClickListener = { position ->
+            showEditItemDialog(ingredients, ingredientsAdapter, position, "Editar Ingrediente")
+        }
+
+        preparationAdapter.onTextDoubleClickListener = { position ->
+            showEditItemDialog(preparations, preparationAdapter, position, "Editar Passo")
         }
 
         imagesAdapter.onImgClickListener = { img ->
@@ -185,6 +205,13 @@ class EditRecipeActivity : AppCompatActivity() {
         setViewCount(binding.edtxRecipeDescription, binding.characterCountDescription, 300)
 
         setupTypeSpinner()
+        
+        binding.autoCompleteType.setOnItemClickListener { _, _, position, _ ->
+            if (typeItems[position] == "Add+") {
+                showAddTypeDialog()
+            }
+        }
+        
         getRecipe(id) {
             currentRecipe = it
             setData(it)
@@ -213,10 +240,16 @@ class EditRecipeActivity : AppCompatActivity() {
     private fun setupTypeSpinner() {
         lifecycleScope.launch {
             val types = withContext(Dispatchers.IO) {
-                (application as App).typeDao.getAllTypes().map { it.type }
+                (application as App).typeDao.getAllTypeNames()
             }
-            val adapter = ArrayAdapter(this@EditRecipeActivity, android.R.layout.simple_dropdown_item_1line, types)
-            binding.autoCompleteType.setAdapter(adapter)
+            runOnUiThread {
+                typeItems.clear()
+                typeItems.addAll(types)
+                typeItems.add("Add+")
+                
+                typeAdapter = ArrayAdapter(this@EditRecipeActivity, android.R.layout.simple_dropdown_item_1line, typeItems)
+                binding.autoCompleteType.setAdapter(typeAdapter)
+            }
         }
     }
 
@@ -305,7 +338,15 @@ class EditRecipeActivity : AppCompatActivity() {
     private fun updateRecipe(newRecipe: Recipe) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                (application as App).recipeDao.update(newRecipe)
+                val app = application as App
+                
+                newRecipe.type?.let { typeName ->
+                    if (!app.typeDao.getAllTypeNames().contains(typeName)) {
+                        app.typeDao.insert(Type(type = typeName))
+                    }
+                }
+                
+                app.recipeDao.update(newRecipe)
             }
 
             intent.putExtra(MainActivity.EXTRA_RELOAD, true)
@@ -383,5 +424,86 @@ class EditRecipeActivity : AppCompatActivity() {
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes
+    }
+
+    /**
+     * Shows a dialog to manually add a new recipe type/category.
+     */
+    private fun showAddTypeDialog() {
+        val dialog = BottomSheetDialog(this)
+        val dialogBinding = DialogAddTypeBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+
+        dialogBinding.btnAddType.setOnClickListener {
+            val newType = dialogBinding.edtxNewType.text.toString().trim()
+            if (newType.isNotEmpty()) {
+                if (!typeItems.contains(newType)) {
+                    typeItems.add(typeItems.size - 1, newType)
+                    typeAdapter.notifyDataSetChanged()
+                }
+                binding.autoCompleteType.setText(newType, false)
+                dialog.dismiss()
+            } else {
+                dialogBinding.edtxNewType.error = "Campo obrigatório"
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun setupItemTouchHelper(
+        recyclerView: RecyclerView,
+        list: MutableList<String>,
+        adapter: TextsAdapter
+    ) {
+        val callback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPosition = viewHolder.bindingAdapterPosition
+                val toPosition = target.bindingAdapterPosition
+
+                java.util.Collections.swap(list, fromPosition, toPosition)
+                adapter.notifyItemMoved(fromPosition, toPosition)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+        }
+
+        ItemTouchHelper(callback).attachToRecyclerView(recyclerView)
+    }
+
+    private fun showEditItemDialog(
+        list: MutableList<String>,
+        adapter: TextsAdapter,
+        position: Int,
+        title: String
+    ) {
+        val dialog = BottomSheetDialog(this)
+        val dialogBinding = DialogEditTextItemBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+
+        dialogBinding.txtDialogTitle.text = title
+        dialogBinding.edtxEditItem.setText(list[position])
+        dialogBinding.edtxEditItem.setSelection(dialogBinding.edtxEditItem.text.length)
+
+        dialogBinding.btnSaveItem.setOnClickListener {
+            val newText = dialogBinding.edtxEditItem.text.toString().trim()
+            if (newText.isNotEmpty()) {
+                list[position] = newText
+                adapter.notifyItemChanged(position)
+                dialog.dismiss()
+            } else {
+                dialogBinding.edtxEditItem.error = "O campo não pode estar vazio"
+            }
+        }
+
+        dialog.show()
     }
 }

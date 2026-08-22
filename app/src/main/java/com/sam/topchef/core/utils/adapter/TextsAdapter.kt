@@ -7,12 +7,14 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.sam.topchef.R
+import com.sam.topchef.core.utils.Utils.setClicksListener
 
 class TextsAdapter(private val texts: List<String>, var showDeleteBottom: Boolean = false) :
     RecyclerView.Adapter<TextsAdapter.TextsViewHolder>() {
 
     var onTextClickListener: ((txt: String) -> Unit)? = null
     var onTextLongClickListener: ((position: Int) -> Boolean)? = null
+    var onTextDoubleClickListener: ((position: Int) -> Unit)? = null
 
     var onDeleteItemClickListener: ((position: Int) -> Unit)? = null
 
@@ -28,12 +30,13 @@ class TextsAdapter(private val texts: List<String>, var showDeleteBottom: Boolea
         fun bing(txt: String) {
             textView.setTextColor(itemView.context.getColor(R.color.WhiteForTxt))
             textView.text = "• $txt"
-            textView.setOnClickListener { onTextClickListener?.invoke(txt) }
-            textView.setOnLongClickListener {
-                onTextLongClickListener?.invoke(adapterPosition)
-                true
-            }
-            btnDeleteItem.setOnClickListener { onDeleteItemClickListener?.invoke(adapterPosition) }
+            
+            textView.setClicksListener(
+                onSingleClick = { onTextClickListener?.invoke(txt) },
+                onDoubleClick = { onTextDoubleClickListener?.invoke(bindingAdapterPosition) }
+            )
+
+            btnDeleteItem.setOnClickListener { onDeleteItemClickListener?.invoke(bindingAdapterPosition) }
         }
     }
 

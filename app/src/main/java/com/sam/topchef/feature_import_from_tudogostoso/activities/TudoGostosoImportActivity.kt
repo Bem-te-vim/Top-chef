@@ -5,15 +5,18 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
@@ -22,6 +25,7 @@ import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
+import com.sam.topchef.databinding.DialogAddTypeBinding
 import com.sam.topchef.feature_import_from_tudogostoso.importer.TudoGostosoImporter
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
@@ -47,6 +51,9 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     private val preparations = mutableListOf<String>()
 
     private var currentRecipe: Recipe? = null
+
+    private val typeItems = mutableListOf<String>()
+    private lateinit var typeAdapter: ArrayAdapter<String>
 
     @SuppressLint("NotifyDataSetChanged")
     private val pickImages =
@@ -127,6 +134,8 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         binding.btnAddImages.setOnClickListener {
             pickImages.launch("image/*")
         }
+
+        setupTypeSpinner()
 
         binding.btnSave.setOnClickListener {
             val edtxTitle = binding.edtxRecipeTitle
@@ -251,15 +260,13 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     private fun saveType(newType: String) {
         lifecycleScope.launch() {
             withContext(Dispatchers.IO) {
-                val type = Type(type = newType)
                 val dao = (application as App).typeDao
+                val allTypes = dao.getAllTypeNames()
 
-                if (!dao.getAllTypes().contains(type)) {
-                    dao.insert(type)
-                    Log.i("test", "New type inserted $type")
+                if (!allTypes.contains(newType)) {
+                    dao.insert(Type(type = newType))
+                    Log.i("test", "New type inserted $newType")
                 }
-
-
             }
         }
     }
@@ -333,6 +340,64 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes
+    }
+
+    /**
+     * Populates the category spinner with available recipe types from the database.
+     */
+    private fun setupTypeSpinner() {
+        lifecycleScope.launch {
+            val types = withContext(Dispatchers.IO) {
+                (application as App).typeDao.getAllTypeNames()
+            }
+            runOnUiThread {
+                typeItems.clear()
+                typeItems.addAll(types)
+                typeItems.add("Add+")
+
+                typeAdapter = ArrayAdapter(this@TudoGostosoImportActivity, android.R.layout.simple_dropdown_item_1line, typeItems)
+                binding.autoCompleteType.apply {
+                    setAdapter(typeAdapter)
+                    setDropDownBackgroundDrawable(
+                        ContextCompat.getDrawable(
+                            this@TudoGostosoImportActivity,
+                            R.drawable.bg_dropdown_dark
+                        )
+                    )
+                }
+
+                binding.autoCompleteType.setOnItemClickListener { _, _, position, _ ->
+                    if (typeItems[position] == "Add+") {
+                        showAddTypeDialog()
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Shows a dialog to manually add a new recipe type/category.
+     */
+    private fun showAddTypeDialog() {
+        val dialog = BottomSheetDialog(this)
+        val dialogBinding = DialogAddTypeBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+
+        dialogBinding.btnAddType.setOnClickListener {
+            val newType = dialogBinding.edtxNewType.text.toString().trim()
+            if (newType.isNotEmpty()) {
+                if (!typeItems.contains(newType)) {
+                    typeItems.add(typeItems.size - 1, newType)
+                    typeAdapter.notifyDataSetChanged()
+                }
+                binding.autoCompleteType.setText(newType, false)
+                dialog.dismiss()
+            } else {
+                dialogBinding.edtxNewType.error = "Campo obrigatório"
+            }
+        }
+
+        dialog.show()
     }
 
     /**

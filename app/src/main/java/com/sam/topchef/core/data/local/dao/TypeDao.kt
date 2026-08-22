@@ -17,6 +17,9 @@ interface TypeDao {
     @Query("SELECT * FROM  Type")
     fun getAllTypes(): List<Type>
 
+    @Query("SELECT DISTINCT type FROM Type")
+    fun getAllTypeNames(): List<String>
+
     @Query("SELECT * FROM Type WHERE id = :id")
     fun getType(id: Int): Type
 }

@@ -16,12 +16,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
+import com.sam.topchef.databinding.DialogAddTypeBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import kotlin.concurrent.thread
@@ -34,6 +37,9 @@ class AddRecipeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddRecipeBinding
     private lateinit var imagesAdapter: ImagesAdapter
     private val difficultAdapter = RecipeDifficultAdapter()
+
+    private val typeItems = mutableListOf<String>()
+    private lateinit var typeAdapter: ArrayAdapter<String>
 
 
     private val selectedUris = mutableListOf<String>()
@@ -105,37 +111,35 @@ class AddRecipeActivity : AppCompatActivity() {
         }
 
 
-        val dbItems = mutableListOf<String>()
         thread {
             val app = application as App
             val typeDao = app.db.typeDao()
-            val allTypes = typeDao.getAllTypes()
+            val allTypes = typeDao.getAllTypeNames()
 
             runOnUiThread {
-                val items = allTypes.map { it.type }
-                dbItems.addAll(items)
-            }
-        }
+                typeItems.clear()
+                typeItems.addAll(allTypes)
+                typeItems.add("Add+")
+                
+                typeAdapter = ArrayAdapter(this@AddRecipeActivity, android.R.layout.simple_list_item_1, typeItems)
+                val autoCompleteType = binding.autoCompleteType
+                autoCompleteType.apply {
+                    setText(getString(R.string.type))
+                    setAdapter(typeAdapter)
+                    setDropDownBackgroundDrawable(
+                        ContextCompat.getDrawable(
+                            this@AddRecipeActivity,
+                            R.drawable.bg_dropdown_dark
+                        )
+                    )
+                }
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, dbItems)
-        val autoCompleteType = binding.autoCompleteType
-        autoCompleteType.apply {
-            setText(getString(R.string.type))
-            setAdapter(adapter)
-            setDropDownBackgroundDrawable(
-                ContextCompat.getDrawable(
-                    this@AddRecipeActivity,
-                    R.drawable.bg_dropdown_dark
-                )
-            )
-        }
-
-        autoCompleteType.setOnItemClickListener { _, _, position, _ ->
-            val selectedItem = dbItems[position]
-            if (selectedItem == "Add+") {
-                //todo val dialogView = layoutInflater.inflate()
-                val alertDialog = AlertDialog.Builder(this)
-
+                autoCompleteType.setOnItemClickListener { _, _, position, _ ->
+                    val selectedItem = typeItems[position]
+                    if (selectedItem == "Add+") {
+                        showAddTypeDialog()
+                    }
+                }
             }
         }
 
@@ -226,6 +230,10 @@ class AddRecipeActivity : AppCompatActivity() {
                 binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
             val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
 
+            val recipeType = binding.autoCompleteType.text.toString().trim().takeIf { 
+                it.isNotEmpty() && it != getString(R.string.type)
+            }
+
             val recipe = Recipe(
                 title = title,
                 description = description,
@@ -234,12 +242,20 @@ class AddRecipeActivity : AppCompatActivity() {
                 ingredients = ingredientList,
                 preparationMode = stepsList,
                 cookingTime = cookingTime,
-                preparationTime = preparationTime
-
+                preparationTime = preparationTime,
+                type = recipeType
             )
             thread {
                 val app = application as App
                 val dao = app.db.recipeDao()
+                
+                recipeType?.let { typeName ->
+                    val typeDao = app.db.typeDao()
+                    if (!typeDao.getAllTypeNames().contains(typeName)) {
+                        typeDao.insert(Type(type = typeName))
+                    }
+                }
+                
                 dao.insert(recipe)
 
                 runOnUiThread {
@@ -288,6 +304,31 @@ class AddRecipeActivity : AppCompatActivity() {
     private fun sumHourMinutes(hour: Int, minutes: Int): Int {
         val totalInMinutes = (hour * 60) + minutes
         return totalInMinutes
+    }
+
+    /**
+     * Shows a dialog to manually add a new recipe type/category.
+     */
+    private fun showAddTypeDialog() {
+        val dialog = BottomSheetDialog(this)
+        val dialogBinding = DialogAddTypeBinding.inflate(layoutInflater)
+        dialog.setContentView(dialogBinding.root)
+
+        dialogBinding.btnAddType.setOnClickListener {
+            val newType = dialogBinding.edtxNewType.text.toString().trim()
+            if (newType.isNotEmpty()) {
+                if (!typeItems.contains(newType)) {
+                    typeItems.add(typeItems.size - 1, newType)
+                    typeAdapter.notifyDataSetChanged()
+                }
+                binding.autoCompleteType.setText(newType, false)
+                dialog.dismiss()
+            } else {
+                dialogBinding.edtxNewType.error = "Campo obrigatório"
+            }
+        }
+
+        dialog.show()
     }
 
 
