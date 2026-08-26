@@ -1,5 +1,6 @@
 package com.sam.topchef.feature_profile.activities
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -18,6 +19,7 @@ import com.sam.topchef.core.data.model.User
 import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.databinding.ActivityProfileBinding
+import com.sam.topchef.feature_fullscreen_image.FullscreenImageActivity
 import com.sam.topchef.feature_profile.adaper.ProfilePageAdapter
 import com.sam.topchef.feature_settings.view.SettingsActivity
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +32,8 @@ import kotlinx.coroutines.withContext
  */
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
+
+    private var currentImageUri: String? = null
 
     var imageUriCallback: ((uri: String?) -> Unit)? = null
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -64,6 +68,21 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+
+        include.imageProfile.setOnClickListener {
+            it.clickAnimation()
+            val i = Intent(this, FullscreenImageActivity::class.java)
+            i.putExtra("imageUri", currentImageUri)
+
+            val options = ActivityOptions
+                .makeSceneTransitionAnimation(
+                    (this),
+                    it,
+                    "image_transition"
+                )
+            startActivity(i, options.toBundle())
+        }
+
         include.editProfileBtn.setOnClickListener {
             val dialog = BottomSheetDialog(this)
             val view = layoutInflater.inflate(R.layout.layout_edit_profile, null)
@@ -81,7 +100,7 @@ class ProfileActivity : AppCompatActivity() {
 
                 imageUriCallback = { uri ->
                     profileImage = uri
-
+                    currentImageUri = uri
                     LoadImages().apply {
                         loadImagesWithBlur(uri, imageProfileFromDialog)
                         loadImagesWithBlur(uri, include.imageProfile)
@@ -127,6 +146,7 @@ class ProfileActivity : AppCompatActivity() {
             val user = withContext(Dispatchers.IO) {
                 app.userDao.getUser()
             }
+            currentImageUri = user?.imageUri
             include.profileUserName.text = if( user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
             LoadImages().loadImagesWithBlur(user?.imageUri, include.imageProfile)
 

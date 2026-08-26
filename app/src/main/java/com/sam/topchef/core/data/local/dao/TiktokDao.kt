@@ -28,6 +28,9 @@ interface TiktokDao {
     @Query("SELECT * FROM Tiktok WHERE id = :id")
     fun getById(id: Int): TikTokModel?
 
+    @Query("SELECT * FROM Tiktok WHERE origin_url = :url")
+    fun getByUrl(url: String): TikTokModel?
+
     @Query("DELETE FROM Tiktok WHERE id = :id")
     fun delete(id: Int)
 

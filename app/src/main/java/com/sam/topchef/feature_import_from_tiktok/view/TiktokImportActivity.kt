@@ -21,6 +21,7 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
@@ -84,6 +85,15 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         binding = ActivityTiktokImportBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val intent = Intent(this@TiktokImportActivity, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+                finish()
+            }
+        })
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -113,8 +123,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         playerView.player = player
 
 
-
-
         /** Pause and play the video Player on single click, show toast on double click **/
         playerView.setClicksListener(
             onSingleClick = {
@@ -130,7 +138,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             onHold = {
                 player.setPlaybackSpeed(2f)
                 binding.message.show()
-                binding.message.text = "2x Speed"
+                binding.message.text = getString(R.string._2x_speed)
             },
             onRelease = {
                 player.setPlaybackSpeed(1f)
@@ -165,10 +173,12 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
         player.addListener(playerListener)
 
-        playerListener.onPlayerError {   val cause = it.cause
+        playerListener.onPlayerError {
+            val cause = it.cause
             if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
                 handle403Error()
-            } }
+            }
+        }
 
         playerListener.isPlaying { showPlayerIc(it) }
 
@@ -196,10 +206,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         }
 
     }
+
     /**
      * Shares the current TikTok recipe's information using the system share sheet.
      */
-    fun share(){
+    fun share() {
         currentTikTokModel?.let { recipe ->
             shareText(this, recipe.toShareText())
         } ?: run {
@@ -211,7 +222,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * Converts the current TikTok recipe's ingredients into a shopping cart and redirects the user
      * to the shopping list view.
      */
-    fun moveToCart(){
+    fun moveToCart() {
         currentTikTokModel?.let { recipe ->
             val cartItems = recipe.ingredients.flatMap { section ->
                 section.sectionItems.map { item -> CartItem(itemName = item) }
@@ -228,7 +239,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 val cartId = db.cartDao().insert(newCart).toInt()
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@TiktokImportActivity, "Ingredientes movidos para o carrinho!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@TiktokImportActivity,
+                        "Ingredientes movidos para o carrinho!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     val intent = Intent(this@TiktokImportActivity, ShoppingListActivity::class.java)
                     intent.putExtra("id", cartId)
                     startActivity(intent)
@@ -238,10 +253,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             Toast.makeText(this, "Aguarde o carregamento da receita", Toast.LENGTH_SHORT).show()
         }
     }
-    private fun showPlayerIc(isPlaying: Boolean){
-        if(isPlaying){
+
+    private fun showPlayerIc(isPlaying: Boolean) {
+        if (isPlaying) {
             binding.playIc.hide()
-        }else{
+        } else {
             binding.playIc.show()
         }
     }
@@ -351,9 +367,38 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * Displays a dialog showing the parsed/imported recipe data for user confirmation.
      * @param recipe The imported TikTok recipe data to show.
      */
-    private fun showRecipeDialog(recipe: TikTokModel) {
+    fun showRecipeDialog(recipe: TikTokModel) {
         val dialog = TiktokRecipeDataDialog.newInstance(recipe)
         dialog.show(supportFragmentManager, TiktokRecipeDataDialog.TAG)
+    }
+
+    fun pausePlayer() {
+        if (player.isPlaying) {
+            player.pause()
+        }
+    }
+
+    fun onRecipeUpdated(updatedRecipe: TikTokModel) {
+        lifecycleScope.launch {
+            val updated = withContext(Dispatchers.IO) {
+                val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+                var result = updatedRecipe
+                if (updatedRecipe.id != 0) {
+                    db.tiktokDao().update(updatedRecipe)
+                } else {
+                    updatedRecipe.originUrl?.let { url ->
+                        val savedRecipe = db.tiktokDao().getByUrl(url)
+                        if (savedRecipe != null) {
+                            result = updatedRecipe.copy(id = savedRecipe.id)
+                            db.tiktokDao().update(result)
+                        }
+                    }
+                }
+                result
+            }
+            currentTikTokModel = updated
+            showRecipeDialog(updated)
+        }
     }
 
     /**

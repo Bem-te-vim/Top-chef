@@ -1,12 +1,12 @@
 package com.sam.topchef.feature_import_from_tiktok.view
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -69,8 +69,34 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
             binding.rvSteps.layoutManager = LinearLayoutManager(context)
             binding.rvSteps.adapter = TiktokStepsAdapter(allSteps)
 
+            checkIfSaved(recipe)
+
             binding.save.setOnClickListener {
                 saveRecipe(recipe)
+            }
+
+            binding.editRecipe.setOnClickListener {
+                (activity as? TiktokImportActivity)?.pausePlayer()
+                dismiss()
+                val editDialog = TiktokEditRecipeDialog.newInstance(recipe)
+                editDialog.show(parentFragmentManager, TiktokEditRecipeDialog.TAG)
+            }
+
+        }
+    }
+
+    private fun checkIfSaved(recipe: TikTokModel) {
+        val db = AppDataBase.getDataBase(requireContext())
+        lifecycleScope.launch {
+            val isSaved = withContext(Dispatchers.IO) {
+                recipe.originUrl?.let { url ->
+                    db.tiktokDao().getByUrl(url) != null
+                } ?: false
+            }
+            if (isSaved) {
+                binding.save.visibility = View.GONE
+            } else {
+                binding.save.visibility = View.VISIBLE
             }
         }
     }
@@ -81,13 +107,8 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
             withContext(Dispatchers.IO) {
                 db.tiktokDao().insert(recipe)
             }
-            dismiss()
-            activity?.let {
-                val intent = Intent(it, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                startActivity(intent)
-                it.finish()
-            }
+            binding.save.visibility = View.GONE
+            Toast.makeText(requireContext(), "Receita salva com sucesso!", Toast.LENGTH_SHORT).show()
         }
     }
 
