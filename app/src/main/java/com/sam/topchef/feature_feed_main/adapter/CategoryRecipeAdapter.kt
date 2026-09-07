@@ -29,7 +29,7 @@ class CategoryRecipeAdapter() :
         notifyDataSetChanged()
     }
 
-    val onCategoryClick: ((category: String) -> Unit)? = null
+    var onCategoryClick: ((category: String) -> Unit)? = null
 
     inner class CategoryRecipeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvCategory: TextView = view.findViewById(R.id.tv_category)

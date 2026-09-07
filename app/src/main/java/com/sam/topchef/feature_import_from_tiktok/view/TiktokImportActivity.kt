@@ -2,6 +2,7 @@ package com.sam.topchef.feature_import_from_tiktok.view
 
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -10,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -27,7 +27,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
 import com.sam.topchef.core.data.model.Cart
-import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.core.utils.Utils.hide
 import com.sam.topchef.core.utils.Utils.setClicksListener
@@ -42,7 +41,6 @@ import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
 import com.sam.topchef.feature_import_from_tiktok.player.PlayerListener
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokImportPresenter
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokUICallBack
-import com.sam.topchef.feature_shopping_list.activities.CartActivity
 import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
 import kotlinx.coroutines.Dispatchers
@@ -132,13 +130,18 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     player.play()
                 }
             },
-            onDoubleClick = {
-                Toast.makeText(this, "DoubleClick", Toast.LENGTH_SHORT).show()
+            onDoubleClick = { _, x, y ->
+                showHeartAnimation(x, y)
+                // Only favorites (curtir). Unlike (descurtir) is only via btn_favorite.
+                saveFavoriteToDatabase(true)
             },
             onHold = {
                 player.setPlaybackSpeed(2f)
                 binding.message.show()
                 binding.message.text = getString(R.string._2x_speed)
+                if (!player.isPlaying) {
+                    player.play()
+                }
             },
             onRelease = {
                 player.setPlaybackSpeed(1f)
@@ -148,27 +151,29 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
         /** video interactions **/
         binding.btnFavorite.setOnClickListener {
-            it.clickAnimation()
+            it.clickAnimation(startAnimationScale = 0.90f)
+            toggleFavorite()
         }
 
         binding.btnCart.setOnClickListener {
-            it.clickAnimation()
-            moveToCart()
+            it.clickAnimation(startAnimationScale = 0.90f)
+            dialogMoveToCart()
         }
 
         binding.btnShare.setOnClickListener {
-            it.clickAnimation()
+            it.clickAnimation(startAnimationScale = 0.90f)
             share()
         }
 
         binding.btnReopenDialog.setOnClickListener {
-            it.clickAnimation()
+            it.clickAnimation(startAnimationScale = 0.90f)
             currentTikTokModel?.let { recipe ->
                 showRecipeDialog(recipe)
             } ?: run {
                 Toast.makeText(this, "Nenhuma receita carregada ainda", Toast.LENGTH_SHORT).show()
             }
         }
+
 
 
         player.addListener(playerListener)
@@ -222,6 +227,18 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * Converts the current TikTok recipe's ingredients into a shopping cart and redirects the user
      * to the shopping list view.
      */
+    fun dialogMoveToCart() {
+        AlertDialog.Builder(this)
+            .setTitle("Mover Items Para o Carrinho?")
+            .setPositiveButton("Mover") { p0, _ ->
+                moveToCart()
+                p0.dismiss()
+            }
+            .setNegativeButton("Cancelar") { p0, _ ->
+                p0.dismiss()
+            }.show()
+    }
+
     fun moveToCart() {
         currentTikTokModel?.let { recipe ->
             val cartItems = recipe.ingredients.flatMap { section ->
@@ -344,6 +361,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     message.visibility = View.GONE
                     messageLoadAnimation(false)
 
+                    updateFavoriteUI()
                     showRecipeDialog(updatedRecipe)
                 }
             } catch (e: Exception) {
@@ -397,6 +415,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 result
             }
             currentTikTokModel = updated
+            updateFavoriteUI()
             showRecipeDialog(updated)
         }
     }
@@ -469,6 +488,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 player.setMediaItem(mediaItem)
                 player.prepare()
                 player.play()
+                updateFavoriteUI()
                 showRecipeDialog(recipe)
             }
         }
@@ -486,6 +506,72 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             "403 error detected, attempting to refresh URL from: $currentOriginUrl"
         )
         presenter.getTikTokData(currentOriginUrl!!)
+    }
+
+    private fun showHeartAnimation(x: Float, y: Float) {
+        val heart = binding.favoriteIc
+        heart.animate().cancel()
+
+        heart.x = x - heart.width / 2
+        heart.y = y - heart.height / 2
+
+        heart.scaleX = 0f
+        heart.scaleY = 0f
+        heart.alpha = 1f
+        heart.show()
+
+        heart.animate()
+            .scaleX(1.2f)
+            .scaleY(1.2f)
+            .setDuration(200)
+            .withEndAction {
+                heart.animate()
+                    .scaleX(1.5f)
+                    .scaleY(1.5f)
+                    .alpha(0f)
+                    .setDuration(300)
+                    .withEndAction { heart.hide() }
+            }
+    }
+
+    private fun toggleFavorite() {
+        val model = currentTikTokModel ?: return
+        val newStatus = !model.isFavorite
+        saveFavoriteToDatabase(newStatus)
+    }
+
+    private fun saveFavoriteToDatabase(isFavorite: Boolean = true) {
+        val recipe = currentTikTokModel ?: return
+        lifecycleScope.launch(Dispatchers.IO) {
+            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+            val tiktokDao = db.tiktokDao()
+
+            val existing = recipe.originUrl?.let { tiktokDao.getByUrl(it) }
+            val toUpdate = (existing ?: recipe).copy(isFavorite = isFavorite)
+
+            if (existing != null || recipe.id != 0) {
+                tiktokDao.update(toUpdate)
+            } else {
+                tiktokDao.insert(toUpdate)
+            }
+
+            val finalModel = recipe.originUrl?.let { tiktokDao.getByUrl(it) } ?: toUpdate
+            withContext(Dispatchers.Main) {
+                currentTikTokModel = finalModel
+                updateFavoriteUI()
+            }
+        }
+    }
+
+    private fun updateFavoriteUI() {
+        val isFavorite = currentTikTokModel?.isFavorite ?: false
+        if (isFavorite) {
+            binding.btnFavorite.clearColorFilter()
+            binding.btnFavorite.setImageResource(R.drawable.favorite_svgrepo_com)
+        } else {
+            binding.btnFavorite.setColorFilter(getColor(R.color.white_transparent))
+            binding.btnFavorite.setImageResource(R.drawable.favorite_heart_love_svgrepo_com)
+        }
     }
 
     /**

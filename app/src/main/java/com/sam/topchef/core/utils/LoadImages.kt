@@ -44,4 +44,21 @@ class LoadImages {
             .into(into)
     }
 
+    fun loadImagesWithBlur(
+        @DrawableRes imageUrl: Int?,
+        into: ShapeableImageView,
+        @DrawableRes placeHolder: Int = R.drawable.placeholder_item
+    ) {
+        Glide.with(into.context)
+            .load(imageUrl)
+            .thumbnail(
+                Glide.with(into.context)
+                    .load(imageUrl)
+                    .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
+            )
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(placeHolder)
+            .into(into)
+    }
+
 }

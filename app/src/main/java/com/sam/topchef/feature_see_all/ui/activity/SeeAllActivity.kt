@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.databinding.ActivitySeeAllBinding
@@ -28,6 +29,8 @@ class SeeAllActivity : AppCompatActivity() {
     companion object {
         const val ALL_POPULAR_RECIPES = "AllPopularRecipes"
         const val ALL_CATEGORIES = "AllCategories"
+        const val CATEGORY_FILTER = "CategoryFilter"
+        const val EXTRA_CATEGORY_NAME = "extra_category_name"
     }
 
     /**
@@ -41,14 +44,28 @@ class SeeAllActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         val i = intent.getStringExtra("show") ?: throw NullPointerException()
+        val categoryName = intent.getStringExtra(EXTRA_CATEGORY_NAME)
+        
+        val rvSeeAll = binding.rvSeeAll
+        
         when (i) {
-            ALL_POPULAR_RECIPES -> loadPopularRecipe()
-            ALL_CATEGORIES -> loadCategories()
+            ALL_POPULAR_RECIPES -> {
+                rvSeeAll.layoutManager = GridLayoutManager(this, 3)
+                seeAllAdapter = SeeAllAdapter(R.layout.row_images)
+                loadPopularRecipe()
+            }
+            ALL_CATEGORIES -> {
+                rvSeeAll.layoutManager = GridLayoutManager(this, 4)
+                seeAllAdapter = SeeAllAdapter(R.layout.row_categories_recipe_item)
+                loadCategories()
+            }
+            CATEGORY_FILTER -> {
+                rvSeeAll.layoutManager = LinearLayoutManager(this)
+                seeAllAdapter = SeeAllAdapter(R.layout.row_popular_recipe_item)
+                loadRecipesByCategory(categoryName ?: "")
+            }
         }
 
-        val rvSeeAll = binding.rvSeeAll
-        rvSeeAll.layoutManager = GridLayoutManager(this, 3)
-        seeAllAdapter = SeeAllAdapter()
         rvSeeAll.adapter = seeAllAdapter
 
         seeAllAdapter.itemClick = { id ->
@@ -56,7 +73,28 @@ class SeeAllActivity : AppCompatActivity() {
             i.putExtra("id", id)
             startActivity(i)
         }
+        seeAllAdapter.likeClick = { id, isFavorite ->
+            updateRecipeFavoriteStatus(id, isFavorite)
+        }
+        seeAllAdapter.categoryClick = { category ->
+            val i = Intent(this, SeeAllActivity::class.java).apply {
+                putExtra("show", CATEGORY_FILTER)
+                putExtra(EXTRA_CATEGORY_NAME, category)
+            }
+            startActivity(i)
+        }
         binding.btnBack.setOnClickListener { finish() }
+    }
+
+    private fun updateRecipeFavoriteStatus(id: Int, isFavorite: Boolean) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val app = application as App
+            val recipe = app.recipeDao.getRecipe(id)
+            recipe?.let {
+                it.isFavorite = isFavorite
+                app.recipeDao.update(it)
+            }
+        }
     }
 
     /**
@@ -80,7 +118,9 @@ class SeeAllActivity : AppCompatActivity() {
     private fun loadCategories() {
         lifecycleScope.launch {
             val allCategories = withContext(Dispatchers.IO) {
-                (application as App).recipeDao.getAllRecipes().filter { it.type != null }
+                (application as App).recipeDao.getAllRecipes()
+                    .filter { !it.type.isNullOrBlank() }
+                    .distinctBy { it.type }
             }
 
             showProgressBar(allCategories.size)
@@ -90,14 +130,29 @@ class SeeAllActivity : AppCompatActivity() {
     }
 
     /**
+     * Loads and displays recipes filtered by a specific category name.
+     */
+    private fun loadRecipesByCategory(categoryName: String) {
+        lifecycleScope.launch {
+            val recipes = withContext(Dispatchers.IO) {
+                (application as App).recipeDao.getAllRecipes().filter { it.type == categoryName }
+            }
+
+            showProgressBar(recipes.size)
+            binding.customToolbarTitle.text = categoryName
+            seeAllAdapter.submitList(recipes)
+        }
+    }
+
+    /**
      * Toggles the visibility of the progress bar or empty state message.
      * @param result The number of items loaded.
      */
     private fun showProgressBar(result: Int) {
-        if (result > 1) {
-            binding.progressBar.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        if (result > 0) {
+            binding.txtMessage.visibility = View.GONE
         } else {
-            binding.progressBar.visibility = View.GONE
             binding.txtMessage.visibility = View.VISIBLE
         }
     }

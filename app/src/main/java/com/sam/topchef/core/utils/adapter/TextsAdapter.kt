@@ -33,7 +33,7 @@ class TextsAdapter(private val texts: List<String>, var showDeleteBottom: Boolea
             
             textView.setClicksListener(
                 onSingleClick = { onTextClickListener?.invoke(txt) },
-                onDoubleClick = { onTextDoubleClickListener?.invoke(bindingAdapterPosition) }
+                onDoubleClick = { _, _, _ -> onTextDoubleClickListener?.invoke(bindingAdapterPosition) }
             )
 
             btnDeleteItem.setOnClickListener { onDeleteItemClickListener?.invoke(bindingAdapterPosition) }

@@ -32,4 +32,8 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
+    <style name="ShapeAppearance.TopChef.Circle" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+
 </resources>

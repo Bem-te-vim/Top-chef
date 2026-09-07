@@ -19,6 +19,8 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
+import com.sam.topchef.core.data.model.User
+import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.core.utils.Utils.shareText
 import com.sam.topchef.core.utils.Utils.toShareText
@@ -44,6 +46,7 @@ class RecipeDetailActivity : AppCompatActivity() {
     private var currentImageUri: String? = null
 
     private var currentRecipe: Recipe? = null
+
     /**
      * Initializes the detail view, extracts the recipe ID from intent, and initiates data loading.
      */
@@ -59,9 +62,18 @@ class RecipeDetailActivity : AppCompatActivity() {
         )
         binding.statusBarOverlay.layoutParams.height = statusBarHeight
 
-        val i = intent
-        val recipeId = i.extras?.getInt("id") as Int
-        loadData(recipeId)
+        val recipeId = intent.getIntExtra("id", -1)
+        if (recipeId != -1) {
+            loadData(recipeId)
+        } else {
+            // If ID is missing, try to get it from TimerService if it's running
+            if (TimerService.isTimerRunning.value && TimerService.currentRecipeId != -1) {
+                loadData(TimerService.currentRecipeId)
+            } else {
+                Toast.makeText(this, "Erro ao carregar receita", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
 
 
         binding.btnBack.setOnClickListener { finish() }
@@ -73,18 +85,20 @@ class RecipeDetailActivity : AppCompatActivity() {
             recipe.isFavorite = !recipe.isFavorite
             setButtonState(recipe.isFavorite, view as ImageButton, this)
 
-            i.putExtra(MainActivity.EXTRA_RECIPE_ID, recipeId)
-            i.putExtra(MainActivity.EXTRA_IS_FAVORITE, recipe.isFavorite)
-            setResult(RESULT_OK, i)
+            val resultIntent = Intent()
+            resultIntent.putExtra(MainActivity.EXTRA_RECIPE_ID, recipeId)
+            resultIntent.putExtra(MainActivity.EXTRA_IS_FAVORITE, recipe.isFavorite)
+            setResult(RESULT_OK, resultIntent)
         }
 
 
 
-        binding.goTimer.setOnClickListener {
-            it.clickAnimation()
-            recipeCookingTimerInSeconds?.let {
-
-            }
+        binding.goTimer.setOnClickListener { view ->
+            view.clickAnimation()
+            val minutes = currentRecipe?.cookingTime ?: 0
+            val id = currentRecipe?.id ?: -1
+            val dialog = TimerDialog.newInstance(minutes, id)
+            dialog.show(supportFragmentManager, TimerDialog.TAG)
         }
 
         binding.coverImageRecipe.setOnClickListener {
@@ -106,6 +120,26 @@ class RecipeDetailActivity : AppCompatActivity() {
             shareRecipe(recipeId)
         }
     }
+
+    private fun setupRecipeCreator() {
+        lifecycleScope.launch {
+            var user: User? = null
+            withContext(Dispatchers.IO) {
+                user = (application as App).userDao.getUser()
+            }
+
+            if (currentRecipe?.chef == null){
+                LoadImages().loadImagesWithBlur(user?.imageUri, binding.imageChefCover)
+                binding.txtChefName.text = user?.name ?: "Sem Nome de Usuario"
+                binding.txtChefWorkerPosition.text = "Sua Propia Receita :)"
+            }else{
+                LoadImages().loadImagesWithBlur(R.drawable.tudo_gostoso, binding.imageChefCover)
+                binding.txtChefName.text = "Tudo Gostoso"
+                binding.txtChefWorkerPosition.text = "Receita da Web"
+            }
+        }
+    }
+
 
     private fun shareRecipe(id: Int, isTikTok: Boolean = false) {
         thread {
@@ -146,6 +180,7 @@ class RecipeDetailActivity : AppCompatActivity() {
                     return@runOnUiThread
                 }
                 currentRecipe = recipe
+                setupRecipeCreator()
 
                 val imgUriList = recipe.imageUriString
                 val title = recipe.title

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
+import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.databinding.DialogRecipeDataBinding
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_import_from_tiktok.adapter.TiktokIngredientsAdapter
@@ -72,10 +73,12 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
             checkIfSaved(recipe)
 
             binding.save.setOnClickListener {
+                it.clickAnimation(startAnimationScale = 0.90f)
                 saveRecipe(recipe)
             }
 
             binding.editRecipe.setOnClickListener {
+                it.clickAnimation(startAnimationScale = 0.90f)
                 (activity as? TiktokImportActivity)?.pausePlayer()
                 dismiss()
                 val editDialog = TiktokEditRecipeDialog.newInstance(recipe)

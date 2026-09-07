@@ -39,6 +39,8 @@ import com.sam.topchef.feature_search.activities.SearchActivity
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.ALL_CATEGORIES
 import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.ALL_POPULAR_RECIPES
+import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.CATEGORY_FILTER
+import com.sam.topchef.feature_see_all.ui.activity.SeeAllActivity.Companion.EXTRA_CATEGORY_NAME
 import com.sam.topchef.feature_shopping_list.activities.CartActivity
 import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
@@ -129,6 +131,13 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
         rvCategories.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         categoryRecipeAdapter = CategoryRecipeAdapter()
+        categoryRecipeAdapter.onCategoryClick = { category ->
+            val i = Intent(this, SeeAllActivity::class.java).apply {
+                putExtra("show", CATEGORY_FILTER)
+                putExtra(EXTRA_CATEGORY_NAME, category)
+            }
+            startActivity(i)
+        }
         rvCategories.adapter = categoryRecipeAdapter
 
 
@@ -140,7 +149,8 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
 
 
         binding.imageProfile.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
+            val i = Intent(this, ProfileActivity::class.java)
+            result.launch(i)
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
 
@@ -459,10 +469,8 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     private fun loadData() {
         thread {
             val app = application as App
-            val dao = app.db.recipeDao()
-            val allRecipes = dao.getAllRecipes()
-            val tiktokRecipes = app.db.tiktokDao().getAll()
-
+            val allRecipes = app.recipeDao.getAllRecipes()
+            val tiktokRecipes = app.tiktokDao.getAll()
             val user = app.userDao.getUser()
 
 
@@ -479,13 +487,17 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
                 )
             }.sortedBy { it.reviews }
 
-            val categories = allRecipes.take(10).map { recipe ->
-                RecipeCategory(
-                    recipe.id,
-                    recipe.type ?: "Default",
-                    recipe.imageUriString.takeIf { it.isNotEmpty() }?.first()
-                )
-            }
+            val categories = allRecipes
+                .filter { !it.type.isNullOrBlank() }
+                .distinctBy { it.type }
+                .take(10)
+                .map { recipe ->
+                    RecipeCategory(
+                        recipe.id,
+                        recipe.type!!,
+                        recipe.imageUriString.firstOrNull()
+                    )
+                }
 
 
             val mainPosts = allRecipes.map { recipe ->

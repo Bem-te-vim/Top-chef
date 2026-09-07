@@ -143,7 +143,7 @@ object Utils {
      * Set a listener that distinguishes between single click, double click, hold, and release to avoid conflicts.
      * @param delay Time to wait for a second click in milliseconds.
      * @param onSingleClick Callback for single click.
-     * @param onDoubleClick Callback for double click.
+     * @param onDoubleClick Callback for double click with x, y coordinates.
      * @param onHold Callback for long press start.
      * @param onRelease Callback for long press release.
      */
@@ -151,38 +151,42 @@ object Utils {
     fun View.setClicksListener(
         delay: Long = 300L,
         onSingleClick: (View) -> Unit = {},
-        onDoubleClick: (View) -> Unit = {},
+        onDoubleClick: (View, x: Float, y: Float) -> Unit = { _, _, _ -> },
         onHold: (View) -> Unit = {},
         onRelease: (View) -> Unit = {}
     ) {
         var clickCount = 0
         var isHolding = false
+        var lastTouchX = 0f
+        var lastTouchY = 0f
         val handler = Handler(Looper.getMainLooper())
         val runnable = Runnable {
             if (clickCount == 1) {
                 onSingleClick(this)
             } else if (clickCount >= 2) {
-                onDoubleClick(this)
+                onDoubleClick(this, lastTouchX, lastTouchY)
             }
             clickCount = 0
         }
 
-        this.setOnClickListener {
-            clickCount++
-            if (clickCount == 1) {
-                handler.postDelayed(runnable, delay)
-            }
-        }
-
-        this.setOnLongClickListener {
-            isHolding = true
-            onHold(this)
-            true
-        }
-
         this.setOnTouchListener { v, event ->
             when (event.action) {
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                MotionEvent.ACTION_DOWN -> {
+                    lastTouchX = event.x
+                    lastTouchY = event.y
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (isHolding) {
+                        isHolding = false
+                        onRelease(v)
+                    } else {
+                        clickCount++
+                        if (clickCount == 1) {
+                            handler.postDelayed(runnable, delay)
+                        }
+                    }
+                }
+                MotionEvent.ACTION_CANCEL -> {
                     if (isHolding) {
                         isHolding = false
                         onRelease(v)
@@ -190,6 +194,12 @@ object Utils {
                 }
             }
             false
+        }
+
+        this.setOnLongClickListener {
+            isHolding = true
+            onHold(this)
+            true
         }
     }
 }

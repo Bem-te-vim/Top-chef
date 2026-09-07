@@ -19,6 +19,7 @@ import com.sam.topchef.core.data.model.User
 import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.databinding.ActivityProfileBinding
+import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_fullscreen_image.FullscreenImageActivity
 import com.sam.topchef.feature_profile.adaper.ProfilePageAdapter
 import com.sam.topchef.feature_settings.view.SettingsActivity
@@ -34,6 +35,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
 
     private var currentImageUri: String? = null
+    private var currentUserName: String? = null
 
     var imageUriCallback: ((uri: String?) -> Unit)? = null
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -93,35 +95,45 @@ class ProfileActivity : AppCompatActivity() {
             val editNameFromDialog: EditText = view.findViewById(R.id.edit_name)
             val imageProfileFromDialog: ShapeableImageView = view.findViewById(R.id.image_profile)
 
-            var profileImage: String? = null
+            editNameFromDialog.setText(currentUserName ?: "Ainda sem nome")
+            LoadImages().loadImagesWithBlur(currentImageUri, imageProfileFromDialog)
 
             imageProfileFromDialog.setOnClickListener {
                 pickImage.launch("image/*")
 
                 imageUriCallback = { uri ->
-                    profileImage = uri
                     currentImageUri = uri
                     LoadImages().apply {
                         loadImagesWithBlur(uri, imageProfileFromDialog)
-                        loadImagesWithBlur(uri, include.imageProfile)
                     }
                 }
             }
 
             btnSaveFromDialog.setOnClickListener {
-                include.profileUserName.text = editNameFromDialog.text.toString()
-                dialog.dismiss()
+                val userName = editNameFromDialog.text.toString()
+                currentUserName = userName
+                include.profileUserName.text = userName
+
                 val user = User(
                     name = editNameFromDialog.text.toString(),
-                    imageUri = profileImage
+                    imageUri = currentImageUri
                 )
 
-
+                //Save the image and the username on DataBase
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
                         (application as App).userDao.saveUser(user)
                     }
                 }
+
+                LoadImages().loadImagesWithBlur(currentImageUri, include.imageProfile)
+                include.profileUserName.text = currentUserName ?: "Ainda sem nome"
+
+                val resultIntent = Intent()
+                resultIntent.putExtra(MainActivity.EXTRA_RELOAD, true)
+                setResult(RESULT_OK, resultIntent)
+
+                dialog.dismiss()
             }
 
         }
@@ -132,10 +144,11 @@ class ProfileActivity : AppCompatActivity() {
             val recipesData = withContext(Dispatchers.IO) {
                 val recipes = app.recipeDao.getAllRecipes()
                 val tiktokRecipes = app.db.tiktokDao().getAll()
-                
+
                 val totalCount = recipes.size + tiktokRecipes.size
-                val totalFavorites = recipes.count { it.isFavorite } + tiktokRecipes.count { it.isFavorite }
-                
+                val totalFavorites =
+                    recipes.count { it.isFavorite } + tiktokRecipes.count { it.isFavorite }
+
                 Pair(totalCount, totalFavorites)
             }
 
@@ -147,9 +160,10 @@ class ProfileActivity : AppCompatActivity() {
                 app.userDao.getUser()
             }
             currentImageUri = user?.imageUri
-            include.profileUserName.text = if( user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
+            currentUserName = user?.name
+            include.profileUserName.text =
+                if (user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
             LoadImages().loadImagesWithBlur(user?.imageUri, include.imageProfile)
-
 
 
         }
