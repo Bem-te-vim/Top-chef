@@ -36,9 +36,12 @@ class VideoRecipeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         thumbnailAdapter = VideoThumbnailAdapter()
         setupRecyclerView()
+        setupListeners()
         loadVideos()
+    }
 
-        thumbnailAdapter.itemClick = { videoId->
+    private fun setupListeners() {
+        thumbnailAdapter.itemClick = { videoId ->
             val i = Intent(requireContext(), TiktokImportActivity::class.java)
             i.putExtra("tiktokId", videoId)
             startActivity(i)

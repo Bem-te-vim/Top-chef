@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -27,7 +28,9 @@ import com.sam.topchef.databinding.ActivityAddRecipeBinding
 import com.sam.topchef.databinding.DialogAddTypeBinding
 import com.sam.topchef.feature_add_recipe.adapter.RecipeDifficultAdapter
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
-import kotlin.concurrent.thread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Activity responsible for creating new recipes.
@@ -41,8 +44,9 @@ class AddRecipeActivity : AppCompatActivity() {
     private val typeItems = mutableListOf<String>()
     private lateinit var typeAdapter: ArrayAdapter<String>
 
-
     private val selectedUris = mutableListOf<String>()
+    private val ingredientList = mutableListOf<String>()
+    private val stepsList = mutableListOf<String>()
 
     @SuppressLint("NotifyDataSetChanged")
     private val pickImages =
@@ -76,6 +80,13 @@ class AddRecipeActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
+        setupAdapters()
+        setupListeners()
+        setupCharacterCounters()
+        setupTypeSpinner()
+    }
+
+    private fun setupAdapters() {
         val imgCover = binding.imgCoverAddRecipe
 
         val rvImg = binding.rvImagesAddRecipe
@@ -106,21 +117,82 @@ class AddRecipeActivity : AppCompatActivity() {
         }
         rvImg.adapter = imagesAdapter
 
+        val rvDifficult = binding.rvRecipeDifficult
+        val layoutManager =
+            object : LinearLayoutManager(this, HORIZONTAL, false) {
+                override fun canScrollHorizontally(): Boolean {
+                    return false
+                }
+            }
+        rvDifficult.layoutManager = layoutManager
+        rvDifficult.adapter = difficultAdapter
+
+
+        val rvIngredients = binding.rvIngredients
+        rvIngredients.layoutManager = LinearLayoutManager(this)
+
+        val ingredientAdapter = TextsAdapter(ingredientList, true)
+        rvIngredients.adapter = ingredientAdapter
+
+        val rvPreparation = binding.rvPreparation
+        rvPreparation.layoutManager = LinearLayoutManager(this)
+
+        val stepsAdapter = TextsAdapter(stepsList, true)
+        rvPreparation.adapter = stepsAdapter
+    }
+
+    private fun setupListeners() {
         binding.btnAddImages.setOnClickListener {
             pickImages.launch("image/*")
         }
 
+        binding.addIngredient.setOnClickListener {
 
-        thread {
+            val ingredientFiled = binding.edtxIngredient
+            val ingredient =
+                ingredientFiled.text.toString().trim().ifEmpty { return@setOnClickListener }
+
+            ingredientList.add(ingredient)
+            (binding.rvIngredients.adapter as? TextsAdapter)?.notifyItemInserted(ingredientList.lastIndex)
+            ingredientFiled.text.clear()
+        }
+
+        binding.addStep.setOnClickListener {
+            val stepField = binding.edtxStep
+            val step = stepField.text.toString().trim().ifEmpty { return@setOnClickListener }
+
+            stepsList.add(step)
+            (binding.rvPreparation.adapter as? TextsAdapter)?.notifyItemInserted(stepsList.lastIndex)
+            stepField.text.clear()
+        }
+
+        binding.btnSave.setOnClickListener {
+            saveRecipe()
+        }
+    }
+
+    private fun setupCharacterCounters() {
+        val edtxTitle = binding.edtxRecipeTitle
+        val characterCountTitle = binding.characterCountTitle
+        setViewCount(edtxTitle, characterCountTitle, 45)
+
+
+        val edtxDescription = binding.edtxRecipeDescription
+        val characterCountDescription = binding.characterCountDescription
+        setViewCount(edtxDescription, characterCountDescription, 300)
+    }
+
+    private fun setupTypeSpinner() {
+        lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val typeDao = app.db.typeDao()
             val allTypes = typeDao.getAllTypeNames()
 
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 typeItems.clear()
                 typeItems.addAll(allTypes)
                 typeItems.add("Add+")
-                
+
                 typeAdapter = ArrayAdapter(this@AddRecipeActivity, android.R.layout.simple_list_item_1, typeItems)
                 val autoCompleteType = binding.autoCompleteType
                 autoCompleteType.apply {
@@ -142,143 +214,79 @@ class AddRecipeActivity : AppCompatActivity() {
                 }
             }
         }
-
-
-        val edtxTitle = binding.edtxRecipeTitle
-        val characterCountTitle = binding.characterCountTitle
-        setViewCount(edtxTitle, characterCountTitle, 45)
-
-
-        val edtxDescription = binding.edtxRecipeDescription
-        val characterCountDescription = binding.characterCountDescription
-        setViewCount(edtxDescription, characterCountDescription, 300)
-
-
-        val rvDifficult = binding.rvRecipeDifficult
-        val layoutManager =
-            object : LinearLayoutManager(this, HORIZONTAL, false) {
-                override fun canScrollHorizontally(): Boolean {
-                    return false
-                }
-            }
-        rvDifficult.layoutManager = layoutManager
-        rvDifficult.adapter = difficultAdapter
-
-
-        val ingredientList = mutableListOf<String>()
-        val rvIngredients = binding.rvIngredients
-        rvIngredients.layoutManager = LinearLayoutManager(this)
-
-        val ingredientAdapter = TextsAdapter(ingredientList, true)
-        rvIngredients.adapter = ingredientAdapter
-
-        val addIngredient = binding.addIngredient
-        addIngredient.setOnClickListener {
-
-            val ingredientFiled = binding.edtxIngredient
-            val ingredient =
-                ingredientFiled.text.toString().trim().ifEmpty { return@setOnClickListener }
-
-            ingredientList.add(ingredient)
-            ingredientAdapter.notifyItemInserted(ingredientList.lastIndex)
-            ingredientFiled.text.clear()
-        }
-
-        val stepsList = mutableListOf<String>()
-        val rvPreparation = binding.rvPreparation
-        rvPreparation.layoutManager = LinearLayoutManager(this)
-
-        val stepsAdapter = TextsAdapter(stepsList, true)
-        rvPreparation.adapter = stepsAdapter
-
-        val addStep = binding.addStep
-        addStep.setOnClickListener {
-            val stepField = binding.edtxStep
-            val step = stepField.text.toString().trim().ifEmpty { return@setOnClickListener }
-
-            stepsList.add(step)
-            stepsAdapter.notifyItemInserted(stepsList.lastIndex)
-            stepField.text.clear()
-        }
-
-        binding.btnSave.setOnClickListener { view ->
-
-            val title = edtxTitle.text.toString().trim().ifEmpty {
-                edtxTitle.error = getString(R.string.required_field)
-
-                val nestedScrollView = binding.mainNestedScrollView
-                nestedScrollView.post {
-                    nestedScrollView.smoothScrollTo(0, edtxTitle.top)
-                }
-                return@setOnClickListener
-            }
-
-            val description = edtxDescription.text.toString().trim().takeIf { it.isNotEmpty() }
-            val difficult = difficultAdapter.getDifficultyLevel()
-            val imageUriString = selectedUris
-
-            val cookingTimeHour =
-                binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
-            val cookingTimeMinute =
-                binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
-            val cookingTime = sumHourMinutes(cookingTimeHour, cookingTimeMinute)
-
-
-            val preparationTimeHour =
-                binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
-            val preparationTimeMinute =
-                binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
-            val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
-
-            val recipeType = binding.autoCompleteType.text.toString().trim().takeIf { 
-                it.isNotEmpty() && it != getString(R.string.type)
-            }
-
-            val recipe = Recipe(
-                title = title,
-                description = description,
-                difficult = difficult,
-                imageUriString = imageUriString,
-                ingredients = ingredientList,
-                preparationMode = stepsList,
-                cookingTime = cookingTime,
-                preparationTime = preparationTime,
-                type = recipeType
-            )
-            thread {
-                val app = application as App
-                val dao = app.db.recipeDao()
-                
-                recipeType?.let { typeName ->
-                    val typeDao = app.db.typeDao()
-                    if (!typeDao.getAllTypeNames().contains(typeName)) {
-                        typeDao.insert(Type(type = typeName))
-                    }
-                }
-                
-                dao.insert(recipe)
-
-                runOnUiThread {
-                    Toast.makeText(
-                        applicationContext,
-                        getString(R.string.your_recipe_will_saved),
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    intent.putExtra(MainActivity.EXTRA_RELOAD, true)
-                    setResult(RESULT_OK, intent)
-                    finish()
-                }
-            }
-        }
-
-
     }
 
-    /**
-     * take the length of a editText and set the value in
-     * one textview
-     **/
+    private fun saveRecipe() {
+        val edtxTitle = binding.edtxRecipeTitle
+        val title = edtxTitle.text.toString().trim().ifEmpty {
+            edtxTitle.error = getString(R.string.required_field)
+
+            val nestedScrollView = binding.mainNestedScrollView
+            nestedScrollView.post {
+                nestedScrollView.smoothScrollTo(0, edtxTitle.top)
+            }
+            return
+        }
+
+        val description = binding.edtxRecipeDescription.text.toString().trim().takeIf { it.isNotEmpty() }
+        val difficult = difficultAdapter.getDifficultyLevel()
+        val imageUriString = selectedUris
+
+        val cookingTimeHour =
+            binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
+        val cookingTimeMinute =
+            binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+        val cookingTime = sumHourMinutes(cookingTimeHour, cookingTimeMinute)
+
+
+        val preparationTimeHour =
+            binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
+        val preparationTimeMinute =
+            binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+        val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
+
+        val recipeType = binding.autoCompleteType.text.toString().trim().takeIf {
+            it.isNotEmpty() && it != getString(R.string.type)
+        }
+
+        val recipe = Recipe(
+            title = title,
+            description = description,
+            difficult = difficult,
+            imageUriString = imageUriString,
+            ingredients = ingredientList,
+            preparationMode = stepsList,
+            cookingTime = cookingTime,
+            preparationTime = preparationTime,
+            type = recipeType
+        )
+        lifecycleScope.launch(Dispatchers.IO) {
+            val app = application as App
+            val dao = app.db.recipeDao()
+
+            recipeType?.let { typeName ->
+                val typeDao = app.db.typeDao()
+                if (!typeDao.getAllTypeNames().contains(typeName)) {
+                    typeDao.insert(Type(type = typeName))
+                }
+            }
+
+            dao.insert(recipe)
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    applicationContext,
+                    getString(R.string.your_recipe_will_saved),
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                intent.putExtra(MainActivity.EXTRA_RELOAD, true)
+                setResult(RESULT_OK, intent)
+                finish()
+            }
+        }
+    }
+
     /**
      * Monitors character count in an EditText and updates a corresponding TextView.
      * @param editText The input field to monitor.
@@ -330,6 +338,4 @@ class AddRecipeActivity : AppCompatActivity() {
 
         dialog.show()
     }
-
-
 }

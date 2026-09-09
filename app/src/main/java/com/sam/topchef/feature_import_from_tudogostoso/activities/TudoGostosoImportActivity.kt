@@ -5,7 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.text.InputFilter
 import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -87,6 +91,15 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
+        setupAdapters()
+        setupOnBackPressed()
+        setupListeners()
+        setupCharacterCounters()
+        setupTypeSpinner()
+        handleIntent()
+    }
+
+    private fun setupAdapters() {
         ingredientsAdapter = TextsAdapter(ingredients, true)
         preparationAdapter = TextsAdapter(preparations, true)
         imagesAdapter = ImagesAdapter(imageUris)
@@ -101,17 +114,9 @@ class TudoGostosoImportActivity : AppCompatActivity() {
             preparations.removeAt(position)
             preparationAdapter.notifyItemRemoved(position)
         }
+    }
 
-        val sharedText = intent.getStringExtra("urlPath")
-        val url = sharedText?.let { extractUrlFromSharedText(it) }
-        if (url != null) {
-            startImport(url)
-        } else {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
-
-
+    private fun setupOnBackPressed() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 AlertDialog.Builder(this@TudoGostosoImportActivity)
@@ -127,64 +132,80 @@ class TudoGostosoImportActivity : AppCompatActivity() {
                         goToMain()
                     }
                     .show()
-
             }
         })
+    }
 
+    private fun setupListeners() {
         binding.btnAddImages.setOnClickListener {
             pickImages.launch("image/*")
         }
 
-        setupTypeSpinner()
-
         binding.btnSave.setOnClickListener {
-            val edtxTitle = binding.edtxRecipeTitle
-            val title = edtxTitle.text.toString().trim().ifEmpty {
-                edtxTitle.error = getString(R.string.required_field)
+            handleSaveRecipe()
+        }
+    }
 
-                val nestedScrollView = binding.mainNestedScrollView
-                nestedScrollView.post {
-                    nestedScrollView.smoothScrollTo(0, edtxTitle.top)
-                }
-                return@setOnClickListener
+    private fun setupCharacterCounters() {
+        setViewCount(binding.edtxRecipeTitle, binding.characterCountTitle, 45)
+        setViewCount(binding.edtxRecipeDescription, binding.characterCountDescription, 300)
+    }
+
+    private fun handleIntent() {
+        val sharedText = intent.getStringExtra("urlPath")
+        val url = sharedText?.let { extractUrlFromSharedText(it) }
+        if (url != null) {
+            startImport(url)
+        } else {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }
+    }
+
+    private fun handleSaveRecipe() {
+        val edtxTitle = binding.edtxRecipeTitle
+        val title = edtxTitle.text.toString().trim().ifEmpty {
+            edtxTitle.error = getString(R.string.required_field)
+
+            val nestedScrollView = binding.mainNestedScrollView
+            nestedScrollView.post {
+                nestedScrollView.smoothScrollTo(0, edtxTitle.top)
             }
-
-
-            val description =
-                binding.edtxRecipeDescription.text.toString().trim().takeIf { it.isNotEmpty() }
-            val difficult = difficultAdapter.getDifficultyLevel()
-            val imageUriString = imageUris
-
-            val cookingTimeHour =
-                binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
-            val cookingTimeMinute =
-                binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
-            val cookingTime = sumHourMinutes(cookingTimeHour, cookingTimeMinute)
-
-
-            val preparationTimeHour =
-                binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
-            val preparationTimeMinute =
-                binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
-            val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
-
-
-            currentRecipe = currentRecipe?.copy(
-                title = title,
-                description = description,
-                difficult = difficult,
-                imageUriString = imageUriString,
-                ingredients = ingredients,
-                preparationMode = preparations,
-                cookingTime = cookingTime,
-                preparationTime = preparationTime
-            )
-            saveType(currentRecipe?.type!!)
-            saveRecipe(currentRecipe!!)
-            goToMain()
+            return
         }
 
+        val description =
+            binding.edtxRecipeDescription.text.toString().trim().takeIf { it.isNotEmpty() }
+        val difficult = difficultAdapter.getDifficultyLevel()
+        val imageUriString = imageUris
 
+        val cookingTimeHour =
+            binding.edtxCokingTimeHour.text.toString().trim().toIntOrNull() ?: 0
+        val cookingTimeMinute =
+            binding.edtxCokingTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+        val cookingTime = sumHourMinutes(cookingTimeHour, cookingTimeMinute)
+
+        val preparationTimeHour =
+            binding.edtxPreparationTimeHour.text.toString().trim().toIntOrNull() ?: 0
+        val preparationTimeMinute =
+            binding.edtxPreparationTimeMinute.text.toString().trim().toIntOrNull() ?: 0
+        val preparationTime = sumHourMinutes(preparationTimeHour, preparationTimeMinute)
+
+        currentRecipe = currentRecipe?.copy(
+            title = title,
+            description = description,
+            difficult = difficult,
+            imageUriString = imageUriString,
+            ingredients = ingredients,
+            preparationMode = preparations,
+            cookingTime = cookingTime,
+            preparationTime = preparationTime
+        )
+        currentRecipe?.let {
+            saveType(it.type!!)
+            saveRecipe(it)
+        }
+        goToMain()
     }
 
     /**
@@ -328,6 +349,7 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(MainActivity.EXTRA_RELOAD, true)
         }
         startActivity(intent)
         finish()
@@ -350,7 +372,7 @@ class TudoGostosoImportActivity : AppCompatActivity() {
             val types = withContext(Dispatchers.IO) {
                 (application as App).typeDao.getAllTypeNames()
             }
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 typeItems.clear()
                 typeItems.addAll(types)
                 typeItems.add("Add+")
@@ -424,6 +446,22 @@ class TudoGostosoImportActivity : AppCompatActivity() {
             currentRecipe = recipe
             setData(recipe)
 
+        }
+    }
+
+    /**
+     * Monitors character count in an EditText and updates a corresponding TextView.
+     * @param editText The input field to monitor.
+     * @param textView The display for the current count.
+     * @param maxValueCont The maximum allowed characters.
+     */
+    private fun setViewCount(editText: EditText, textView: TextView, maxValueCont: Int) {
+        textView.text = getString(R.string.value_bar_value, 0, maxValueCont)
+        editText.filters = arrayOf(InputFilter.LengthFilter(maxValueCont))
+
+        editText.addTextChangedListener { text ->
+            val length = text?.length ?: 0
+            textView.text = getString(R.string.value_bar_value, length, maxValueCont)
         }
     }
 

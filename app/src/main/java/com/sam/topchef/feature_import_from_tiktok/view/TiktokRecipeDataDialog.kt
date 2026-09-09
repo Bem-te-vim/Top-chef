@@ -60,31 +60,34 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
             binding.txtRecipeTitle.text = recipe.name
             binding.txtRecipeDescription.text = recipe.description
 
-
-            val allIngredients = recipe.ingredients
-            binding.rvIngredients.layoutManager = LinearLayoutManager(context)
-            binding.rvIngredients.adapter = TiktokIngredientsAdapter(allIngredients)
-
-
-            val allSteps = recipe.preparationMode
-            binding.rvSteps.layoutManager = LinearLayoutManager(context)
-            binding.rvSteps.adapter = TiktokStepsAdapter(allSteps)
-
+            setupAdapters(recipe)
+            setupListeners(recipe)
             checkIfSaved(recipe)
+        }
+    }
 
-            binding.save.setOnClickListener {
-                it.clickAnimation(startAnimationScale = 0.90f)
-                saveRecipe(recipe)
-            }
+    private fun setupAdapters(recipe: TikTokModel) {
+        val allIngredients = recipe.ingredients
+        binding.rvIngredients.layoutManager = LinearLayoutManager(context)
+        binding.rvIngredients.adapter = TiktokIngredientsAdapter(allIngredients)
 
-            binding.editRecipe.setOnClickListener {
-                it.clickAnimation(startAnimationScale = 0.90f)
-                (activity as? TiktokImportActivity)?.pausePlayer()
-                dismiss()
-                val editDialog = TiktokEditRecipeDialog.newInstance(recipe)
-                editDialog.show(parentFragmentManager, TiktokEditRecipeDialog.TAG)
-            }
+        val allSteps = recipe.preparationMode
+        binding.rvSteps.layoutManager = LinearLayoutManager(context)
+        binding.rvSteps.adapter = TiktokStepsAdapter(allSteps)
+    }
 
+    private fun setupListeners(recipe: TikTokModel) {
+        binding.save.setOnClickListener {
+            it.clickAnimation(startAnimationScale = 0.90f)
+            saveRecipe(recipe)
+        }
+
+        binding.editRecipe.setOnClickListener {
+            it.clickAnimation(startAnimationScale = 0.90f)
+            (activity as? TiktokImportActivity)?.pausePlayer()
+            dismiss()
+            val editDialog = TiktokEditRecipeDialog.newInstance(recipe)
+            editDialog.show(parentFragmentManager, TiktokEditRecipeDialog.TAG)
         }
     }
 

@@ -126,48 +126,22 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/main_nested_scroll_view"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_main_feed"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/container_app_bar">
+        app:layout_constraintTop_toBottomOf="@+id/container_app_bar" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <include
-                android:id="@+id/include_popular_recipes"
-                layout="@layout/layout_rv_horizontal_popular_recipes" />
-
-            <include
-                android:id="@+id/include_categories"
-                layout="@layout/layout_rv_horizontal_categories" />
-
-            <include
-                android:id="@+id/include_main"
-                layout="@layout/layout_rv_vertical_main"/>
-        </LinearLayout>
-
-
-    </androidx.core.widget.NestedScrollView>
-
-    <LinearLayout
+    <include
+        android:id="@+id/include_recipe_list_empty"
+        layout="@layout/error_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_app_bar">
-
-        <include
-            android:id="@+id/include_recipe_list_empty"
-            layout="@layout/error_layout"
-            android:visibility="gone" />
-
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@id/container_app_bar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

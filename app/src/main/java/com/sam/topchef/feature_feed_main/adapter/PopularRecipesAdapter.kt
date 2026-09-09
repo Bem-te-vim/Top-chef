@@ -82,6 +82,7 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
             btnFavorite.setOnClickListener {
                 item.isFavorite = !item.isFavorite
                 adapterChanges.onRecipeLiked(item.id, item.isFavorite, item.isTikTok)
+                setButtonState(item.isFavorite, btnFavorite, context)
             }
         }
     }
@@ -126,9 +127,6 @@ class PopularRecipesAdapter(val adapterChanges: AdapterChanges) :
         }
     }
 
-    fun onEditNotify() {
-        TODO("Not yet implemented")
-    }
 
     @SuppressLint("DefaultLocale")
     private fun timeFormater(totalMinutes: Int): String {

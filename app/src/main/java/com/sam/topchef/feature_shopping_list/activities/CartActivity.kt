@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -23,7 +24,9 @@ import com.sam.topchef.core.utils.Utils.toShareText
 import com.sam.topchef.databinding.ActivityCartBinding
 import com.sam.topchef.feature_shopping_list.adpters.CartItemAdapter
 import com.sam.topchef.feature_shopping_list.data.model.CartItem
-import kotlin.concurrent.thread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Activity for managing a specific shopping cart/list.
@@ -60,97 +63,106 @@ class CartActivity : AppCompatActivity() {
 
         val cartId = intent.extras?.getInt("id") ?: throw NullPointerException()
 
+        setupOnBackPressed()
+        setupRecyclerView()
+        setupListeners()
+        loadData(cartId)
+    }
 
+    private fun setupOnBackPressed() {
         backCallback = object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
                 exitEditMode()
             }
         }
-
         onBackPressedDispatcher.addCallback(this, backCallback)
+    }
 
-
+    private fun setupRecyclerView() {
         cartItemAdapter = CartItemAdapter(cartItems)
-
         val rvCartItems = binding.rvCartItems
         rvCartItems.layoutManager = LinearLayoutManager(this)
         rvCartItems.adapter = cartItemAdapter
+    }
 
+    private fun setupListeners() {
         // Criar novo item
         binding.btnCreateNewCartItem.setOnClickListener {
-            val text = binding.createNewCartItem.text.toString().trim()
-            if (text.isEmpty()) return@setOnClickListener
-
-            if (editableState && editingPosition != null) {
-                // ✏️ EDITAR ITEM
-                cartItems[editingPosition!!].itemName = text
-                cartItemAdapter.notifyItemChanged(editingPosition!!)
-                saveChanges()
-                exitEditMode()
-            } else {
-                // ➕ NOVO ITEM
-                val newItem = CartItem(itemName = text)
-                cartItems.add(newItem)
-                cartItemAdapter.notifyItemInserted(cartItems.size - 1)
-                saveChanges()
-                binding.createNewCartItem.text.clear()
-                binding.rvCartItems.smoothScrollToPosition(cartItems.lastIndex)
-                setResult(RESULT_OK)
-            }
+            handleCreateOrEditItem()
         }
 
         cartItemAdapter.onCartItemLongClickListener = { position ->
-            editableState = true
-            editingPosition = position
-            backCallback.isEnabled = true
-
-            cartItemAdapter.editingPosition = position
-            cartItemAdapter.notifyItemChanged(position)
-
-            binding.rvCartItems.smoothScrollToPosition(position)
-
-
-            binding.btnCreateNewCartItem.setImageDrawable(
-                AppCompatResources.getDrawable(
-                    this,
-                    R.drawable.edit_24dp
-                )
-            )
-
-
-
-
-            val editText = binding.createNewCartItem
-            editText.setText(cartItems[position].itemName)
-            editText.requestFocus()
-            editText.setSelection(editText.text.length)
-
-            showKeyboard(editText)
+            enterEditMode(position)
         }
-
-
 
         cartItemAdapter.onCartItemChecked = { checkBoxState, itemPosition ->
-            exitEditMode()
-            cartItems[itemPosition].isChecked = checkBoxState
-            if (checkBoxState) {
-                cartItems.swap(itemPosition, cartItems.lastIndex)
-                cartItemAdapter.notifyItemMoved(itemPosition, cartItems.lastIndex)
-            } else {
-                cartItems.swap(itemPosition, 0)
-                cartItemAdapter.notifyItemMoved(itemPosition, 0)
-            }
-            saveChanges()
+            handleItemChecked(checkBoxState, itemPosition)
         }
-
-
 
         binding.btnBack.setOnClickListener { finish() }
         binding.btnMoreOptions.setOnClickListener {
             showBottomSheetsDialog()
         }
+    }
 
-        loadData(cartId)
+    private fun handleCreateOrEditItem() {
+        val text = binding.createNewCartItem.text.toString().trim()
+        if (text.isEmpty()) return
+
+        if (editableState && editingPosition != null) {
+            // ✏️ EDITAR ITEM
+            cartItems[editingPosition!!].itemName = text
+            cartItemAdapter.notifyItemChanged(editingPosition!!)
+            saveChanges()
+            exitEditMode()
+        } else {
+            // ➕ NOVO ITEM
+            val newItem = CartItem(itemName = text)
+            cartItems.add(newItem)
+            cartItemAdapter.notifyItemInserted(cartItems.size - 1)
+            saveChanges()
+            binding.createNewCartItem.text.clear()
+            binding.rvCartItems.smoothScrollToPosition(cartItems.lastIndex)
+            setResult(RESULT_OK)
+        }
+    }
+
+    private fun enterEditMode(position: Int) {
+        editableState = true
+        editingPosition = position
+        backCallback.isEnabled = true
+
+        cartItemAdapter.editingPosition = position
+        cartItemAdapter.notifyItemChanged(position)
+
+        binding.rvCartItems.smoothScrollToPosition(position)
+
+        binding.btnCreateNewCartItem.setImageDrawable(
+            AppCompatResources.getDrawable(
+                this,
+                R.drawable.edit_24dp
+            )
+        )
+
+        val editText = binding.createNewCartItem
+        editText.setText(cartItems[position].itemName)
+        editText.requestFocus()
+        editText.setSelection(editText.text.length)
+
+        showKeyboard(editText)
+    }
+
+    private fun handleItemChecked(checkBoxState: Boolean, itemPosition: Int) {
+        exitEditMode()
+        cartItems[itemPosition].isChecked = checkBoxState
+        if (checkBoxState) {
+            cartItems.swap(itemPosition, cartItems.lastIndex)
+            cartItemAdapter.notifyItemMoved(itemPosition, cartItems.lastIndex)
+        } else {
+            cartItems.swap(itemPosition, 0)
+            cartItemAdapter.notifyItemMoved(itemPosition, 0)
+        }
+        saveChanges()
     }
 
     /**
@@ -295,11 +307,11 @@ class CartActivity : AppCompatActivity() {
      */
     @SuppressLint("NotifyDataSetChanged")
     private fun loadData(id: Int) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val dao = (application as App).db.cartDao()
             val cart = dao.getCart(id)
 
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 currentCart = cart // ← Salva o carrinho atual
                 cartItems.clear()
                 cartItems.addAll(cart.cartItems)
@@ -314,7 +326,7 @@ class CartActivity : AppCompatActivity() {
      * @param cart The cart object to update.
      */
     private fun updateCart(cart: Cart) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val dao = (application as App).db.cartDao()
             dao.update(cart)
         }

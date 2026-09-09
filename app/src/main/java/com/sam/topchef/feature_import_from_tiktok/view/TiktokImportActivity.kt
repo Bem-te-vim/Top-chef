@@ -83,27 +83,40 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         binding = ActivityTiktokImportBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupOnBackPressed()
+        setupWindowInsets()
+        setupPlayer()
+        setupListeners()
+        setupPresenter()
+        handleIntent()
+    }
+
+    private fun setupOnBackPressed() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val intent = Intent(this@TiktokImportActivity, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                intent.putExtra(MainActivity.EXTRA_RELOAD, true)
                 startActivity(intent)
                 finish()
             }
         })
+    }
 
+    private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
 
-
+    @OptIn(UnstableApi::class)
+    private fun setupPlayer() {
         val dataSourceFactory = DefaultHttpDataSource.Factory()
             .setUserAgent("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
             .setDefaultRequestProperties(mapOf("Referer" to "https://www.tiktok.com/"))
             .setAllowCrossProtocolRedirects(true)
-
 
         playerListener = PlayerListener()
 
@@ -119,7 +132,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
         val playerView = binding.playerView
         playerView.player = player
-
 
         /** Pause and play the video Player on single click, show toast on double click **/
         playerView.setClicksListener(
@@ -149,6 +161,19 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             }
         )
 
+        player.addListener(playerListener)
+
+        playerListener.onPlayerError {
+            val cause = it.cause
+            if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
+                handle403Error()
+            }
+        }
+
+        playerListener.isPlaying { showPlayerIc(it) }
+    }
+
+    private fun setupListeners() {
         /** video interactions **/
         binding.btnFavorite.setOnClickListener {
             it.clickAnimation(startAnimationScale = 0.90f)
@@ -173,24 +198,15 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 Toast.makeText(this, "Nenhuma receita carregada ainda", Toast.LENGTH_SHORT).show()
             }
         }
+    }
 
-
-
-        player.addListener(playerListener)
-
-        playerListener.onPlayerError {
-            val cause = it.cause
-            if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
-                handle403Error()
-            }
-        }
-
-        playerListener.isPlaying { showPlayerIc(it) }
-
+    private fun setupPresenter() {
         presenter = TikTokImportPresenter(this)
         recipeInfoByIA = RecipeInfoByIA()
         message = binding.message
+    }
 
+    private fun handleIntent() {
         val sharedText = intent.getStringExtra("urlPath")
         val tiktokId = intent.getIntExtra("tiktokId", -1)
 
@@ -209,7 +225,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
-
     }
 
     /**

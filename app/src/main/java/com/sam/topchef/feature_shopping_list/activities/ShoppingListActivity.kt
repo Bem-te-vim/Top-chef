@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -26,7 +27,9 @@ import com.sam.topchef.databinding.ActivityShoppingListBinding
 import com.sam.topchef.feature_fullscreen_image.FullscreenImageActivity
 import com.sam.topchef.feature_shopping_list.adapter_interface.AdapterChanges
 import com.sam.topchef.feature_shopping_list.adpters.CartsAdapter
-import kotlin.concurrent.thread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Activity for displaying all shopping lists (carts).
@@ -60,26 +63,31 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        result =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    loadData()
-                }
+        setupActivityResultLauncher()
+        setupRecyclerView()
+        setupListeners()
+        loadData()
+    }
+
+    private fun setupActivityResultLauncher() {
+        result = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                loadData()
             }
+        }
+    }
 
-
-
-
+    private fun setupRecyclerView() {
         cartsAdapter = CartsAdapter(this)
         val rvCarts = binding.rvCarts
         rvCarts.layoutManager = LinearLayoutManager(this)
         rvCarts.adapter = cartsAdapter
+    }
 
-
+    private fun setupListeners() {
         binding.btnRemoveImageToCart.setOnClickListener {
             removeImageToCart()
         }
-
 
         binding.btnAddImageToCart.setOnClickListener {
             pickImages.launch("image/*")
@@ -87,8 +95,7 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
 
         binding.btnCreateNewCart.setOnClickListener {
             val txtCreateNewCart = binding.createNewCart
-            val cartName =
-                txtCreateNewCart.text.toString().trim().ifEmpty { return@setOnClickListener }
+            val cartName = txtCreateNewCart.text.toString().trim().ifEmpty { return@setOnClickListener }
             txtCreateNewCart.text.clear()
 
             val cart = Cart(title = cartName, cartImage = cartImage)
@@ -96,10 +103,7 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
             createNewCart(cart)
         }
 
-
         binding.btnBack.setOnClickListener { finish() }
-
-        loadData()
     }
 
     /**
@@ -128,7 +132,7 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
      * @param cart The cart to update.
      */
     private fun updateCart(cart: Cart) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val dao = (application as App).db.cartDao()
             dao.update(cart)
         }
@@ -148,14 +152,14 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
      * @param id The ID of the cart to delete.
      */
     private fun deleteCart(id: Int) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val dao = (application as App).db.cartDao()
             dao.delete(id)
 
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 cartsAdapter.onDeleteNotify(id)
 
-                Toast.makeText(this, "Carrinho deletado", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@ShoppingListActivity, "Carrinho deletado", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -166,12 +170,12 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
      * @param callback The callback function.
      */
     private fun getCart(id: Int, callback: (Cart) -> Unit) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val dao = (application as App).db.cartDao()
             val cart = dao.getCart(id)
 
             if (cart != null) {
-                runOnUiThread { callback(cart) }
+                withContext(Dispatchers.Main) { callback(cart) }
             }
         }
     }
@@ -312,14 +316,14 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
      * Loads all saved carts from the database and updates the adapter.
      */
     private fun loadData() {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val dao = app.db.cartDao()
             val allCarts = dao.getAllCarts()
 
-            if (allCarts.isEmpty()) return@thread
+            if (allCarts.isEmpty()) return@launch
 
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 cartsAdapter.setData(allCarts)
             }
         }
@@ -330,13 +334,13 @@ class ShoppingListActivity : AppCompatActivity(), AdapterChanges {
      * @param cart The new cart object.
      */
     fun createNewCart(cart: Cart) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val dao = app.db.cartDao()
             val newId = dao.insert(cart).toInt()
 
             cart.id = newId
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 cartsAdapter.setNewCart(cart)
             }
 

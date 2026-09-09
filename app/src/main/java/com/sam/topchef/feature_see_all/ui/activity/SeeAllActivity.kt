@@ -43,31 +43,33 @@ class SeeAllActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        val i = intent.getStringExtra("show") ?: throw NullPointerException()
-        val categoryName = intent.getStringExtra(EXTRA_CATEGORY_NAME)
-        
+        setupRecyclerView()
+        setupListeners()
+        loadData()
+    }
+
+    private fun setupRecyclerView() {
+        val showType = intent.getStringExtra("show") ?: throw NullPointerException()
         val rvSeeAll = binding.rvSeeAll
         
-        when (i) {
+        when (showType) {
             ALL_POPULAR_RECIPES -> {
                 rvSeeAll.layoutManager = GridLayoutManager(this, 3)
                 seeAllAdapter = SeeAllAdapter(R.layout.row_images)
-                loadPopularRecipe()
             }
             ALL_CATEGORIES -> {
                 rvSeeAll.layoutManager = GridLayoutManager(this, 4)
                 seeAllAdapter = SeeAllAdapter(R.layout.row_categories_recipe_item)
-                loadCategories()
             }
             CATEGORY_FILTER -> {
                 rvSeeAll.layoutManager = LinearLayoutManager(this)
                 seeAllAdapter = SeeAllAdapter(R.layout.row_popular_recipe_item)
-                loadRecipesByCategory(categoryName ?: "")
             }
         }
-
         rvSeeAll.adapter = seeAllAdapter
+    }
 
+    private fun setupListeners() {
         seeAllAdapter.itemClick = { id ->
             val i = Intent(this, RecipeDetailActivity::class.java)
             i.putExtra("id", id)
@@ -84,6 +86,17 @@ class SeeAllActivity : AppCompatActivity() {
             startActivity(i)
         }
         binding.btnBack.setOnClickListener { finish() }
+    }
+
+    private fun loadData() {
+        val showType = intent.getStringExtra("show") ?: throw NullPointerException()
+        val categoryName = intent.getStringExtra(EXTRA_CATEGORY_NAME)
+
+        when (showType) {
+            ALL_POPULAR_RECIPES -> loadPopularRecipe()
+            ALL_CATEGORIES -> loadCategories()
+            CATEGORY_FILTER -> loadRecipesByCategory(categoryName ?: "")
+        }
     }
 
     private fun updateRecipeFavoriteStatus(id: Int, isFavorite: Boolean) {

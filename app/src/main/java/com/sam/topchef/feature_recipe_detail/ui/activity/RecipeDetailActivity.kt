@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.Toast
@@ -34,7 +35,6 @@ import com.sam.topchef.feature_recipe_detail.model.Step
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.concurrent.thread
 
 /**
  * Activity for displaying detailed information about a specific recipe.
@@ -57,11 +57,77 @@ class RecipeDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
+        setupStatusBarPadding()
+        setupListeners()
+        loadRecipeData()
+    }
+
+    private fun setupStatusBarPadding() {
         val statusBarHeight = resources.getDimensionPixelSize(
             resources.getIdentifier("status_bar_height", "dimen", "android")
         )
         binding.statusBarOverlay.layoutParams.height = statusBarHeight
+    }
 
+    private fun setupListeners() {
+        binding.btnBack.setOnClickListener { finish() }
+
+        binding.btnFavorite.setOnClickListener { view ->
+            toggleFavorite(view as ImageButton)
+        }
+
+        binding.goTimer.setOnClickListener { view ->
+            showTimerDialog(view)
+        }
+
+        binding.coverImageRecipe.setOnClickListener {
+            showFullscreenImage(it)
+        }
+
+        binding.btnShare.setOnClickListener {
+            it.clickAnimation()
+            val recipeId = intent.getIntExtra("id", -1)
+            shareRecipe(recipeId)
+        }
+    }
+
+    private fun toggleFavorite(btnFavorite: ImageButton) {
+        btnFavorite.clickAnimation()
+        val recipe = currentRecipe ?: return
+        val recipeId = intent.getIntExtra("id", -1)
+
+        recipe.isFavorite = !recipe.isFavorite
+        setButtonState(recipe.isFavorite, btnFavorite, this)
+
+        val resultIntent = Intent()
+        resultIntent.putExtra(MainActivity.EXTRA_RECIPE_ID, recipeId)
+        resultIntent.putExtra(MainActivity.EXTRA_IS_FAVORITE, recipe.isFavorite)
+        setResult(RESULT_OK, resultIntent)
+    }
+
+    private fun showTimerDialog(view: View) {
+        view.clickAnimation()
+        val minutes = currentRecipe?.cookingTime ?: 0
+        val id = currentRecipe?.id ?: -1
+        val dialog = TimerDialog.newInstance(minutes, id)
+        dialog.show(supportFragmentManager, TimerDialog.TAG)
+    }
+
+    private fun showFullscreenImage(view: View) {
+        view.clickAnimation()
+        val i = Intent(this, FullscreenImageActivity::class.java)
+        i.putExtra("imageUri", currentImageUri)
+
+        val options = ActivityOptions
+            .makeSceneTransitionAnimation(
+                (this),
+                view,
+                "image_transition"
+            )
+        startActivity(i, options.toBundle())
+    }
+
+    private fun loadRecipeData() {
         val recipeId = intent.getIntExtra("id", -1)
         if (recipeId != -1) {
             loadData(recipeId)
@@ -73,51 +139,6 @@ class RecipeDetailActivity : AppCompatActivity() {
                 Toast.makeText(this, "Erro ao carregar receita", Toast.LENGTH_SHORT).show()
                 finish()
             }
-        }
-
-
-        binding.btnBack.setOnClickListener { finish() }
-
-        binding.btnFavorite.setOnClickListener { view ->
-            view.clickAnimation()
-            val recipe = currentRecipe ?: return@setOnClickListener
-
-            recipe.isFavorite = !recipe.isFavorite
-            setButtonState(recipe.isFavorite, view as ImageButton, this)
-
-            val resultIntent = Intent()
-            resultIntent.putExtra(MainActivity.EXTRA_RECIPE_ID, recipeId)
-            resultIntent.putExtra(MainActivity.EXTRA_IS_FAVORITE, recipe.isFavorite)
-            setResult(RESULT_OK, resultIntent)
-        }
-
-
-
-        binding.goTimer.setOnClickListener { view ->
-            view.clickAnimation()
-            val minutes = currentRecipe?.cookingTime ?: 0
-            val id = currentRecipe?.id ?: -1
-            val dialog = TimerDialog.newInstance(minutes, id)
-            dialog.show(supportFragmentManager, TimerDialog.TAG)
-        }
-
-        binding.coverImageRecipe.setOnClickListener {
-            it.clickAnimation()
-            val i = Intent(this, FullscreenImageActivity::class.java)
-            i.putExtra("imageUri", currentImageUri)
-
-            val options = ActivityOptions
-                .makeSceneTransitionAnimation(
-                    (this),
-                    it,
-                    "image_transition"
-                )
-            startActivity(i, options.toBundle())
-        }
-
-        binding.btnShare.setOnClickListener {
-            it.clickAnimation()
-            shareRecipe(recipeId)
         }
     }
 
@@ -142,7 +163,7 @@ class RecipeDetailActivity : AppCompatActivity() {
 
 
     private fun shareRecipe(id: Int, isTikTok: Boolean = false) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val text = if (isTikTok) {
                 val tiktok = app.db.tiktokDao().getById(id)
@@ -153,8 +174,8 @@ class RecipeDetailActivity : AppCompatActivity() {
             }
 
             text?.let {
-                runOnUiThread {
-                    shareText(this, it)
+                withContext(Dispatchers.Main) {
+                    shareText(this@RecipeDetailActivity, it)
                 }
             }
         }
@@ -166,18 +187,18 @@ class RecipeDetailActivity : AppCompatActivity() {
      * @param recipeId The ID of the recipe to display.
      */
     private fun loadData(recipeId: Int) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val dao = app.db.recipeDao()
             val recipe = dao.getRecipe(recipeId)
 
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
 
                 if (recipe == null) {
                     Toast.makeText(applicationContext, "Receita não encontrada", Toast.LENGTH_SHORT)
                         .show()
                     finish()
-                    return@runOnUiThread
+                    return@withContext
                 }
                 currentRecipe = recipe
                 setupRecipeCreator()
@@ -199,7 +220,7 @@ class RecipeDetailActivity : AppCompatActivity() {
 
 
                 fun setImage(load: String?, img: ShapeableImageView) {
-                    Glide.with(this)
+                    Glide.with(this@RecipeDetailActivity)
                         .load(load)
                         .placeholder(R.drawable.placeholder_item)
                         .into(img)
@@ -210,7 +231,7 @@ class RecipeDetailActivity : AppCompatActivity() {
                 currentImageUri = imgUriList.firstOrNull()
                 setImage(imgUriList.firstOrNull(), imgCover)
 
-                setButtonState(isFavorite, binding.btnFavorite, this)
+                setButtonState(isFavorite, binding.btnFavorite, this@RecipeDetailActivity)
 
                 binding.txtRecipeType.text = type
                 binding.txtRecipeTitle.text = title
@@ -221,7 +242,7 @@ class RecipeDetailActivity : AppCompatActivity() {
 
 
                 binding.rvImageFromDetail.layoutManager =
-                    LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+                    LinearLayoutManager(this@RecipeDetailActivity, LinearLayoutManager.HORIZONTAL, false)
                 val imagesAdapter = ImagesAdapter(imgUriList)
 
                 imagesAdapter.onImgClickListener = { imageSrc ->
@@ -231,16 +252,16 @@ class RecipeDetailActivity : AppCompatActivity() {
                 binding.rvImageFromDetail.adapter = imagesAdapter
 
 
-                binding.rvIngredients.layoutManager = LinearLayoutManager(this)
+                binding.rvIngredients.layoutManager = LinearLayoutManager(this@RecipeDetailActivity)
                 val rvIngredient = binding.rvIngredients
-                rvIngredient.layoutManager = LinearLayoutManager(this)
+                rvIngredient.layoutManager = LinearLayoutManager(this@RecipeDetailActivity)
                 rvIngredient.adapter = TextsAdapter(ingredients)
 
 
-                binding.rvIngredients.layoutManager = LinearLayoutManager(this)
+                binding.rvIngredients.layoutManager = LinearLayoutManager(this@RecipeDetailActivity)
                 val rvSteps = binding.rvSteps
                 val steps = preparationMode.map { Step(it) }
-                rvSteps.layoutManager = LinearLayoutManager(this)
+                rvSteps.layoutManager = LinearLayoutManager(this@RecipeDetailActivity)
                 rvSteps.adapter = StepsAdapter(steps)
 
             }

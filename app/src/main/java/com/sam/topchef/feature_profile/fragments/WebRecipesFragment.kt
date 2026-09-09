@@ -37,22 +37,33 @@ class WebRecipesFragment : Fragment() {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupViews(view)
+        setupRecyclerView(view)
+        setupListeners()
+        loadFeed()
+    }
 
+    private fun setupViews(view: View) {
         progressBar = view.findViewById(R.id.progress_bar)
+    }
 
+    private fun setupRecyclerView(view: View) {
         val rvMain: RecyclerView = view.findViewById(R.id.rv_web_recipes)
         rvMain.layoutManager = LinearLayoutManager(requireContext())
         webRecipeAdapter = WebRecipeAdapter(recipes)
         rvMain.adapter = webRecipeAdapter
+    }
 
+    private fun setupListeners() {
         webRecipeAdapter.onClick = { recipeLinkPath ->
             val i = Intent(requireContext(), TudoGostosoImportActivity::class.java)
             i.putExtra("urlPath", recipeLinkPath)
             startActivity(i)
         }
+    }
 
-
-
+    @SuppressLint("NotifyDataSetChanged")
+    private fun loadFeed() {
         lifecycleScope.launch {
             showProgress()
             val result = TudoGostosoImporter.getFeed()

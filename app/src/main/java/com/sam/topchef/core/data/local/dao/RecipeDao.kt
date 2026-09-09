@@ -1,5 +1,6 @@
 package com.sam.topchef.core.data.local.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -31,4 +32,15 @@ interface RecipeDao {
     @Query("SELECT * FROM Recipe")
     fun getAllRecipes(): List<Recipe>
 
+    @Query("SELECT * FROM Recipe ORDER BY id DESC")
+    fun getAllRecipesPaged(): PagingSource<Int, Recipe>
+
+    @Query("SELECT * FROM Recipe ORDER BY reviews DESC LIMIT :limit")
+    fun getPopularRecipes(limit: Int): List<Recipe>
+
+    @Query("SELECT DISTINCT type FROM Recipe WHERE type IS NOT NULL AND type != ''")
+    fun getAllCategoryNames(): List<String>
+    
+    @Query("SELECT * FROM Recipe WHERE type = :type LIMIT 1")
+    fun getFirstRecipeByType(type: String): Recipe?
 }

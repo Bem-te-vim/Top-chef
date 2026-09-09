@@ -32,15 +32,32 @@ class AllRecipesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupRecyclerView(view)
+        setupListeners()
+        loadRecipes()
+    }
 
-
+    private fun setupRecyclerView(view: View) {
         val rvAllRecipes = view.findViewById<RecyclerView>(R.id.rv_all_recipes)
         rvAllRecipes.layoutManager = GridLayoutManager(requireContext(), 3)
         allForProfileAdapter = AllForProfileAdapter()
         rvAllRecipes.adapter = allForProfileAdapter
+    }
 
+    private fun setupListeners() {
+        allForProfileAdapter.itemClick = { id, _ ->
+            val i = Intent(requireContext(), RecipeDetailActivity::class.java)
+            i.putExtra("id", id)
+            startActivity(i)
+        }
+
+        allForProfileAdapter.itemLongClick = { _, _ ->
+            //TODO: tools
+        }
+    }
+
+    private fun loadRecipes() {
         lifecycleScope.launch {
-
             val recipes = withContext(Dispatchers.IO) {
                 (requireContext().applicationContext as App)
                     .recipeDao
@@ -55,20 +72,7 @@ class AllRecipesFragment : Fragment() {
                         )
                     }
             }
-
-
             allForProfileAdapter.submitList(recipes)
         }
-
-        allForProfileAdapter.itemClick = { id, isTikTok ->
-            val i = Intent(requireContext(), RecipeDetailActivity::class.java)
-            i.putExtra("id", id)
-            startActivity(i)
-        }
-
-        allForProfileAdapter.itemLongClick = { id, isTikTok ->
-            //TODO: tools
-        }
-
     }
 }

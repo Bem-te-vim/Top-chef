@@ -92,13 +92,28 @@ class EditRecipeActivity : AppCompatActivity() {
 
         val id = intent.extras?.getInt("id") ?: throw NullPointerException("Invalid id")
 
+        setupAdapters()
+        setupListeners()
+        setupCharacterCounters()
+        setupTypeSpinner()
+        
+        getRecipe(id) {
+            currentRecipe = it
+            setData(it)
+        }
+    }
 
+    private fun setupAdapters() {
         ingredientsAdapter = TextsAdapter(ingredients, true)
         preparationAdapter = TextsAdapter(preparations, true)
         imagesAdapter = ImagesAdapter(imageUris)
         difficultAdapter = RecipeDifficultAdapter()
 
+        setupItemTouchHelper(binding.rvIngredients, ingredients, ingredientsAdapter)
+        setupItemTouchHelper(binding.rvPreparation, preparations, preparationAdapter)
+    }
 
+    private fun setupListeners() {
         ingredientsAdapter.onDeleteItemClickListener = { position ->
             ingredients.removeAt(position)
             ingredientsAdapter.notifyItemRemoved(position)
@@ -108,9 +123,6 @@ class EditRecipeActivity : AppCompatActivity() {
             preparations.removeAt(position)
             preparationAdapter.notifyItemRemoved(position)
         }
-
-        setupItemTouchHelper(binding.rvIngredients, ingredients, ingredientsAdapter)
-        setupItemTouchHelper(binding.rvPreparation, preparations, preparationAdapter)
 
         ingredientsAdapter.onTextDoubleClickListener = { position ->
             showEditItemDialog(ingredients, ingredientsAdapter, position, "Editar Ingrediente")
@@ -201,21 +213,16 @@ class EditRecipeActivity : AppCompatActivity() {
 
         })
 
-        setViewCount(binding.edtxRecipeTitle, binding.characterCountTitle, 45)
-        setViewCount(binding.edtxRecipeDescription, binding.characterCountDescription, 300)
-
-        setupTypeSpinner()
-        
         binding.autoCompleteType.setOnItemClickListener { _, _, position, _ ->
             if (typeItems[position] == "Add+") {
                 showAddTypeDialog()
             }
         }
-        
-        getRecipe(id) {
-            currentRecipe = it
-            setData(it)
-        }
+    }
+
+    private fun setupCharacterCounters() {
+        setViewCount(binding.edtxRecipeTitle, binding.characterCountTitle, 45)
+        setViewCount(binding.edtxRecipeDescription, binding.characterCountDescription, 300)
     }
 
     /**
@@ -242,7 +249,7 @@ class EditRecipeActivity : AppCompatActivity() {
             val types = withContext(Dispatchers.IO) {
                 (application as App).typeDao.getAllTypeNames()
             }
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 typeItems.clear()
                 typeItems.addAll(types)
                 typeItems.add("Add+")

@@ -20,8 +20,11 @@ class FullscreenImageActivity : AppCompatActivity() {
         binding = ActivityFullscreenImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
-        
 
+        loadImage()
+    }
+
+    private fun loadImage() {
         val imageView = binding.fullImage
         val imageUri = intent.getStringExtra("imageUri")
 

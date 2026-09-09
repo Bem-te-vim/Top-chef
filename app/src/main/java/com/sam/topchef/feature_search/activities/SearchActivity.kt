@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.databinding.ActivitySearchBinding
@@ -16,8 +17,10 @@ import com.sam.topchef.feature_feed_main.data.model.RecipePost
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import com.sam.topchef.feature_search.adapter.SearchAdapter
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
-import kotlin.concurrent.thread
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Activity providing global search functionality for recipes.
@@ -39,21 +42,27 @@ class SearchActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
+        setupStatusBarPadding()
+        setupSearchInput()
+        setupRecyclerView()
+    }
 
+    private fun setupStatusBarPadding() {
         val statusBarHeight = resources.getDimensionPixelSize(
             resources.getIdentifier("status_bar_height", "dimen", "android")
         )
         binding.statusBarOverlay.layoutParams.height = statusBarHeight
+    }
 
+    private fun setupSearchInput() {
         val txtSearch = binding.textInputSearch
         txtSearch.requestFocus()
         txtSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
-
             override fun afterTextChanged(p0: Editable?) {
-                searchRunnable?.let { handler.removeCallbacks (it) }
+                searchRunnable?.let { handler.removeCallbacks(it) }
 
                 searchRunnable = Runnable {
                     val searchText = p0.toString().trim()
@@ -68,12 +77,10 @@ class SearchActivity : AppCompatActivity() {
 
                 handler.postDelayed(searchRunnable!!, 300)
             }
-
-
-
         })
+    }
 
-
+    private fun setupRecyclerView() {
         val rvSearch = binding.rvSearch
         searchAdapter = SearchAdapter()
         searchAdapter.onItemClickListener = { id, isTikTok ->
@@ -97,7 +104,7 @@ class SearchActivity : AppCompatActivity() {
      * @param search The search query.
      */
     private fun search(search: String) {
-        thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val recipeResults = app.db.recipeDao().search(search).map {
                 RecipePost(
@@ -122,7 +129,7 @@ class SearchActivity : AppCompatActivity() {
 
             val combinedResults = recipeResults + tiktokResults
 
-            runOnUiThread {
+            withContext(Dispatchers.Main) {
                 if (combinedResults.isNotEmpty()) {
                     searchAdapter.submitList(combinedResults)
                     binding.layoutNotFound.visibility = View.GONE

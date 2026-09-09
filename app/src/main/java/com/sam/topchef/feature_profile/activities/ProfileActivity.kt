@@ -62,6 +62,12 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
+        setupListeners()
+        loadProfileData()
+        setupViewPager()
+    }
+
+    private fun setupListeners() {
         val include = binding.includeHeader
         include.btnBack.setOnClickListener { finish() }
 
@@ -69,7 +75,6 @@ class ProfileActivity : AppCompatActivity() {
             it.clickAnimation()
             startActivity(Intent(this, SettingsActivity::class.java))
         }
-
 
         include.imageProfile.setOnClickListener {
             it.clickAnimation()
@@ -86,59 +91,65 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         include.editProfileBtn.setOnClickListener {
-            val dialog = BottomSheetDialog(this)
-            val view = layoutInflater.inflate(R.layout.layout_edit_profile, null)
-            dialog.setContentView(view)
-            dialog.show()
+            showEditProfileDialog()
+        }
+    }
 
-            val btnSaveFromDialog: Button = view.findViewById(R.id.btn_save)
-            val editNameFromDialog: EditText = view.findViewById(R.id.edit_name)
-            val imageProfileFromDialog: ShapeableImageView = view.findViewById(R.id.image_profile)
+    private fun showEditProfileDialog() {
+        val include = binding.includeHeader
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.layout_edit_profile, null)
+        dialog.setContentView(view)
+        dialog.show()
 
-            editNameFromDialog.setText(currentUserName ?: "Ainda sem nome")
-            LoadImages().loadImagesWithBlur(currentImageUri, imageProfileFromDialog)
+        val btnSaveFromDialog: Button = view.findViewById(R.id.btn_save)
+        val editNameFromDialog: EditText = view.findViewById(R.id.edit_name)
+        val imageProfileFromDialog: ShapeableImageView = view.findViewById(R.id.image_profile)
 
-            imageProfileFromDialog.setOnClickListener {
-                pickImage.launch("image/*")
+        editNameFromDialog.setText(currentUserName ?: "Ainda sem nome")
+        LoadImages().loadImagesWithBlur(currentImageUri, imageProfileFromDialog)
 
-                imageUriCallback = { uri ->
-                    currentImageUri = uri
-                    LoadImages().apply {
-                        loadImagesWithBlur(uri, imageProfileFromDialog)
-                    }
+        imageProfileFromDialog.setOnClickListener {
+            pickImage.launch("image/*")
+
+            imageUriCallback = { uri ->
+                currentImageUri = uri
+                LoadImages().apply {
+                    loadImagesWithBlur(uri, imageProfileFromDialog)
                 }
             }
-
-            btnSaveFromDialog.setOnClickListener {
-                val userName = editNameFromDialog.text.toString()
-                currentUserName = userName
-                include.profileUserName.text = userName
-
-                val user = User(
-                    name = editNameFromDialog.text.toString(),
-                    imageUri = currentImageUri
-                )
-
-                //Save the image and the username on DataBase
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        (application as App).userDao.saveUser(user)
-                    }
-                }
-
-                LoadImages().loadImagesWithBlur(currentImageUri, include.imageProfile)
-                include.profileUserName.text = currentUserName ?: "Ainda sem nome"
-
-                val resultIntent = Intent()
-                resultIntent.putExtra(MainActivity.EXTRA_RELOAD, true)
-                setResult(RESULT_OK, resultIntent)
-
-                dialog.dismiss()
-            }
-
         }
 
+        btnSaveFromDialog.setOnClickListener {
+            val userName = editNameFromDialog.text.toString()
+            currentUserName = userName
+            include.profileUserName.text = userName
 
+            val user = User(
+                name = editNameFromDialog.text.toString(),
+                imageUri = currentImageUri
+            )
+
+            //Save the image and the username on DataBase
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    (application as App).userDao.saveUser(user)
+                }
+            }
+
+            LoadImages().loadImagesWithBlur(currentImageUri, include.imageProfile)
+            include.profileUserName.text = currentUserName ?: "Ainda sem nome"
+
+            val resultIntent = Intent()
+            resultIntent.putExtra(MainActivity.EXTRA_RELOAD, true)
+            setResult(RESULT_OK, resultIntent)
+
+            dialog.dismiss()
+        }
+    }
+
+    private fun loadProfileData() {
+        val include = binding.includeHeader
         lifecycleScope.launch {
             val app = application as App
             val recipesData = withContext(Dispatchers.IO) {
@@ -164,10 +175,10 @@ class ProfileActivity : AppCompatActivity() {
             include.profileUserName.text =
                 if (user?.name.isNullOrEmpty()) "Olá." else "Olá, ${user.name}"
             LoadImages().loadImagesWithBlur(user?.imageUri, include.imageProfile)
-
-
         }
+    }
 
+    private fun setupViewPager() {
         val viewPager = binding.viewPager
         val tabLayout = binding.tabLayout
 
@@ -184,7 +195,6 @@ class ProfileActivity : AppCompatActivity() {
                 else -> throw IllegalStateException()
             }
         }.attach()
-
     }
 
 
