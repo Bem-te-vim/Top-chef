@@ -5,7 +5,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class TikWmRemoteDataSource {
+class   TikWmRemoteDataSource {
 
     fun getTikTokData(url: String, callback: TikWmCallBack) {
         HTTPClient.retrofit().create(TikWmApi::class.java).getTikTokData(url)

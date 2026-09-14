@@ -151,12 +151,12 @@ class RecipeDetailActivity : AppCompatActivity() {
 
             if (currentRecipe?.chef == null){
                 LoadImages().loadImagesWithBlur(user?.imageUri, binding.imageChefCover)
-                binding.txtChefName.text = user?.name ?: "Sem Nome de Usuario"
-                binding.txtChefWorkerPosition.text = "Sua Propia Receita :)"
+                binding.txtChefName.text = user?.name ?: getString(R.string.without_username)
+                binding.txtChefWorkerPosition.text = getString(R.string.you_own_recipe)
             }else{
                 LoadImages().loadImagesWithBlur(R.drawable.tudo_gostoso, binding.imageChefCover)
-                binding.txtChefName.text = "Tudo Gostoso"
-                binding.txtChefWorkerPosition.text = "Receita da Web"
+                binding.txtChefName.text = getString(R.string.tudo_gostoso)
+                binding.txtChefWorkerPosition.text = getString(R.string.recipe_from_web)
             }
         }
     }

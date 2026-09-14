@@ -3,7 +3,6 @@ package com.sam.topchef.feature_import_from_tiktok.ia
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.sam.topchef.BuildConfig
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
@@ -31,7 +30,10 @@ class RecipeInfoByIA {
     suspend fun downloadAudio(url: String, outputFile: File): File = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
+            .header(
+                "User-Agent",
+                "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
+            )
             .header("Referer", "https://www.tiktok.com/")
             .build()
         httpClient.newCall(request).execute().use { response ->
@@ -80,7 +82,7 @@ class RecipeInfoByIA {
         }
 
         DESCRIÇÃO COM HASHTAGS
-        ${description.joinToString("\n") }
+        ${description.joinToString("\n")}
     """.trimIndent()
 
         val response = model.generateContent(

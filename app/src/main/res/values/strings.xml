@@ -92,5 +92,9 @@
     <string name="_2x_speed">2x Speed</string>
     <string name="start">Iniciar</string>
     <string name="stop">Parar</string>
+    <string name="without_username">Sem Nome de Usuario</string>
+    <string name="you_own_recipe">Sua Própria Receita :)</string>
+    <string name="tudo_gostoso">Tudo Gostoso</string>
+    <string name="recipe_from_web">Receita da Web</string>
 
 </resources>

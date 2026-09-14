@@ -9,94 +9,220 @@
     android:keepScreenOn="true"
     tools:context=".feature_import_from_tiktok.view.TiktokImportActivity">
 
-
     <androidx.media3.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
+        app:resize_mode="zoom"
         app:use_controller="false" />
+
+    <SeekBar
+        android:id="@+id/video_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="1000"
+        android:minHeight="1.8dp"
+        android:maxHeight="1.8dp"
+        android:paddingStart="0dp"
+        android:paddingEnd="0dp"
+        android:progress="0"
+        android:progressBackgroundTint="@color/white_transparent"
+        android:progressDrawable="@drawable/custom_seekbar_progress"
+        android:progressTint="@color/WhiteForTxt"
+        android:splitTrack="false"
+        android:thumb="@drawable/custom_seekbar_thumb"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Overlay Info (Bottom Left) -->
+    <LinearLayout
+        android:id="@+id/container_bottom_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="80dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/video_progress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/txt_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:shadowColor="@color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="\@topchef_user"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="18sp"
+            tools:text="\@sam_chef" />
+
+        <TextView
+            android:id="@+id/txt_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="3"
+            android:shadowColor="@color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="Confira essa receita incrível que acabei de importar! #receita #topchef #tiktok"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="14sp"
+            tools:text="Bolo de chocolate super fofinho e fácil de fazer. Passo a passo completo aqui no app!" />
+    </LinearLayout>
+
+    <!-- Side Panel (Right) -->
+    <LinearLayout
+        android:id="@+id/container_side_panel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="12dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/video_progress"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Profile Pic -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_profile"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="24dp"
+            android:padding="2dp"
+            android:src="@drawable/placeholder_item"
+            app:shapeAppearance="@style/ShapeAppearance.TopChef.Circle"
+            app:strokeColor="@color/WhiteForTxt"
+            app:strokeWidth="2dp" />
+
+        <!-- Favorite -->
+        <ImageButton
+            android:id="@+id/btn_favorite"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/favorite_heart_love_svgrepo_com" />
+
+        <TextView
+            android:id="@+id/txt_likes_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:shadowColor="@color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="1.2k"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="12sp" />
+
+        <!-- Cart -->
+        <ImageButton
+            android:id="@+id/btn_cart"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginBottom="4dp"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cart_large_minimalistic_svgrepo"
+            app:tint="@color/WhiteForTxt" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:shadowColor="@color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="Carrinho"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="11sp" />
+
+        <!-- Share -->
+        <ImageButton
+            android:id="@+id/btn_share"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginBottom="4dp"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/share_svgrepo_com"
+            app:tint="@color/WhiteForTxt" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="sans-serif-medium"
+            android:shadowColor="@color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="Share"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="12sp" />
+
+        <!-- Reopen Dialog -->
+        <ImageButton
+            android:id="@+id/btn_reopen_dialog"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginBottom="4dp"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/up_square"
+            app:tint="@color/WhiteForTxt" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:shadowColor="@color/black"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="Dados"
+            android:textColor="@color/WhiteForTxt"
+            android:textSize="12sp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/message"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="12dp"
+        android:background="@drawable/rounded_square_shape"
+        android:backgroundTint="@color/black_transparent"
         android:fontFamily="sans-serif-medium"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         android:textAlignment="center"
-        android:textColor="@color/white_transparent"
+        android:textColor="@color/WhiteForTxt"
         android:textSize="14sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="@string/load_info"
-        tools:textColor="@color/black"
-        tools:visibility="visible" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.7">
-
-        <ImageButton
-            android:id="@+id/btn_favorite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:src="@drawable/favorite_heart_love_svgrepo_com"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageButton
-            android:id="@+id/btn_share"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@null"
-            android:src="@drawable/share_svgrepo_com"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_cart"
-            app:layout_constraintStart_toStartOf="parent"
-            app:tint="@color/white_transparent"  />
-
-        <ImageButton
-            android:id="@+id/btn_cart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@null"
-            android:src="@drawable/cart_large_minimalistic_svgrepo"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_favorite"
-            app:tint="@color/white_transparent" />
-
-        <ImageButton
-            android:id="@+id/btn_reopen_dialog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@null"
-            android:src="@drawable/up_square"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_share"
-            app:tint="@color/white_transparent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        app:layout_constraintVertical_bias="0.8"
+        tools:text="@string/load_info"
+        tools:visibility="visible" />
 
     <ProgressBar
         android:id="@+id/progress_bar_import"
@@ -112,23 +238,23 @@
         android:id="@+id/play_ic"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:visibility="gone"
-        tools:visibility="visible"
         android:src="@drawable/play_arrow_24dp"
-        app:tint="@color/white_transparent"
-        app:layout_constraintBottom_toBottomOf="@+id/playerView"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/white_transparent"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/favorite_ic"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:visibility="gone"
-        tools:visibility="visible"
         android:src="@drawable/favorite_svgrepo_com"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

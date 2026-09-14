@@ -31,9 +31,6 @@ class PopularHeaderAdapter(
         popularRecipesAdapter.onDeleteNotify(id, isTikTok)
     }
 
-    fun onEditNotify() {
-        popularRecipesAdapter.onEditNotify()
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)

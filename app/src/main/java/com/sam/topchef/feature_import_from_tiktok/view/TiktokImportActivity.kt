@@ -18,7 +18,10 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import android.util.Log
+import androidx.core.view.updateLayoutParams
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.View
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -67,6 +70,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private var currentTikTokModel: TikTokModel? = null
 
     private lateinit var playerListener: PlayerListener
+    private var isUserSeeking = false
 
     /**
      * Initializes the activity, sets up edge-to-edge display, binding,
@@ -104,9 +108,23 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     }
 
     private fun setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+
+            binding.containerBottomInfo.updateLayoutParams<MarginLayoutParams> {
+                val baseMargin = (12 * resources.displayMetrics.density).toInt()
+                bottomMargin = systemBars.bottom + baseMargin
+            }
+
+            binding.containerSidePanel.updateLayoutParams<MarginLayoutParams> {
+                val baseMargin = (12 * resources.displayMetrics.density).toInt()
+                bottomMargin = systemBars.bottom + baseMargin
+            }
+
+            binding.videoProgress.updateLayoutParams<MarginLayoutParams> {
+                bottomMargin = systemBars.bottom
+            }
+
             insets
         }
     }
@@ -144,6 +162,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             },
             onDoubleClick = { _, x, y ->
                 showHeartAnimation(x, y)
+                binding.btnFavorite.clickAnimation(startAnimationScale = 0.90f)
                 // Only favorites (curtir). Unlike (descurtir) is only via btn_favorite.
                 saveFavoriteToDatabase(true)
             },
@@ -170,7 +189,34 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             }
         }
 
-        playerListener.isPlaying { showPlayerIc(it) }
+        playerListener.isPlaying { 
+            showPlayerIc(it)
+            if (it) startProgressUpdate() else stopProgressUpdate()
+        }
+
+        setupProgressBar()
+    }
+
+    private fun setupProgressBar() {
+        binding.videoProgress.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    val duration = player.duration
+                    if (duration > 0) {
+                        val newPosition = (progress * duration) / 1000
+                        player.seekTo(newPosition)
+                    }
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                isUserSeeking = true
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                isUserSeeking = false
+            }
+        })
     }
 
     private fun setupListeners() {
@@ -377,6 +423,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     messageLoadAnimation(false)
 
                     updateFavoriteUI()
+                    updateVideoInfoUI(updatedRecipe)
                     showRecipeDialog(updatedRecipe)
                 }
             } catch (e: Exception) {
@@ -431,6 +478,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             }
             currentTikTokModel = updated
             updateFavoriteUI()
+            updateVideoInfoUI(updated)
             showRecipeDialog(updated)
         }
     }
@@ -504,6 +552,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 player.prepare()
                 player.play()
                 updateFavoriteUI()
+                updateVideoInfoUI(recipe)
                 showRecipeDialog(recipe)
             }
         }
@@ -574,6 +623,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             withContext(Dispatchers.Main) {
                 currentTikTokModel = finalModel
                 updateFavoriteUI()
+                updateVideoInfoUI(finalModel)
             }
         }
     }
@@ -584,9 +634,39 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             binding.btnFavorite.clearColorFilter()
             binding.btnFavorite.setImageResource(R.drawable.favorite_svgrepo_com)
         } else {
-            binding.btnFavorite.setColorFilter(getColor(R.color.white_transparent))
+            binding.btnFavorite.setColorFilter(getColor(R.color.WhiteForTxt))
             binding.btnFavorite.setImageResource(R.drawable.favorite_heart_love_svgrepo_com)
         }
+    }
+
+    private fun updateVideoInfoUI(recipe: TikTokModel) {
+        binding.txtUsername.text = "@topchef_creator"
+        binding.txtDescription.text = recipe.name + " - " + (recipe.description ?: "Sem descrição disponível.")
+        
+        // Placeholder values for likes/profile
+        binding.txtLikesCount.text = if (recipe.isFavorite) "1.3k" else "1.2k"
+    }
+
+    private val progressRunnable = object : Runnable {
+        override fun run() {
+            if (player.isPlaying && !isUserSeeking) {
+                val currentPos = player.currentPosition
+                val duration = player.duration
+                if (duration > 0) {
+                    binding.videoProgress.progress = ((currentPos * 1000) / duration).toInt()
+                }
+            }
+            binding.videoProgress.postDelayed(this, 100)
+        }
+    }
+
+    private fun startProgressUpdate() {
+        binding.videoProgress.removeCallbacks(progressRunnable)
+        binding.videoProgress.post(progressRunnable)
+    }
+
+    private fun stopProgressUpdate() {
+        binding.videoProgress.removeCallbacks(progressRunnable)
     }
 
     /**
