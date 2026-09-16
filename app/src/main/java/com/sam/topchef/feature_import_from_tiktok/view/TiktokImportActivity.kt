@@ -26,10 +26,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
 import com.sam.topchef.core.data.model.Cart
+import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.core.utils.Utils.hide
 import com.sam.topchef.core.utils.Utils.setClicksListener
@@ -69,6 +71,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
     private var currentTikTokModel: TikTokModel? = null
 
+    private var isImportMode = false
     private lateinit var playerListener: PlayerListener
     private var isUserSeeking = false
 
@@ -98,11 +101,16 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private fun setupOnBackPressed() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val intent = Intent(this@TiktokImportActivity, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                intent.putExtra(MainActivity.EXTRA_RELOAD, true)
-                startActivity(intent)
-                finish()
+                if (isImportMode) {
+                    val intent = Intent(this@TiktokImportActivity, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    intent.putExtra(MainActivity.EXTRA_RELOAD, true)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
             }
         })
     }
@@ -257,8 +265,10 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         val tiktokId = intent.getIntExtra("tiktokId", -1)
 
         if (tiktokId != -1) {
+            isImportMode = false
             loadSavedTiktokRecipe(tiktokId)
         } else if (sharedText != null) {
+            isImportMode = true
             val url = extractUrlFromSharedText(sharedText)
             if (url != null) {
                 currentOriginUrl = url
@@ -352,47 +362,32 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         return regex.find(normalized)?.value
     }
 
-    /**
-     * Updates the UI with the fetched TikTok data, specifically setting
-     * and playing the video URL in the ExoPlayer.
-     *
-     * @param response The data object containing TikTok video information.
-     */
-    override fun showData(response: TikTokData) {
-        val mediaItem = MediaItem.fromUri(response.data.videoUrl)
 
-        player.setMediaItem(mediaItem)
-        player.prepare()
-        player.play()
-
-        Log.i("thumbNail", response.data.thumbnail)
-
-        if (isRefreshing && currentRecipeId != null) {
-            updateVideoUrlInDb(currentRecipeId!!, response.data.videoUrl)
-        } else if (!isRefreshing) {
-            importRecipeWithIA(response)
-        }
-        isRefreshing = false
-    }
 
     /**
-     * Updates the video player's source URL for a specific recipe in the database.
+     * Updates the video player's source URL and metadata for a specific recipe in the database.
      * @param id The ID of the TikTok recipe.
-     * @param newVideoUrl The fresh video URL to save.
+     * @param data The fresh data from TikTok API.
      */
-    private fun updateVideoUrlInDb(id: Int, newVideoUrl: String) {
+    private fun updateVideoMetadataInDb(id: Int, data: com.sam.topchef.feature_import_from_tiktok.model.Data) {
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDataBase.getDataBase(this@TiktokImportActivity)
             val recipe = db.tiktokDao().getById(id)
             if (recipe != null) {
-                val updated = recipe.copy(videoUrl = newVideoUrl)
+                val updated = recipe.copy(
+                    videoUrl = data.videoUrl,
+                    authorName = data.author.name,
+                    authorAvatar = data.author.avatar,
+                    likesCount = data.likesCount
+                )
                 db.tiktokDao().update(updated)
                 withContext(Dispatchers.Main) {
                     if (currentRecipeId == id) {
                         currentTikTokModel = updated
+                        updateVideoInfoUI(updated)
                     }
                 }
-                Log.d("TiktokImport", "Updated video URL in DB for recipe $id")
+                Log.d("TiktokImport", "Updated video metadata in DB for recipe $id")
             }
         }
     }
@@ -415,7 +410,10 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 recipe.copy(
                     thumbnail = response.data.thumbnail,
                     videoUrl = response.data.videoUrl,
-                    originUrl = currentOriginUrl
+                    originUrl = currentOriginUrl,
+                    authorName = response.data.author.name,
+                    authorAvatar = response.data.author.avatar,
+                    likesCount = response.data.likesCount
                 ).also { updatedRecipe ->
                     Log.d("RecipeIA", "Recipe imported successfully: $updatedRecipe")
                     currentTikTokModel = updatedRecipe
@@ -506,6 +504,39 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             message.scaleX = 1f
             message.scaleY = 1f
         }
+    }
+
+
+
+    /**
+     * Updates the UI with the fetched TikTok data, specifically setting
+     * and playing the video URL in the ExoPlayer.
+     *
+     * @param response The data object containing TikTok video information.
+     */
+    override fun showData(response: TikTokData) {
+        val mediaItem = MediaItem.fromUri(response.data.videoUrl)
+
+        player.setMediaItem(mediaItem)
+        player.prepare()
+        player.play()
+
+        updateVideoInfoUI(
+            authorName = response.data.author.name,
+            authorAvatar = response.data.author.avatar,
+            likesCount = response.data.likesCount,
+            name = response.data.title,
+            description = null
+        )
+
+        Log.i("TTKResponse", response.toString())
+
+        if (isRefreshing && currentRecipeId != null) {
+            updateVideoMetadataInDb(currentRecipeId!!, response.data)
+        } else if (!isRefreshing) {
+            importRecipeWithIA(response)
+        }
+        isRefreshing = false
     }
 
     /**
@@ -640,11 +671,38 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     }
 
     private fun updateVideoInfoUI(recipe: TikTokModel) {
-        binding.txtUsername.text = "@topchef_creator"
-        binding.txtDescription.text = recipe.name + " - " + (recipe.description ?: "Sem descrição disponível.")
-        
-        // Placeholder values for likes/profile
-        binding.txtLikesCount.text = if (recipe.isFavorite) "1.3k" else "1.2k"
+        updateVideoInfoUI(
+            authorName = recipe.authorName,
+            authorAvatar = recipe.authorAvatar,
+            likesCount = recipe.likesCount,
+            name = recipe.name,
+            description = recipe.description
+        )
+    }
+
+    private fun updateVideoInfoUI(
+        authorName: String?,
+        authorAvatar: String?,
+        likesCount: Int,
+        name: String,
+        description: String?
+    ) {
+        binding.txtUsername.text = authorName?.let { "@${it.replace(" ", "_").lowercase()}" } ?: "@topchef_creator"
+        binding.txtDescription.text = if (description.isNullOrEmpty()) name else "$name - $description"
+
+        binding.txtLikesCount.text = formatLikesCount(likesCount)
+
+        authorAvatar?.let {
+            LoadImages().loadImagesWithBlur(it, binding.imgProfile)
+        }
+    }
+
+    private fun formatLikesCount(count: Int): String {
+        return when {
+            count >= 1000000 -> String.format(java.util.Locale.US, "%.1fM", count / 1000000.0)
+            count >= 1000 -> String.format(java.util.Locale.US, "%.1fK", count / 1000.0)
+            else -> count.toString()
+        }
     }
 
     private val progressRunnable = object : Runnable {

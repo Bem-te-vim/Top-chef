@@ -45,4 +45,12 @@ object DataBaseMigration {
             db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `origin_url` TEXT")
         }
     }
+
+    val MIGRATION_16_17 = object : Migration(16, 17) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `author_name` TEXT")
+            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `author_avatar` TEXT")
+            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `likes_count` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
 }

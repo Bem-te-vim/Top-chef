@@ -406,6 +406,32 @@
                             app:layout_constraintStart_toEndOf="@id/img_washoku_ignore"
                             app:layout_constraintTop_toTopOf="@+id/img_washoku_ignore" />
 
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/AutoCompleteTextViewForm"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="100dp"
+                            app:boxBackgroundColor="@color/background"
+                            app:boxStrokeColor="@color/background"
+                            app:endIconMode="dropdown_menu"
+                            app:endIconTint="@color/default_color_app"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/txt_ingredients_ignore"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/autoCompleteService"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:ellipsize="end"
+                                android:inputType="none"
+                                android:popupBackground="@color/backgroundIc"
+                                android:singleLine="true"
+                                android:textColor="@color/LtGrayFoTxt" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 

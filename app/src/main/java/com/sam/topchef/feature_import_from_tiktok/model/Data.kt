@@ -7,6 +7,12 @@ data class Data(
     @SerializedName("title")
     val title: String,
 
+    @SerializedName("digg_count")
+    val likesCount: Int,
+
+    @SerializedName("author")
+    val author: Author,
+
     @SerializedName("play")
     val videoUrl: String,
 

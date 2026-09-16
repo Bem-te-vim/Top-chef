@@ -37,5 +37,14 @@ data class TikTokModel(
 
     @SerializedName("preparation_mode_section")
     @ColumnInfo(name = "preparation_mode")
-    val preparationMode: List<TiktokStep>
+    val preparationMode: List<TiktokStep>,
+
+    @ColumnInfo("author_name")
+    val authorName: String? = null,
+
+    @ColumnInfo("author_avatar")
+    val authorAvatar: String? = null,
+
+    @ColumnInfo("likes_count")
+    val likesCount: Int = 0
 )
