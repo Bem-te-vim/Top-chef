@@ -367,27 +367,19 @@ Algumas funcionalidades que podem fazer parte da evolução do TopChef:
 
 ## 📸 Screenshots
 
-> Adicione aqui screenshots do aplicativo para apresentar a interface.
-
-```text
-screenshots/
-├── home.png
-├── recipe_detail.png
-├── add_recipe.png
-├── favorites.png
-├── shopping_list.png
-└── importer.png
-```
-
-Exemplo:
-
-```md
 <p align="center">
-  <img src="screenshots/home.png" width="250"/>
-  <img src="screenshots/recipe_detail.png" width="250"/>
-  <img src="screenshots/shopping_list.png" width="250"/>
+  <img src="screenshots/home.jpg" width="200"/>
+  <img src="screenshots/profile.jpg" width="200"/>
+  <img src="screenshots/tiktok_main_scream.jpg" width="200"/>
+  <img src="screenshots/tiktok_detail.jpg" width="200"/>
 </p>
-```
+
+<p align="center">
+  <img src="screenshots/add_manual_recipe.jpg" width="200"/>
+  <img src="screenshots/detail.jpg" width="200"/>
+  <img src="screenshots/categories.jpg" width="200"/>
+  <img src="screenshots/carts.jpg" width="200"/>
+</p>
 
 ---
 
