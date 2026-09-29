@@ -30,9 +30,37 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="16dp"
-            android:paddingBottom="32dp"
-            android:paddingEnd="16dp">
+            android:paddingEnd="16dp"
+            android:paddingBottom="32dp">
 
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/img_recipe_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/placeholder_item"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.TopChef.RoundedSquare"
+                app:strokeWidth="2dp"
+                tools:ignore="ContentDescription" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/txt_change_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_square_shape"
+                android:backgroundTint="@color/backgroundIc"
+                android:fontFamily="sans-serif"
+                android:text="Toque para mudar a capa"
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textColor="@color/default_color_app"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@id/img_recipe_thumbnail"
+                app:layout_constraintStart_toStartOf="@id/img_recipe_thumbnail"
+                app:layout_constraintTop_toBottomOf="@id/img_recipe_thumbnail" />
 
             <LinearLayout
                 android:id="@+id/container_title_description"
@@ -42,7 +70,7 @@
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@id/txt_change_thumbnail">
 
                 <EditText
                     android:id="@+id/edtx_recipe_title"

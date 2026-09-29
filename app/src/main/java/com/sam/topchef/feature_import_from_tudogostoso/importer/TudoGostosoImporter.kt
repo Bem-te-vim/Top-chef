@@ -6,75 +6,169 @@ import com.sam.topchef.feature_import_from_tudogostoso.model.WebRecipeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import kotlin.to
+import kotlin.toString
 
 object TudoGostosoImporter {
     private const val BASE_URL = "https://www.tudogostoso.com.br/"
     private const val SEARCH_URL = "https://www.tudogostoso.com.br/busca?q="
 
 
-    suspend fun searchRecipe(search: String): Recipe? = withContext(Dispatchers.IO) {
+    suspend fun searchRecipe(search: String): List<WebRecipeModel> = withContext(Dispatchers.IO) {
         val search = search.replace(" ", "+").trim()
         try {
             val doc = Jsoup.connect(SEARCH_URL + search)
-                .userAgent("Mozilla/5.0 (Android)")
+                .userAgent(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                            "Chrome/140.0.0.0 Safari/537.36"
+                )
+                .timeout(15_000)
                 .get()
 
-            val callBack = doc.selectFirst("h1.u-title-page")?.text() ?: throw NullPointerException(
-                "Query not math"
-            )
 
-           Log.i("searchRecipe", "$doc $callBack")
+            val recipes = doc.select("div.card.card-recipe")
 
-            null
+            val webRecipes = recipes.mapNotNull { card ->
+
+                val title = card
+                    .select("strong.card-title a.card-link")
+                    .text()
+                    .trim()
+
+                val link = card
+                    .select("strong.card-title a.card-link")
+                    .attr("href")
+                    .trim()
+
+
+                val imageUrl = card.selectFirst("picture.card-media")?.let { picture ->
+
+                val source = picture.selectFirst("source[srcset]")
+                val sourceUrl = source?.absUrl("srcset")?.trim()
+
+                if (!sourceUrl.isNullOrEmpty()) {
+                    sourceUrl
+                } else {
+                    picture.selectFirst("img")?.let { img ->
+                        img.absUrl("src").trim()
+                    }
+                }
+
+            } ?: ""
+
+                if (title.isEmpty() || link.isEmpty() || imageUrl.isEmpty()) {
+                    null
+                } else {
+                    WebRecipeModel(
+                        title = title,
+                        imageUrl = imageUrl,
+                        recipeLinksPath = link
+                    )
+                }
+
+            }
+            Log.i("searchRecipe", "Receitas encontradas: ${webRecipes.size}")
+
+            webRecipes.forEach {
+                Log.i(
+                    "searchRecipe",
+                    """
+                    Título: ${it.title}
+                    Link: ${it.recipeLinksPath}
+                    Imagem: ${it.imageUrl}
+                    """.trimIndent()
+                )
+            }
+
+            webRecipes
         } catch (e: Exception) {
-            e.printStackTrace()
-            null
+            Log.e("searchRecipe", "Erro ao buscar", e)
+            emptyList()
         }
     }
 
     suspend fun getFeed(url: String = BASE_URL): List<WebRecipeModel> =
         withContext(Dispatchers.IO) {
             try {
+
                 val doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Android)")
+                    .userAgent(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                                "Chrome/140.0.0.0 Safari/537.36"
+                    )
+                    .referrer("https://www.tudogostoso.com.br/")
+                    .timeout(15_000)
                     .get()
 
-                val title =
-                    doc.select("div.card.card-recipe.is-video.is-rowable-on-mobile strong.card-title a.card-link")
-                        .map { it.text() }
+                val recipes = doc.select("div.card.card-recipe")
 
-                val links =
-                    doc.select("div.card.card-recipe.is-video.is-rowable-on-mobile strong.card-title a.card-link")
-                        .map { it.attr("href") }
+                val webRecipes = recipes.mapNotNull { card ->
 
-                val baseSelector =
-                    "div.card.card-recipe.is-video.is-rowable-on-mobile div.card-wrapper div.card-media-wrapper picture.card-media"
+                    val title = card
+                        .select("strong.card-title a.card-link")
+                        .text()
+                        .trim()
 
-                val imageUrls = doc.select("$baseSelector source")
-                    .mapNotNull { it.attr("srcset").takeIf(String::isNotBlank) }
-                    .ifEmpty {
-                        doc.select("$baseSelector img")
-                            .mapNotNull { it.attr("src").takeIf(String::isNotBlank) }
-                    }
+                    val link = card
+                        .select("strong.card-title a.card-link")
+                        .attr("href")
+                        .trim()
 
-                val minLength = minOf(title.size, links.size, imageUrls.size)
-                val webRecipes = (0 until minLength).map { i ->
-                    WebRecipeModel(
-                        title = title[i],
-                        imageUrl = imageUrls[i],
-                        recipeLinksPath = links[i]
+                    val imageElement = card.selectFirst(
+                        "picture.card-media img"
                     )
+
+                    val imageUrl = imageElement?.let { img ->
+
+                        // Primeiro tenta src
+                        val src = img.attr("src").trim()
+
+                        if (src.isNotEmpty()) {
+                            img.absUrl("src")
+                        } else {
+                            // Caso o site use lazy loading
+                            val dataSrc = img.attr("data-src").trim()
+
+                            if (dataSrc.isNotEmpty()) {
+                                img.absUrl("data-src")
+                            } else {
+                                ""
+                            }
+                        }
+                    } ?: ""
+
+                    if (title.isEmpty() || link.isEmpty() || imageUrl.isEmpty()) {
+                        null
+                    } else {
+                        WebRecipeModel(
+                            title = title,
+                            imageUrl = imageUrl,
+                            recipeLinksPath = link
+                        )
+                    }
                 }
 
-                Log.i("getFeed", "$webRecipes")
+                Log.i("getFeed", "Receitas encontradas: ${webRecipes.size}")
+
+                webRecipes.forEach {
+                    Log.i(
+                        "getFeed",
+                        """
+                    Título: ${it.title}
+                    Link: ${it.recipeLinksPath}
+                    Imagem: ${it.imageUrl}
+                    """.trimIndent()
+                    )
+                }
 
                 webRecipes
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("getFeed", "Erro ao buscar feed", e)
                 emptyList()
             }
-
         }
 
 
@@ -130,7 +224,7 @@ object TudoGostosoImporter {
 
 
 
-                Recipe(
+               val recipe = Recipe(
                     chef = "Web",
                     title = title,
                     ingredients = ingredients,
@@ -143,6 +237,9 @@ object TudoGostosoImporter {
                     type = recipeType
                 )
 
+                Log.i("TGimport", recipe.toString() )
+
+                recipe
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

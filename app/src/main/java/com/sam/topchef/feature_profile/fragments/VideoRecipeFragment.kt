@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
+import com.sam.topchef.core.utils.RecipeToolsDialog
 import com.sam.topchef.databinding.FragmentVideoRecipeBinding
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_profile.adaper.VideoThumbnailAdapter
@@ -45,6 +46,9 @@ class VideoRecipeFragment : Fragment() {
             val i = Intent(requireContext(), TiktokImportActivity::class.java)
             i.putExtra("tiktokId", videoId)
             startActivity(i)
+        }
+        thumbnailAdapter.itemLongClick = { videoId ->
+            RecipeToolsDialog.show(requireContext(), id = videoId, isTikTok = true, onDeleted = { loadVideos() })
         }
     }
 

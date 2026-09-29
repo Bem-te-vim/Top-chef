@@ -120,7 +120,7 @@ class SeeAllAdapter(@LayoutRes private val layout: Int = R.layout.row_images) :
         if (layout == R.layout.row_popular_recipe_item || layout == R.layout.row_categories_recipe_item) {
             val layoutParams = view.layoutParams as? ViewGroup.MarginLayoutParams
             layoutParams?.let {
-                val marginInPx = (20 * parent.context.resources.displayMetrics.density).toInt()
+                val marginInPx = (16 * parent.context.resources.displayMetrics.density).toInt()
                 it.bottomMargin = marginInPx
                 view.layoutParams = it
             }

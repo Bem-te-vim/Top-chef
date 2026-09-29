@@ -71,6 +71,7 @@
     <string name="delete_recipe">Apagar Receita</string>
     <string name="edit_recipe">Editar Receita</string>
     <string name="share_recipe">Compartinhar Receita</string>
+    <string name="open_recipe">Abrir Receita</string>
     <string name="move_to_cart">Adicionar Ingredientes ao carrinho</string>
     <string name="create_cart">Criar carrinho</string>
     <string name="qtn_items"><b>%1$d</b> Items </string>

@@ -18,11 +18,11 @@
 
 O **TopChef** foi desenvolvido para facilitar a organização de receitas e transformar receitas encontradas na internet em uma coleção pessoal.
 
-O aplicativo permite cadastrar receitas manualmente, organizar receitas por categorias, favoritar pratos, criar listas de compras e importar receitas encontradas em plataformas como **TudoGostoso** e **TikTok**.
+O aplicativo permite cadastrar receitas manualmente, organizar receitas por categorias, favoritar pratos, porcionar receitas proporcionalmente, criar listas de compras e importar receitas encontradas em plataformas como **TudoGostoso** e **TikTok**.
 
 A proposta é tornar o processo simples:
 
-> 🔎 Encontrou uma receita → 📲 compartilhe com o TopChef → 🍳 organize → 🛒 prepare sua lista de compras → 👨‍🍳 cozinhe.
+> 🔎 Encontrou uma receita → 📲 compartilhe com o TopChef → 🍳 organize → 📏 porcione → 🛒 prepare sua lista de compras → 👨‍🍳 cozinhe.
 
 ---
 
@@ -30,49 +30,40 @@ A proposta é tornar o processo simples:
 
 ### 🍽️ Gerenciamento de receitas
 
-* Cadastro de receitas próprias
-* Título, descrição e categoria
-* Tempo de preparo
-* Tempo de cozimento
-* Tempo total
-* Ingredientes
-* Modo de preparo
-* Adição de imagens
-* Visualização detalhada da receita
-* Sistema de favoritos
-* Organização por categorias
+* Cadastro de receitas próprias (título, descrição, categoria, tempos, dificuldade)
+* Adição e exibição de múltiplas imagens com modo tela cheia
+* **Porcionamento Proporcional de Receitas**:
+  * Recálculo automático dos ingredientes por fatores como **1x (Padrão)**, **2x (Dobro)**, **1/2 (Metade)** ou **Personalizado** (qualquer multiplicador ou fração)
+  * Algoritmo inteligente que identifica e recalcula inteiros, decimais, frações e numerais por extenso (ex: *uma xícara*, *duas colheres*, *meia colher*)
+  * Ajuste gramatical automático de unidades para singular e plural (ex: *xícara* ➔ *xícaras*, *colher* ➔ *colheres*)
+* Visualização detalhada e temporizador de cozimento integrado com serviço em segundo plano
+* Sistema de favoritos e navegação por categorias
+* **Menu Unificado de Ferramentas de Receita (`RecipeToolsDialog`)**:
+  * Acessível via clique longo (`longClickListener`) em qualquer receita do app (TikTok, TudoGostoso ou Receita do App)
+  * Permite abrir, editar, compartilhar texto/link, mover ingredientes direto para a lista de compras ou excluir a receita com confirmação e remoção no banco de dados
 
-### 🌐 Importação de receitas
+### 🌐 Importação de receitas e Feed Web
 
-O TopChef consegue receber receitas através do compartilhamento do Android.
+O TopChef consegue receber e importar receitas de diversas fontes externas.
+
+* **Pull-to-Refresh (SwipeRefreshLayout)**: Atualização por arraste no feed web e buscas de receitas.
 
 #### 🥘 TudoGostoso
 
-É possível compartilhar uma receita do TudoGostoso diretamente para o TopChef.
+Compartilhe ou busque receitas do TudoGostoso diretamente no aplicativo.
 
-O aplicativo identifica o link compartilhado e realiza a extração das informações da receita, incluindo:
+O TopChef realiza a extração automática das informações da página web:
+* Nome, descrição, ingredientes, modo de preparo, tempos, categoria e imagens.
 
-* Nome
-* Descrição
-* Ingredientes
-* Modo de preparo
-* Tempos
-* Categoria
-* Imagens
+#### 🎵 TikTok + Inteligência Artificial (Gemini)
 
-A ideia é evitar que o usuário precise copiar manualmente toda a receita.
-
-#### 🎵 TikTok + Inteligência Artificial
-
-Receitas encontradas no TikTok também podem ser enviadas para o TopChef através do compartilhamento.
+Receitas encontradas no TikTok enviadas via compartilhamento do Android.
 
 O fluxo utiliza:
 
-**TikTok → TopChef → processamento do conteúdo → Gemini → receita estruturada**
+**TikTok → TopChef → processamento do conteúdo → Gemini AI → receita estruturada**
 
-A inteligência artificial é utilizada para transformar as informações presentes no conteúdo em uma estrutura de receita.
-
-O resultado é convertido para um modelo estruturado contendo informações como:
+A inteligência artificial transforma conteúdos informais do vídeo em uma estrutura organizada de receita (ingredientes e modo de preparo).
 
 ```json
 {
@@ -83,15 +74,11 @@ O resultado é convertido para um modelo estruturado contendo informações como
 }
 ```
 
-Isso permite transformar uma receita apresentada de forma informal em uma receita organizada dentro do aplicativo.
-
 ---
 
 ## 🤖 Inteligência Artificial
 
-O TopChef possui integração com a **Google Gemini API** para auxiliar na interpretação de receitas provenientes do TikTok.
-
-O objetivo é utilizar IA para identificar informações importantes dentro do conteúdo compartilhado e convertê-las para o formato utilizado pelo aplicativo.
+O TopChef possui integração com a **Google Gemini API** para interpretar e estruturar receitas provenientes do TikTok.
 
 ### Fluxo
 
@@ -99,25 +86,22 @@ O objetivo é utilizar IA para identificar informações importantes dentro do c
 ┌───────────────┐
 │     TikTok    │
 └───────┬───────┘
-        │
         │ Compartilhar
         ▼
 ┌───────────────┐
 │    TopChef    │
 └───────┬───────┘
-        │
         │ Extrai conteúdo
         ▼
 ┌───────────────┐
 │   Gemini AI   │
 └───────┬───────┘
-        │
         │ Receita estruturada
         ▼
 ┌───────────────┐
 │ Recipe Model  │
 └───────┬───────┘
-        │
+        │ Salva localmente
         ▼
 ┌───────────────┐
 │  Room Database│
@@ -128,240 +112,43 @@ O objetivo é utilizar IA para identificar informações importantes dentro do c
 
 ## 🛒 Lista de compras
 
-O aplicativo possui um sistema de listas de compras integrado às receitas.
+O aplicativo possui um sistema de listas de compras integrado diretamente às receitas.
 
-É possível:
-
-* Criar listas
-* Adicionar ingredientes
-* Editar itens
-* Reordenar itens
-* Marcar itens
-* Compartilhar listas
-* Organizar os itens para facilitar as compras
-
-A lista foi pensada para funcionar junto com o processo de preparação das receitas.
-
-```text
-Receita
-   │
-   ├── Ingrediente 1
-   ├── Ingrediente 2
-   ├── Ingrediente 3
-   └── Ingrediente 4
-           │
-           ▼
-     Lista de compras
-```
-
----
-
-## 📲 Compartilhamento
-
-O TopChef utiliza o sistema de compartilhamento do Android para receber conteúdos de outros aplicativos.
-
-Exemplo:
-
-```text
-TikTok
-   │
-   │ Compartilhar
-   ▼
-TopChef
-```
-
-ou:
-
-```text
-TudoGostoso
-   │
-   │ Compartilhar
-   ▼
-TopChef
-```
-
-O aplicativo identifica o tipo de conteúdo recebido e direciona o usuário para o fluxo de importação correspondente.
+* Criar e organizar carrinhos/listas
+* Mover automaticamente ingredientes de qualquer receita para uma lista de compras
+* Adicionar, editar, reordenar e desmarcar itens
+* Compartilhar a lista de compras como texto
 
 ---
 
 ## 💾 Banco de dados
 
-O armazenamento local das informações é feito utilizando **Room Database**.
+O armazenamento local é gerenciado pelo **Room Database**.
 
 Entre os dados armazenados estão:
-
-* Receitas
-* Categorias
-* Listas de compras
-* Usuário
-* Favoritos
-* Informações relacionadas às receitas
-
-A utilização do Room permite que o aplicativo mantenha os dados disponíveis localmente, inclusive sem depender constantemente de uma conexão com a internet.
-
-### Estrutura simplificada
-
-```text
-Room Database
-│
-├── Recipe
-│
-├── Type
-│
-├── Cart
-│
-└── User
-```
-
----
-
-## 🏗️ Arquitetura
-
-O projeto utiliza uma organização baseada em separação de responsabilidades, mantendo as funcionalidades divididas por módulos/features.
-
-Estrutura simplificada:
-
-```text
-com.sam.topchef
-│
-├── core
-│   └── data
-│       └── local
-│           ├── app
-│           └── appDataBase
-│
-├── feature_recipe
-│
-├── feature_cart
-│
-├── feature_home
-│
-├── feature_import
-│
-└── ...
-```
-
-O projeto utiliza componentes como:
-
-* Activities
-* Fragments
-* RecyclerView
-* Adapters
-* ViewBinding
-* Room
-* Coroutines
-* Lifecycle
-* Glide
+* Receitas locais
+* Receitas importadas do TikTok
+* Categorias e tipos
+* Carrinhos e itens de compras
+* Usuário e favoritos
 
 ---
 
 ## 🛠️ Tecnologias utilizadas
 
-| Tecnologia             | Utilização                                         |
-| ---------------------- | -------------------------------------------------- |
-| **Kotlin**             | Linguagem principal                                |
-| **Android SDK**        | Desenvolvimento Android                            |
-| **XML**                | Construção das interfaces                          |
-| **ViewBinding**        | Acesso seguro às Views                             |
-| **Room**               | Banco de dados local                               |
-| **KSP**                | Processamento de código                            |
-| **Coroutines**         | Operações assíncronas                              |
-| **Lifecycle**          | Gerenciamento do ciclo de vida                     |
-| **RecyclerView**       | Listas e feeds                                     |
-| **Glide**              | Carregamento de imagens                            |
-| **Gemini API**         | Processamento de receitas com IA                   |
-| **Media3 / ExoPlayer** | Reprodução de conteúdo                             |
-| **Jsoup**              | Extração de informações de páginas                 |
-| **Selenium**           | Automação/extração em páginas que exigem navegador |
-
----
-
-## 🎨 Interface
-
-O TopChef possui uma interface focada em:
-
-* Navegação simples
-* Cards de receitas
-* Imagens grandes
-* Categorias
-* Receitas populares
-* Receitas favoritas
-* Listas de compras
-* Tela detalhada da receita
-* Fluxos específicos para importação
-
-A tela principal organiza diferentes tipos de conteúdo através de listas e seções, permitindo ao usuário descobrir rapidamente suas receitas.
-
----
-
-## 🔄 Fluxo principal
-
-```text
-                     ┌──────────────┐
-                     │    TopChef   │
-                     └──────┬───────┘
-                            │
-             ┌──────────────┼──────────────┐
-             │              │              │
-             ▼              ▼              ▼
-        Cadastrar       Importar       Explorar
-         receita         receita        receitas
-             │              │              │
-             │       ┌──────┴──────┐       │
-             │       │             │       │
-             │       ▼             ▼       │
-             │  TudoGostoso     TikTok    │
-             │                     │       │
-             │                     ▼       │
-             │                  Gemini    │
-             │                     │       │
-             └──────────┬──────────┘       │
-                        ▼                  │
-                  Recipe / Room ◄─────────┘
-                        │
-              ┌─────────┴─────────┐
-              ▼                   ▼
-         Favoritos          Lista de compras
-```
-
----
-
-## 🚀 Objetivo do projeto
-
-O TopChef nasceu como um projeto para estudar e aplicar conceitos de desenvolvimento Android, mas evoluiu para uma aplicação completa de gerenciamento de receitas.
-
-O projeto busca explorar na prática:
-
-* Desenvolvimento Android moderno com Kotlin
-* Persistência local
-* Arquitetura de aplicações
-* Consumo de APIs
-* Web scraping
-* Integração com inteligência artificial
-* Processamento de conteúdo multimídia
-* Compartilhamento entre aplicativos
-* Criação de interfaces utilizando XML
-* Gerenciamento de grandes listas de dados
-
----
-
-## 🔮 Possíveis próximos passos
-
-Algumas funcionalidades que podem fazer parte da evolução do TopChef:
-
-* [ ] Backup e restauração das receitas
-* [ ] Backup utilizando Google Drive
-* [ ] Sincronização entre dispositivos
-* [ ] Conta de usuário
-* [ ] Compartilhamento de receitas entre usuários
-* [ ] Melhorias no sistema de importação
-* [ ] Mais fontes de receitas
-* [ ] Geração automática de listas de compras
-* [ ] Busca avançada
-* [ ] Filtros por ingredientes e categorias
-* [ ] Melhorias no processamento por IA
-* [ ] Recomendações de receitas
-* [ ] Modo offline mais completo
+| Tecnologia                  | Utilização                                         |
+| --------------------------- | -------------------------------------------------- |
+| **Kotlin**                  | Linguagem principal                                |
+| **Android SDK / XML**       | Interface nativa do usuário                        |
+| **ViewBinding**             | Acesso seguro às Views                             |
+| **Room Database**           | Armazenamento e persistência local                 |
+| **Coroutines & Lifecycle**  | Processamento assíncrono e gerenciamento de estado |
+| **SwipeRefreshLayout**      | Atualização de listas por arraste (Pull-to-refresh)|
+| **RecyclerView & Adapters** | Exibição otimizada de listas e feeds               |
+| **Glide**                   | Carregamento e cache de imagens                    |
+| **Gemini API**              | Processamento e estruturação de receitas com IA    |
+| **Media3 / ExoPlayer**      | Reprodução de vídeos                               |
+| **Jsoup**                   | Extração de receitas web (Scraping)                |
 
 ---
 
@@ -392,62 +179,24 @@ Algumas funcionalidades que podem fazer parte da evolução do TopChef:
 * Android SDK 36
 * Dispositivo Android ou emulador
 
-### Instalação
+### Passos
 
-Clone o repositório:
-
+1. Clone o repositório:
 ```bash
-git clone https://github.com/SEU_USUARIO/topchef.git
+git clone https://github.com/WladsonSilva/topchef.git
 ```
-
-Abra o projeto no Android Studio e aguarde a sincronização do Gradle.
-
-Depois execute o aplicativo em um dispositivo ou emulador Android.
-
-### Gemini API
-
-Para utilizar a funcionalidade de importação de receitas através de IA, é necessário configurar uma chave da **Gemini API**.
-
-> ⚠️ Nunca publique sua API Key diretamente no repositório.
-
----
-
-## 📚 O que este projeto demonstra
-
-O TopChef reúne diferentes conceitos em um único aplicativo Android:
-
-```text
-Android
-  │
-  ├── Kotlin
-  ├── XML
-  ├── Room
-  ├── Coroutines
-  ├── RecyclerView
-  ├── Glide
-  │
-  ├── Web
-  │   ├── Jsoup
-  │   └── Selenium
-  │
-  ├── IA
-  │   └── Gemini
-  │
-  ├── Multimídia
-  │   └── Media3
-  │
-  └── Android Share Intent
+2. Abra o projeto no Android Studio e aguarde a sincronização das dependências do Gradle.
+3. Configure sua chave da Gemini API no arquivo `local.properties`:
+```properties
+GEMINI_FLASH="sua_chave_aqui"
 ```
+4. Execute o aplicativo em um emulador ou dispositivo físico.
 
 ---
 
 ## 👨‍💻 Autor
 
 Desenvolvido por **Wladson Silva**.
-
-Projeto desenvolvido com foco em aprendizado, experimentação e construção de uma aplicação Android completa.
-
----
 
 <p align="center">
   🍳 <strong>TopChef</strong> — suas receitas, em um só lugar.

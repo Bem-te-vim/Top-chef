@@ -17,7 +17,6 @@ class LoadImages {
     ) {
         Glide.with(into.context)
             .load(imageUrl)
-            .override(800, 450) // Limit resolution for performance
             .thumbnail(
                 Glide.with(into.context)
                     .load(imageUrl)
@@ -36,7 +35,6 @@ class LoadImages {
     ) {
         Glide.with(into.context)
             .load(imageUrl)
-            .override(800, 450)
             .thumbnail(
                 Glide.with(into.context)
                     .load(imageUrl)
@@ -55,7 +53,6 @@ class LoadImages {
     ) {
         Glide.with(into.context)
             .load(imageUrl)
-            .override(800, 450)
             .thumbnail(
                 Glide.with(into.context)
                     .load(imageUrl)

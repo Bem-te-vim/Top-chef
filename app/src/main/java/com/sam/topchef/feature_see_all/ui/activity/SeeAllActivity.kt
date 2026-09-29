@@ -75,6 +75,9 @@ class SeeAllActivity : AppCompatActivity() {
             i.putExtra("id", id)
             startActivity(i)
         }
+        seeAllAdapter.itemLongClick = { id ->
+            com.sam.topchef.core.utils.RecipeToolsDialog.show(this, id = id, isTikTok = false, onDeleted = { loadData() })
+        }
         seeAllAdapter.likeClick = { id, isFavorite ->
             updateRecipeFavoriteStatus(id, isFavorite)
         }

@@ -410,7 +410,7 @@
                             style="@style/AutoCompleteTextViewForm"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="100dp"
+                            android:layout_marginStart="70dp"
                             app:boxBackgroundColor="@color/background"
                             app:boxStrokeColor="@color/background"
                             app:endIconMode="dropdown_menu"

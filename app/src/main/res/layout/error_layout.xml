@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:orientation="vertical"
     android:id="@+id/error_layout_root"
@@ -10,42 +11,41 @@
 
     <ImageView
         android:importantForAccessibility="no"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:src="@drawable/ic_data_not_found"/>
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/error_24dp"
+        app:tint="@color/myGray"/>
 
     <TextView
         android:id="@+id/error_title"
+        android:layout_marginTop="8dp"
         android:layout_marginHorizontal="50dp"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="monospace"
         android:textAlignment="center"
-        android:textColor="@color/WhiteForTxt"
-        android:textSize="24sp"
-        tools:text="Oops..." />
+        android:textColor="@color/myGray"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="Olá!" />
 
 
     <TextView
         android:id="@+id/error_message"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="50dp"
-        android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
-        android:fontFamily="serif-monospace"
         android:textAlignment="center"
-        android:textColor="@color/LtGrayFoTxt"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        tools:text="Pasta" />
+        android:textColor="@color/myGray"
+        android:textSize="14sp"
+        tools:text="Parece que você ainda não tem nem uma receita salva." />
 
     <Button
         android:layout_marginHorizontal="80dp"
         android:id="@+id/btn_go_to_home"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/back"
+        tools:text="Criar Receita"
         android:textColor="@color/WhiteForTxt"
         android:textSize="18sp"/>
 

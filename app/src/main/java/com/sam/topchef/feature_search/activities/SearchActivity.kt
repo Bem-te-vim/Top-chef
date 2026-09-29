@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.core.utils.RecipeToolsDialog
 import com.sam.topchef.databinding.ActivitySearchBinding
 import com.sam.topchef.feature_feed_main.data.model.RecipePost
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
@@ -94,6 +95,9 @@ class SearchActivity : AppCompatActivity() {
                 }
             }
             this.startActivity(i)
+        }
+        searchAdapter.onItemLongClickListener = { id, isTikTok ->
+            RecipeToolsDialog.show(this, id, isTikTok)
         }
         rvSearch.layoutManager = LinearLayoutManager(this)
         rvSearch.adapter = searchAdapter

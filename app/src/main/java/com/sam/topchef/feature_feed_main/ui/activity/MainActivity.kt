@@ -20,6 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.core.utils.RecipeToolsDialog
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.Utils.shareText
@@ -334,7 +335,16 @@ class MainActivity : AppCompatActivity(), AdapterChanges {
     }
 
     override fun onRecipeTools(id: Int, isTikTok: Boolean) {
-        showBottomSheetsDialog(id, isTikTok)
+        RecipeToolsDialog.show(
+            context = this,
+            id = id,
+            isTikTok = isTikTok,
+            onDeleted = {
+                viewModel.loadHeaders()
+                recipePagingAdapter.refresh()
+                popularHeaderAdapter.onDeleteNotify(id, isTikTok)
+            }
+        )
     }
 
     @SuppressLint("InflateParams")

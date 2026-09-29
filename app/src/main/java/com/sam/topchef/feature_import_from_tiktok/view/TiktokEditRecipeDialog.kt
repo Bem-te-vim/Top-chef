@@ -1,7 +1,9 @@
 package com.sam.topchef.feature_import_from_tiktok.view
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputFilter
 import android.view.LayoutInflater
@@ -10,13 +12,16 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.sam.topchef.R
+import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.DialogEditTiktokRecipeBinding
 import com.sam.topchef.databinding.DialogEditTextItemBinding
@@ -36,6 +41,25 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
 
     private val ingredients = mutableListOf<String>()
     private val preparations = mutableListOf<String>()
+
+    private var newThumbnailPath: String? = null
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            newThumbnailPath = it.toString()
+            Glide.with(requireContext()).load(it).into(binding.imgRecipeThumbnail)
+            
+            // Grant persistable permission if it's a content URI
+            try {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: Exception) {
+                // Not all URIs support this, ignore if it fails
+            }
+        }
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
@@ -67,6 +91,9 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
         recipeData?.let { recipe ->
             binding.edtxRecipeTitle.setText(recipe.name)
             binding.edtxRecipeDescription.setText(recipe.description)
+            
+            newThumbnailPath = recipe.thumbnail
+            LoadImages().loadImagesWithBlur(recipe.thumbnail, binding.imgRecipeThumbnail)
 
             // Flatten ingredients
             ingredients.clear()
@@ -138,8 +165,24 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
         }
 
         binding.btnSave.setOnClickListener {
-            saveChanges()
+            dialogSaveChanges()
         }
+
+        binding.txtChangeThumbnail.setOnClickListener {
+            pickImage.launch("image/*")
+        }
+    }
+    fun dialogSaveChanges() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Salvar Alteracões")
+            .setPositiveButton("Salvar") { p0, _ ->
+                saveChanges()
+                p0.dismiss()
+            }
+            .setNegativeButton("Cancelar") { p0, _ ->
+                p0.dismiss()
+                this.dismiss()
+            }.show()
     }
 
     private fun setupCharacterCounters() {
@@ -218,6 +261,7 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
             val updatedRecipe = recipe.copy(
                 name = binding.edtxRecipeTitle.text.toString(),
                 description = binding.edtxRecipeDescription.text.toString(),
+                thumbnail = newThumbnailPath,
                 ingredients = listOf(TiktokSection("Ingredientes", ingredients.toList())),
                 preparationMode = preparations.mapIndexed { index, s ->
                     TiktokStep("Passo ${index + 1}", s)

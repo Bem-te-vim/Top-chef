@@ -36,4 +36,8 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <style name="ShapeAppearance.TopChef.RoundedSquare" parent="">
+        <item name="cornerSize">16dp</item>
+    </style>
+
 </resources>

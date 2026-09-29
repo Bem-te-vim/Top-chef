@@ -13,6 +13,7 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.feature_feed_main.data.model.RecipePost
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
+import com.sam.topchef.core.utils.RecipeToolsDialog
 import com.sam.topchef.feature_profile.adaper.AllForProfileAdapter
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import kotlinx.coroutines.Dispatchers
@@ -51,8 +52,8 @@ class AllRecipesFragment : Fragment() {
             startActivity(i)
         }
 
-        allForProfileAdapter.itemLongClick = { _, _ ->
-            //TODO: tools
+        allForProfileAdapter.itemLongClick = { id, isTikTok ->
+            RecipeToolsDialog.show(requireContext(), id, isTikTok, onDeleted = { loadRecipes() })
         }
     }
 

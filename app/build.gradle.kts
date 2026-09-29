@@ -63,6 +63,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.glide)
     implementation(libs.glide.transformations)
     annotationProcessor(libs.compiler)

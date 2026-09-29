@@ -38,7 +38,7 @@
             android:background="@color/background2"
             app:tabIconTint="@color/white"
             app:tabIndicatorColor="@color/white"
-
+            android:paddingTop="12dp"
             app:tabIndicator="@drawable/tab_indicator_custom"
             app:tabIndicatorFullWidth="false" />
 

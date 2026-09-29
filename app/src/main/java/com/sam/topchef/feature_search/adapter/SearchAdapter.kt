@@ -19,6 +19,7 @@ class SearchAdapter() :
     RecyclerView.Adapter<SearchAdapter.SearchViewHolder>() {
 
     var onItemClickListener: ((id: Int, isTikTok: Boolean) -> Unit)? = null
+    var onItemLongClickListener: ((id: Int, isTikTok: Boolean) -> Unit)? = null
 
     private val recipes = mutableListOf<RecipePost>()
 
@@ -45,6 +46,10 @@ class SearchAdapter() :
 
             itemView.setOnClickListener {
                 onItemClickListener?.invoke(item.id, item.isTikTok)
+            }
+            itemView.setOnLongClickListener {
+                onItemLongClickListener?.invoke(item.id, item.isTikTok)
+                true
             }
 
             setButtonState(item.isFavorite, btnFavorite, context)

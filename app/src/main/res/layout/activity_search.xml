@@ -20,7 +20,7 @@
         android:focusable="true"
         android:hint="@string/search"
         android:imeOptions="actionSearch"
-        android:inputType="textUri"
+        android:inputType="text"
         android:textColor="@color/WhiteForTxt"
         android:textColorHint="@color/myGray"
         android:textSize="16sp"

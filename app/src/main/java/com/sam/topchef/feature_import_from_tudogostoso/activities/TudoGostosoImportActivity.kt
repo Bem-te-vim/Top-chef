@@ -129,7 +129,7 @@ class TudoGostosoImportActivity : AppCompatActivity() {
                         dialog.dismiss()
                         isEnabled = false
                         onBackPressedDispatcher.onBackPressed()
-                        goToMain()
+                       finish()
                     }
                     .show()
             }
