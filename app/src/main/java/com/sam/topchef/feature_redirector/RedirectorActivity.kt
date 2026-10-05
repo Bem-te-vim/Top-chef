@@ -6,31 +6,25 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
 import com.sam.topchef.databinding.ActivityRedirectorBinding
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
-
-import com.sam.topchef.feature_import_from_tudogostoso.activities.TudoGostosoImportActivity
 import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
+import com.sam.topchef.feature_import_from_tudogostoso.activities.TudoGostosoImportActivity
 
 /**
  * Entry point for shared content from other apps.
  * Analyzes the incoming URL (e.g., from TikTok or browser) and redirects the user
- * to the appropriate import activity.
+ * to the appropriate import activity in a single application task.
  */
 class RedirectorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRedirectorBinding
-    /**
-     * Initializes the redirector, extracts the shared text, and triggers redirection logic.
-     */
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityRedirectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val sharedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -38,18 +32,31 @@ class RedirectorActivity : AppCompatActivity() {
             insets
         }
 
+        handleShareIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: Intent?) {
+        val sharedUrl = intent?.getStringExtra(Intent.EXTRA_TEXT)
         redirectUrl(sharedUrl)
     }
 
-    /**
-     * Analyzes the provided URL and redirects the user to the corresponding import activity
-     * (TikTok or TudoGostoso) or back to MainActivity if unsupported.
-     * @param url The shared URL string.
-     */
     private fun redirectUrl(url: String?) {
-        if (url == null) return
+        if (url.isNullOrBlank()) {
+            val mainIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
+            startActivity(mainIntent)
+            finish()
+            return
+        }
 
-        val intent = when {
+        val targetIntent = when {
             url.contains("tiktok.com") -> {
                 Intent(this, TiktokImportActivity::class.java)
             }
@@ -61,13 +68,16 @@ class RedirectorActivity : AppCompatActivity() {
             }
         }
 
-        if (intent != null){
-            intent.putExtra("urlPath", url)
-            startActivity(intent)
-            finish()
-        }else{
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+        if (targetIntent != null) {
+            targetIntent.putExtra("urlPath", url)
+            targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            startActivity(targetIntent)
+        } else {
+            val mainIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
+            startActivity(mainIntent)
         }
+        finish()
     }
 }

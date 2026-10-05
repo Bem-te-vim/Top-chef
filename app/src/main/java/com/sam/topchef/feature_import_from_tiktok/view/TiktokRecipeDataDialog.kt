@@ -23,11 +23,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
+import com.google.gson.Gson
+
 class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
     private var _binding: DialogRecipeDataBinding? = null
     private val binding get() = _binding!!
 
     private var recipeData: TikTokModel? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val json = arguments?.getString(ARG_RECIPE_JSON)
+        if (json != null) {
+            recipeData = Gson().fromJson(json, TikTokModel::class.java)
+        }
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
@@ -85,9 +95,16 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
         binding.editRecipe.setOnClickListener {
             it.clickAnimation(startAnimationScale = 0.90f)
             (activity as? TiktokImportActivity)?.pausePlayer()
-            dismiss()
-            val editDialog = TiktokEditRecipeDialog.newInstance(recipe)
-            editDialog.show(parentFragmentManager, TiktokEditRecipeDialog.TAG)
+            dismissAllowingStateLoss()
+            val fm = parentFragmentManager
+            if (!fm.isStateSaved) {
+                val prev = fm.findFragmentByTag(TiktokEditRecipeDialog.TAG)
+                if (prev != null) {
+                    (prev as? BottomSheetDialogFragment)?.dismissAllowingStateLoss()
+                }
+                val editDialog = TiktokEditRecipeDialog.newInstance(recipe)
+                editDialog.show(fm, TiktokEditRecipeDialog.TAG)
+            }
         }
     }
 
@@ -120,6 +137,9 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
 
     fun setRecipeData(data: TikTokModel) {
         this.recipeData = data
+        arguments = (arguments ?: Bundle()).apply {
+            putString(ARG_RECIPE_JSON, Gson().toJson(data))
+        }
     }
 
     override fun onDestroy() {
@@ -129,9 +149,10 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "TiktokRecipeDataDialog"
+        private const val ARG_RECIPE_JSON = "arg_recipe_json"
+
         fun newInstance(data: TikTokModel): TiktokRecipeDataDialog {
             val dialog = TiktokRecipeDataDialog()
-
             dialog.setRecipeData(data)
             return dialog
         }

@@ -99,6 +99,12 @@ class TudoGostosoImportActivity : AppCompatActivity() {
         handleIntent()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent()
+    }
+
     private fun setupAdapters() {
         ingredientsAdapter = TextsAdapter(ingredients, true)
         preparationAdapter = TextsAdapter(preparations, true)
@@ -205,7 +211,7 @@ class TudoGostosoImportActivity : AppCompatActivity() {
             saveType(it.type!!)
             saveRecipe(it)
         }
-        goToMain()
+        finish()
     }
 
     /**
@@ -341,20 +347,6 @@ class TudoGostosoImportActivity : AppCompatActivity() {
             "hour" to h, "min" to min
         )
     }
-
-    /**
-     * Navigates the user back to the MainActivity after a successful import or cancellation.
-     */
-    private fun goToMain() {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra(MainActivity.EXTRA_RELOAD, true)
-        }
-        startActivity(intent)
-        finish()
-    }
-
 
     /**
      * Sums hours and minutes into total minutes.

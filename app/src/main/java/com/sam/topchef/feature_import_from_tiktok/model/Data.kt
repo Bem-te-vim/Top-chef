@@ -16,6 +16,9 @@ data class Data(
     @SerializedName("play")
     val videoUrl: String,
 
+    @SerializedName("music")
+    val videoAudioFile: String,
+
     @SerializedName("cover")
     val thumbnail: String
 

@@ -29,6 +29,8 @@ import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
 import com.sam.topchef.feature_import_from_tiktok.model.TiktokSection
 import com.sam.topchef.feature_import_from_tiktok.model.TiktokStep
 
+import com.google.gson.Gson
+
 class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
 
     private var _binding: DialogEditTiktokRecipeBinding? = null
@@ -43,6 +45,14 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
     private val preparations = mutableListOf<String>()
 
     private var newThumbnailPath: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val json = arguments?.getString(ARG_RECIPE_JSON)
+        if (json != null) {
+            recipeData = Gson().fromJson(json, TikTokModel::class.java)
+        }
+    }
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -268,12 +278,15 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
                 }
             )
             (activity as? TiktokImportActivity)?.onRecipeUpdated(updatedRecipe)
-            dismiss()
+            dismissAllowingStateLoss()
         }
     }
 
     fun setRecipeData(data: TikTokModel) {
         this.recipeData = data
+        arguments = (arguments ?: Bundle()).apply {
+            putString(ARG_RECIPE_JSON, Gson().toJson(data))
+        }
     }
 
     override fun onDestroy() {
@@ -283,6 +296,8 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "TiktokEditRecipeDialog"
+        private const val ARG_RECIPE_JSON = "arg_recipe_json"
+
         fun newInstance(data: TikTokModel): TiktokEditRecipeDialog {
             val dialog = TiktokEditRecipeDialog()
             dialog.setRecipeData(data)

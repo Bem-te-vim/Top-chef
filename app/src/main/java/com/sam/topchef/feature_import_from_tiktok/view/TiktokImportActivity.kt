@@ -63,7 +63,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private lateinit var player: ExoPlayer
 
     private lateinit var message: TextView
-    private lateinit var recipeInfoByIA: RecipeInfoByIA
+    private val recipeInfoByIA by lazy { RecipeInfoByIA() }
     private var pulseAnimator: ObjectAnimator? = null
     private var currentOriginUrl: String? = null
     private var isRefreshing = false
@@ -95,6 +95,12 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         setupPlayer()
         setupListeners()
         setupPresenter()
+        handleIntent()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
         handleIntent()
     }
 
@@ -256,7 +262,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
     private fun setupPresenter() {
         presenter = TikTokImportPresenter(this)
-        recipeInfoByIA = RecipeInfoByIA()
         message = binding.message
     }
 
@@ -404,7 +409,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 message.text = getString(R.string.load_info)
 
                 val tempFile = File(cacheDir, "temp_audio.mp3")
-                val audioFile = recipeInfoByIA.downloadAudio(response.data.videoUrl, tempFile)
+                val audioFile = recipeInfoByIA.downloadAudio(response.data.videoAudioFile, tempFile)
 
                 val recipe = recipeInfoByIA.importRecipe(listOf(response.data.title), audioFile)
                 recipe.copy(
@@ -425,16 +430,24 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     showRecipeDialog(updatedRecipe)
                 }
             } catch (e: Exception) {
-                message.visibility = View.GONE
                 messageLoadAnimation(false)
                 Log.e("RecipeIA", "Error importing recipe with IA", e)
 
+                val errorMessage = when {
+                    e.message?.contains("high demand", ignoreCase = true) == true ->
+                        "O modelo da IA está com alta demanda no momento. Por favor, tente novamente mais tarde.\nDetalhes: ${e.message}"
+                    else -> e.message ?: "Erro ao converter receita: ${e.javaClass.simpleName}"
+                }
+
+                message.visibility = View.VISIBLE
+                message.text = errorMessage
+
                 Snackbar.make(
                     binding.root,
-                    "Erro ao converter receita",
-                    Snackbar.LENGTH_LONG
+                    errorMessage,
+                    Snackbar.LENGTH_INDEFINITE
                 )
-                    .setAction("Try Again") {
+                    .setAction("Tentar Novamente") {
                         importRecipeWithIA(response)
                     }.show()
             }
@@ -446,12 +459,21 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * @param recipe The imported TikTok recipe data to show.
      */
     fun showRecipeDialog(recipe: TikTokModel) {
-        val dialog = TiktokRecipeDataDialog.newInstance(recipe)
-        dialog.show(supportFragmentManager, TiktokRecipeDataDialog.TAG)
+        if (isFinishing || isDestroyed || supportFragmentManager.isStateSaved) return
+        try {
+            val prev = supportFragmentManager.findFragmentByTag(TiktokRecipeDataDialog.TAG)
+            if (prev != null) {
+                (prev as? androidx.fragment.app.DialogFragment)?.dismissAllowingStateLoss()
+            }
+            val dialog = TiktokRecipeDataDialog.newInstance(recipe)
+            dialog.show(supportFragmentManager, TiktokRecipeDataDialog.TAG)
+        } catch (e: Exception) {
+            Log.e("TiktokImportActivity", "Error showing recipe dialog", e)
+        }
     }
 
     fun pausePlayer() {
-        if (player.isPlaying) {
+        if (::player.isInitialized && player.isPlaying) {
             player.pause()
         }
     }
@@ -707,7 +729,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
     private val progressRunnable = object : Runnable {
         override fun run() {
-            if (player.isPlaying && !isUserSeeking) {
+            if (::player.isInitialized && player.isPlaying && !isUserSeeking) {
                 val currentPos = player.currentPosition
                 val duration = player.duration
                 if (duration > 0) {
@@ -732,7 +754,10 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      */
     override fun onDestroy() {
         pulseAnimator?.cancel()
-        player.release()
+        if (::player.isInitialized) {
+            player.release()
+        }
+        recipeInfoByIA.close()
         super.onDestroy()
     }
 
@@ -740,7 +765,9 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * Pauses the player when the activity is stopped.
      */
     override fun onStop() {
-        player.pause()
+        if (::player.isInitialized) {
+            player.pause()
+        }
         super.onStop()
     }
 
@@ -749,7 +776,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      */
     override fun onResume() {
         super.onResume()
-        if (player.mediaItemCount > 0) {
+        if (::player.isInitialized && player.mediaItemCount > 0) {
             player.play()
         }
     }
