@@ -9,11 +9,13 @@ import android.text.InputFilter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,15 +23,20 @@ import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.sam.topchef.R
+import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.core.utils.adapter.TextsAdapter
+import com.sam.topchef.databinding.DialogAddTypeBinding
 import com.sam.topchef.databinding.DialogEditTiktokRecipeBinding
 import com.sam.topchef.databinding.DialogEditTextItemBinding
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
 import com.sam.topchef.feature_import_from_tiktok.model.TiktokSection
 import com.sam.topchef.feature_import_from_tiktok.model.TiktokStep
-
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
 
@@ -45,6 +52,9 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
     private val preparations = mutableListOf<String>()
 
     private var newThumbnailPath: String? = null
+
+    private val typeItems = mutableListOf<String>()
+    private lateinit var typeAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,7 +130,51 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
             setupAdapters()
             setupListeners()
             setupCharacterCounters()
+            setupTypeSpinner()
         }
+    }
+
+    private fun setupTypeSpinner() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val types = (requireContext().applicationContext as App).typeDao.getAllTypeNames()
+            withContext(Dispatchers.Main) {
+                typeItems.clear()
+                typeItems.addAll(types)
+                typeItems.add("Add+")
+                typeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, typeItems)
+                binding.autoCompleteType.setAdapter(typeAdapter)
+                recipeData?.type?.let {
+                    binding.autoCompleteType.setText(it, false)
+                }
+            }
+        }
+        binding.autoCompleteType.setOnItemClickListener { _, _, position, _ ->
+            if (typeItems[position] == "Add+") {
+                showAddTypeDialog()
+            }
+        }
+    }
+
+    private fun showAddTypeDialog() {
+        val dialogBinding = DialogAddTypeBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnAddType.setOnClickListener {
+            val newType = dialogBinding.edtxNewType.text.toString().trim()
+            if (newType.isNotEmpty()) {
+                if (!typeItems.contains(newType)) {
+                    typeItems.add(typeItems.size - 1, newType)
+                    typeAdapter.notifyDataSetChanged()
+                }
+                binding.autoCompleteType.setText(newType, false)
+                dialog.dismiss()
+            } else {
+                dialogBinding.edtxNewType.error = "Campo obrigatório"
+            }
+        }
+        dialog.show()
     }
 
     private fun setupAdapters() {
@@ -268,10 +322,23 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
 
     private fun saveChanges() {
         recipeData?.let { recipe ->
+            val recipeType = binding.autoCompleteType.text.toString().trim().takeIf {
+                it.isNotEmpty() && it != getString(R.string.type)
+            }
+            recipeType?.let { typeName ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val typeDao = (requireContext().applicationContext as App).typeDao
+                    if (!typeDao.getAllTypeNames().contains(typeName)) {
+                        typeDao.insert(Type(type = typeName))
+                    }
+                }
+            }
+
             val updatedRecipe = recipe.copy(
                 name = binding.edtxRecipeTitle.text.toString(),
                 description = binding.edtxRecipeDescription.text.toString(),
                 thumbnail = newThumbnailPath,
+                type = recipeType,
                 ingredients = listOf(TiktokSection("Ingredientes", ingredients.toList())),
                 preparationMode = preparations.mapIndexed { index, s ->
                     TiktokStep("Passo ${index + 1}", s)

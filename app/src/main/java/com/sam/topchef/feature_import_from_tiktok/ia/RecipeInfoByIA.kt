@@ -121,7 +121,7 @@ class RecipeInfoByIA {
             - hashtags;
             - o áudio do vídeo.
 
-            Sua tarefa é identificar e extrair a receita completa.
+            Sua tarefa é identificar e extrair a receita completa, incluindo uma categoria que melhor se encaixe com o tema da receita.
 
             Regras importantes:
 
@@ -134,12 +134,14 @@ class RecipeInfoByIA {
             7. Se uma informação não puder ser identificada, use uma string vazia ou uma lista vazia.
             8. Preserve quantidades e unidades mencionadas no áudio.
             9. A receita deve ser compreensível mesmo sem o vídeo original.
+            10. Defina uma categoria apropriada (ex: Sobremesa, Massa, Lanche, Prato Principal, Salada, Bebida, etc.).
 
             O JSON deve seguir EXATAMENTE esta estrutura:
 
             {
               "name": "Nome da receita",
               "description": "Breve descrição da receita",
+              "category": "Ex: Sobremesa",
               "ingredients_section": [
                 {
                   "sectionName": "Ex: Massa",

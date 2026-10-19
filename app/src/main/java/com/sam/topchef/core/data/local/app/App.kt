@@ -2,8 +2,12 @@ package com.sam.topchef.core.data.local.app
 
 import android.app.Application
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.BuildConfig
+import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.appCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.initialize
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
 
@@ -12,11 +16,20 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        Firebase.initialize(context = this)
 
-        Firebase.appCheck.installAppCheckProviderFactory(
-            DebugAppCheckProviderFactory.getInstance()
-        )
+        FirebaseApp.initializeApp(this)
+
+        val appCheck = FirebaseAppCheck.getInstance()
+
+        if (BuildConfig.DEBUG) {
+            appCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance()
+            )
+        } else {
+            appCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+            )
+        }
     }
 
 

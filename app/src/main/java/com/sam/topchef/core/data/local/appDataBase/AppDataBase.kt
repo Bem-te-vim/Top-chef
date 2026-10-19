@@ -16,6 +16,7 @@ import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_13_
 import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_14_15
 import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_15_16
 import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_16_17
+import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_17_18
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
@@ -33,7 +34,7 @@ import com.sam.topchef.core.utils.TiktokConverter
         Cart::class,
         User::class,
         TikTokModel::class
-    ], version = 17
+    ], version = 18
 )
 @TypeConverters(
     DateConverter::class,
@@ -64,7 +65,7 @@ abstract class AppDataBase : RoomDatabase() {
                 )
                     .fallbackToDestructiveMigration()
                     .fallbackToDestructiveMigrationOnDowngrade(true)
-                    .addMigrations(MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
+                    .addMigrations(MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
                     .build()
                     .also { INSTANCE = it }
             }

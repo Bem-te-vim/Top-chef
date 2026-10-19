@@ -65,10 +65,23 @@ class MainViewModel(private val db: AppDataBase) : ViewModel() {
             _popularRecipes.value = popular
 
             val categoryItems = withContext(Dispatchers.IO) {
-                db.recipeDao().getAllCategoryNames().take(10).mapNotNull { type ->
-                    val firstRecipe = db.recipeDao().getFirstRecipeByType(type)
-                    firstRecipe?.let {
-                        RecipeCategory(it.id, type, it.imageUriString.firstOrNull())
+                val recipeDao = db.recipeDao()
+                val tiktokDao = db.tiktokDao()
+                val typeDao = db.typeDao()
+
+                val allTypes = (typeDao.getAllTypeNames() +
+                        recipeDao.getAllCategoryNames() +
+                        tiktokDao.getAllCategoryNames()).distinct().take(10)
+
+                allTypes.mapNotNull { type ->
+                    val firstRecipe = recipeDao.getFirstRecipeByType(type)
+                    if (firstRecipe != null) {
+                        RecipeCategory(firstRecipe.id, type, firstRecipe.imageUriString.firstOrNull(), isTikTok = false)
+                    } else {
+                        val firstTikTok = tiktokDao.getFirstRecipeByType(type)
+                        firstTikTok?.let {
+                            RecipeCategory(it.id, type, it.thumbnail, isTikTok = true)
+                        }
                     }
                 }
             }

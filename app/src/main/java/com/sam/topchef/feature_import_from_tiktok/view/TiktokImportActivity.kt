@@ -421,6 +421,14 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     likesCount = response.data.likesCount
                 ).also { updatedRecipe ->
                     Log.d("RecipeIA", "Recipe imported successfully: $updatedRecipe")
+                    updatedRecipe.type?.let { typeName ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+                            if (!db.typeDao().getAllTypeNames().contains(typeName)) {
+                                db.typeDao().insert(com.sam.topchef.core.data.model.Type(type = typeName))
+                            }
+                        }
+                    }
                     currentTikTokModel = updatedRecipe
                     message.visibility = View.GONE
                     messageLoadAnimation(false)
@@ -483,6 +491,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             val updated = withContext(Dispatchers.IO) {
                 val db = AppDataBase.getDataBase(this@TiktokImportActivity)
                 var result = updatedRecipe
+                updatedRecipe.type?.let { typeName ->
+                    if (!db.typeDao().getAllTypeNames().contains(typeName)) {
+                        db.typeDao().insert(com.sam.topchef.core.data.model.Type(type = typeName))
+                    }
+                }
                 if (updatedRecipe.id != 0) {
                     db.tiktokDao().update(updatedRecipe)
                 } else {

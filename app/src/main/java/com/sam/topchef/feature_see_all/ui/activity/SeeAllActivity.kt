@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
+import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.databinding.ActivitySeeAllBinding
+import com.sam.topchef.feature_import_from_tiktok.view.TiktokImportActivity
 import com.sam.topchef.feature_recipe_detail.ui.activity.RecipeDetailActivity
 import com.sam.topchef.feature_see_all.adapter.SeeAllAdapter
 import kotlinx.coroutines.Dispatchers
@@ -71,12 +73,32 @@ class SeeAllActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         seeAllAdapter.itemClick = { id ->
-            val i = Intent(this, RecipeDetailActivity::class.java)
-            i.putExtra("id", id)
-            startActivity(i)
+            lifecycleScope.launch(Dispatchers.IO) {
+                val app = application as App
+                val isTiktok = app.tiktokDao.getById(id) != null
+                withContext(Dispatchers.Main) {
+                    if (isTiktok) {
+                        val i = Intent(this@SeeAllActivity, TiktokImportActivity::class.java).apply {
+                            putExtra("tiktokId", id)
+                        }
+                        startActivity(i)
+                    } else {
+                        val i = Intent(this@SeeAllActivity, RecipeDetailActivity::class.java).apply {
+                            putExtra("id", id)
+                        }
+                        startActivity(i)
+                    }
+                }
+            }
         }
         seeAllAdapter.itemLongClick = { id ->
-            com.sam.topchef.core.utils.RecipeToolsDialog.show(this, id = id, isTikTok = false, onDeleted = { loadData() })
+            lifecycleScope.launch(Dispatchers.IO) {
+                val app = application as App
+                val isTiktok = app.tiktokDao.getById(id) != null
+                withContext(Dispatchers.Main) {
+                    com.sam.topchef.core.utils.RecipeToolsDialog.show(this@SeeAllActivity, id = id, isTikTok = isTiktok, onDeleted = { loadData() })
+                }
+            }
         }
         seeAllAdapter.likeClick = { id, isFavorite ->
             updateRecipeFavoriteStatus(id, isFavorite)
@@ -106,9 +128,15 @@ class SeeAllActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val app = application as App
             val recipe = app.recipeDao.getRecipe(id)
-            recipe?.let {
-                it.isFavorite = isFavorite
-                app.recipeDao.update(it)
+            if (recipe != null) {
+                recipe.isFavorite = isFavorite
+                app.recipeDao.update(recipe)
+            } else {
+                val tiktok = app.tiktokDao.getById(id)
+                tiktok?.let {
+                    it.isFavorite = isFavorite
+                    app.tiktokDao.update(it)
+                }
             }
         }
     }
@@ -134,9 +162,21 @@ class SeeAllActivity : AppCompatActivity() {
     private fun loadCategories() {
         lifecycleScope.launch {
             val allCategories = withContext(Dispatchers.IO) {
-                (application as App).recipeDao.getAllRecipes()
-                    .filter { !it.type.isNullOrBlank() }
-                    .distinctBy { it.type }
+                val app = application as App
+                val regular = app.recipeDao.getAllRecipes().filter { !it.type.isNullOrBlank() }
+                val tiktok = app.tiktokDao.getAll().filter { !it.type.isNullOrBlank() }.map { t ->
+                    Recipe(
+                        id = t.id,
+                        title = t.name,
+                        imageUriString = listOfNotNull(t.thumbnail),
+                        type = t.type,
+                        description = t.description,
+                        chef = t.authorName,
+                        isFavorite = t.isFavorite,
+                        difficult = 1
+                    )
+                }
+                (regular + tiktok).distinctBy { it.type }
             }
 
             showProgressBar(allCategories.size)
@@ -151,7 +191,21 @@ class SeeAllActivity : AppCompatActivity() {
     private fun loadRecipesByCategory(categoryName: String) {
         lifecycleScope.launch {
             val recipes = withContext(Dispatchers.IO) {
-                (application as App).recipeDao.getAllRecipes().filter { it.type == categoryName }
+                val app = application as App
+                val regularRecipes = app.recipeDao.getAllRecipes().filter { it.type == categoryName }
+                val tiktokRecipes = app.tiktokDao.getAll().filter { it.type == categoryName }.map { t ->
+                    Recipe(
+                        id = t.id,
+                        title = t.name,
+                        imageUriString = listOfNotNull(t.thumbnail),
+                        type = t.type,
+                        description = t.description,
+                        chef = t.authorName,
+                        isFavorite = t.isFavorite,
+                        difficult = 1
+                    )
+                }
+                regularRecipes + tiktokRecipes
             }
 
             showProgressBar(recipes.size)

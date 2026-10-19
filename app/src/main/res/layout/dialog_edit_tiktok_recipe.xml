@@ -122,6 +122,36 @@
                     android:textColor="@color/LtGrayFoTxt"
                     android:textSize="14sp" />
 
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:boxBackgroundColor="@color/backgroundIc"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxStrokeColor="@null"
+                    app:endIconMode="dropdown_menu"
+                    app:endIconTint="@color/default_color_app">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/autoCompleteType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:ellipsize="end"
+                        android:hint="@string/type"
+                        android:inputType="none"
+                        android:padding="14dp"
+                        android:popupBackground="@color/backgroundIc"
+                        android:singleLine="true"
+                        android:textColor="@color/WhiteForTxt"
+                        android:textColorHint="@color/myGray"
+                        android:textSize="18sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <View
                     android:id="@+id/divider2"
                     android:layout_width="match_parent"

@@ -214,7 +214,7 @@ object TudoGostosoImporter {
                 val cookMinutes = parseIsoDurationToMinutes(times.getOrNull(1)?.attr("datetime"))
 
                 val recipeType = doc
-                    .select("ul.breadcrumb li.breadcrumb-item a")
+                    .select("ul.breadcrumb a")
                     .firstOrNull { it.attr("href").contains("/categorias/") }
                     ?.text()
                     ?.trim()

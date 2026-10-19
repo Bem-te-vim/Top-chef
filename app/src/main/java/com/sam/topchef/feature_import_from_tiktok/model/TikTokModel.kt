@@ -31,6 +31,10 @@ data class TikTokModel(
     @ColumnInfo(name = "description")
     val description: String,
 
+    @SerializedName(value = "category", alternate = ["type"])
+    @ColumnInfo(name = "type")
+    val type: String? = null,
+
     @SerializedName("ingredients_section")
     @ColumnInfo(name = "ingredients")
     val ingredients: List<TiktokSection>,

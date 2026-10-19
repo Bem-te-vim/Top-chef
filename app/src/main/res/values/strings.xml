@@ -97,5 +97,42 @@
     <string name="you_own_recipe">Sua Própria Receita :)</string>
     <string name="tudo_gostoso">Tudo Gostoso</string>
     <string name="recipe_from_web">Receita da Web</string>
+    <string name="uncategorized">Ainda sem categoria</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configurações</string>
+    <string name="section_recipes">Ver receitas</string>
+    <string name="favorite_recipes">Receitas Favoritas</string>
+    <string name="tiktok_recipes">Receitas do TikTok</string>
+    <string name="tudogostoso_recipes">Receitas do TudoGostoso</string>
+    <string name="all_recipes_option">Todas as Receitas</string>
+    <string name="section_general">Geral</string>
+    <string name="dark_mode">Modo Escuro</string>
+    <string name="shopping_list_option">Lista de Compras</string>
+    <string name="section_feedback">Feedback &amp; Suporte</string>
+    <string name="report_bug">Reportar um Erro</string>
+    <string name="send_feedback">Enviar Feedback</string>
+    <string name="help_support">Ajuda e Suporte</string>
+    <string name="section_about">Sobre</string>
+    <string name="app_version">Versão do Aplicativo</string>
+    <string name="app_version_code">1.0.0</string>
+
+    <!-- Recipe List Settings -->
+    <string name="items_selected">%1$d selecionado(s)</string>
+    <string name="delete_recipes_title">Excluir receitas</string>
+    <string name="delete_recipes_confirm">Deseja excluir %1$d receita(s) selecionada(s)?</string>
+    <string name="recipes_deleted_success">Receita(s) excluída(s) com sucesso</string>
+    <string name="no_recipes_selected">Nenhuma receita selecionada</string>
+    <string name="no_recipes_found">Nenhuma receita encontrada</string>
+    <string name="my_recipes">Minhas Receitas</string>
+
+    <!-- Empty State Strings -->
+    <string name="empty_list_title">Lista Vazia</string>
+    <string name="empty_user_recipes">Você ainda não possui receitas próprias criadas.</string>
+    <string name="empty_favorites">Você ainda não adicionou nenhuma receita aos favoritos.</string>
+    <string name="empty_tiktok_recipes">Nenhuma receita importada do TikTok foi encontrada.</string>
+    <string name="empty_tudogostoso_recipes">Nenhuma receita do TudoGostoso foi encontrada.</string>
+    <string name="empty_all_recipes">Nenhuma receita encontrada na sua coleção.</string>
+    <string name="empty_list_warning">Esta lista está vazia.</string>
 
 </resources>

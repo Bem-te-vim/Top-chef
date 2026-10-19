@@ -28,6 +28,12 @@ interface TiktokDao {
     @Query("SELECT * FROM Tiktok WHERE id = :id")
     fun getById(id: Int): TikTokModel?
 
+    @Query("SELECT * FROM Tiktok WHERE type = :type LIMIT 1")
+    fun getFirstRecipeByType(type: String): TikTokModel?
+
+    @Query("SELECT DISTINCT type FROM Tiktok WHERE type IS NOT NULL AND type != ''")
+    fun getAllCategoryNames(): List<String>
+
     @Query("SELECT * FROM Tiktok WHERE origin_url = :url")
     fun getByUrl(url: String): TikTokModel?
 

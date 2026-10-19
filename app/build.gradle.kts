@@ -108,7 +108,10 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-ai")
+
     implementation("com.google.firebase:firebase-appcheck-debug")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+
     implementation("com.google.firebase:firebase-analytics")
 
     // Add the dependencies for any other desired Firebase products

@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 
 
 import com.google.gson.Gson
+import com.sam.topchef.R
 
 class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
     private var _binding: DialogRecipeDataBinding? = null
@@ -67,6 +68,7 @@ class TiktokRecipeDataDialog : BottomSheetDialogFragment() {
 
     private fun setupUI() {
         recipeData?.let { recipe ->
+            binding.txtRecipeType.text = recipe.type ?: getString(R.string.uncategorized)
             binding.txtRecipeTitle.text = recipe.name
             binding.txtRecipeDescription.text = recipe.description
 
