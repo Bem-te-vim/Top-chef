@@ -71,7 +71,11 @@ class MainViewModel(private val db: AppDataBase) : ViewModel() {
 
                 val allTypes = (typeDao.getAllTypeNames() +
                         recipeDao.getAllCategoryNames() +
-                        tiktokDao.getAllCategoryNames()).distinct().take(10)
+                        tiktokDao.getAllCategoryNames())
+                    .filter { !it.isNullOrBlank() }
+                    .map { it.trim() }
+                    .distinctBy { it.lowercase(java.util.Locale.getDefault()) }
+                    .take(10)
 
                 allTypes.mapNotNull { type ->
                     val firstRecipe = recipeDao.getFirstRecipeByType(type)
@@ -80,7 +84,7 @@ class MainViewModel(private val db: AppDataBase) : ViewModel() {
                     } else {
                         val firstTikTok = tiktokDao.getFirstRecipeByType(type)
                         firstTikTok?.let {
-                            RecipeCategory(it.id, type, it.thumbnail, isTikTok = true)
+                            RecipeCategory(it.id, type, it.getEffectiveThumbnailPath(), isTikTok = true)
                         }
                     }
                 }

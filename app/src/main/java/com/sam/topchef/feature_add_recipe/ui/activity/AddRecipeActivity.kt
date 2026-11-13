@@ -22,6 +22,8 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
+import com.sam.topchef.core.utils.MediaDownloader
+import com.sam.topchef.core.utils.TypeUtils
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
@@ -264,14 +266,11 @@ class AddRecipeActivity : AppCompatActivity() {
             val app = application as App
             val dao = app.db.recipeDao()
 
-            recipeType?.let { typeName ->
-                val typeDao = app.db.typeDao()
-                if (!typeDao.getAllTypeNames().contains(typeName)) {
-                    typeDao.insert(Type(type = typeName))
-                }
-            }
+            val finalType = TypeUtils.findOrInsertType(app.db, recipeType)
+            val recipeToSave = recipe.copy(type = finalType)
+            val downloadedRecipe = MediaDownloader(applicationContext).downloadRecipeImages(recipeToSave) ?: recipeToSave
 
-            dao.insert(recipe)
+            dao.insert(downloadedRecipe)
 
             withContext(Dispatchers.Main) {
                 Toast.makeText(

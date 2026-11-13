@@ -26,6 +26,8 @@ import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.MediaDownloader
+import com.sam.topchef.core.utils.TypeUtils
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
@@ -285,15 +287,10 @@ class TudoGostosoImportActivity : AppCompatActivity() {
      * @param newType The name of the category to save.
      */
     private fun saveType(newType: String) {
-        lifecycleScope.launch() {
+        lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                val dao = (application as App).typeDao
-                val allTypes = dao.getAllTypeNames()
-
-                if (!allTypes.contains(newType)) {
-                    dao.insert(Type(type = newType))
-                    Log.i("test", "New type inserted $newType")
-                }
+                val app = application as App
+                TypeUtils.findOrInsertType(app.db, newType)
             }
         }
     }
@@ -305,7 +302,11 @@ class TudoGostosoImportActivity : AppCompatActivity() {
     private fun saveRecipe(recipe: Recipe) {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                (application as App).recipeDao.insert(recipe)
+                val app = application as App
+                val finalType = TypeUtils.findOrInsertType(app.db, recipe.type)
+                val recipeWithMedia = MediaDownloader(applicationContext).downloadRecipeImages(recipe) ?: recipe
+                val recipeToSave = recipeWithMedia.copy(type = finalType)
+                app.recipeDao.insert(recipeToSave)
             }
 
             Toast.makeText(

@@ -20,10 +20,10 @@ import java.util.Locale
 class SeeAllAdapter(@LayoutRes private val layout: Int = R.layout.row_images) :
     RecyclerView.Adapter<SeeAllAdapter.SeeAllViewHolder>() {
 
-    var itemClick: ((id: Int) -> Unit)? = null
-    var itemLongClick: ((id: Int) -> Unit)? = null
+    var itemClick: ((id: Int, isTikTok: Boolean) -> Unit)? = null
+    var itemLongClick: ((id: Int, isTikTok: Boolean) -> Unit)? = null
     var categoryClick: ((category: String) -> Unit)? = null
-    var likeClick: ((id: Int, isFavorite: Boolean) -> Unit)? = null
+    var likeClick: ((id: Int, isFavorite: Boolean, isTikTok: Boolean) -> Unit)? = null
 
     private val recipes = mutableListOf<Recipe>()
 
@@ -66,7 +66,7 @@ class SeeAllAdapter(@LayoutRes private val layout: Int = R.layout.row_images) :
                 btn.setOnClickListener {
                     item.isFavorite = !item.isFavorite
                     setButtonState(item.isFavorite, btn, btn.context)
-                    likeClick?.invoke(item.id, item.isFavorite)
+                    likeClick?.invoke(item.id, item.isFavorite, item.isTikTok)
                 }
             }
 
@@ -74,11 +74,11 @@ class SeeAllAdapter(@LayoutRes private val layout: Int = R.layout.row_images) :
                 if (layout == R.layout.row_categories_recipe_item && item.type != null) {
                     categoryClick?.invoke(item.type)
                 } else {
-                    itemClick?.invoke(item.id)
+                    itemClick?.invoke(item.id, item.isTikTok)
                 }
             }
             itemView.setOnLongClickListener {
-                itemLongClick?.invoke(item.id)
+                itemLongClick?.invoke(item.id, item.isTikTok)
                 true
             }
         }

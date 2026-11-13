@@ -1,13 +1,12 @@
 package com.sam.topchef.feature_import_from_tudogostoso.importer
 
+import android.system.Os.link
 import android.util.Log
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.feature_import_from_tudogostoso.model.WebRecipeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
-import kotlin.to
-import kotlin.toString
 
 object TudoGostosoImporter {
     private const val BASE_URL = "https://www.tudogostoso.com.br/"
@@ -15,55 +14,54 @@ object TudoGostosoImporter {
 
 
     suspend fun searchRecipe(search: String): List<WebRecipeModel> = withContext(Dispatchers.IO) {
+        /**
+         * Todo: criar uma nova fucao de paginacao, na que as procimas pages do site e
+         * https://www.tudogostoso.com.br/busca?q=bolo+de+maracuja&page=2
+         * a mesma url do search mas com o adicional "&page=n" onde "n"
+         * eo numero da pagina.
+         * **/
+
         val search = search.replace(" ", "+").trim()
         try {
-            val doc = Jsoup.connect(SEARCH_URL + search)
-                .userAgent(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                            "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                            "Chrome/140.0.0.0 Safari/537.36"
-                )
-                .timeout(15_000)
-                .get()
+            val doc = Jsoup.connect(SEARCH_URL + search).userAgent(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " + "AppleWebKit/537.36 (KHTML, like Gecko) " + "Chrome/140.0.0.0 Safari/537.36"
+            ).timeout(15_000).get()
 
 
-            val recipes = doc.select("div.card.card-recipe")
+            val recipes = doc.select("article.news-card.news-card-16-9.news-card-row")
 
             val webRecipes = recipes.mapNotNull { card ->
 
-                val title = card
-                    .select("strong.card-title a.card-link")
-                    .text()
-                    .trim()
+                val title = card.select("div.news-card-title a.news-card-link").text().trim()
 
-                val link = card
-                    .select("strong.card-title a.card-link")
-                    .attr("href")
-                    .trim()
+                val link = card.select("div.news-card-title a.news-card-link").attr("href").trim()
 
 
-                val imageUrl = card.selectFirst("picture.card-media")?.let { picture ->
+                val imageUrl = card.selectFirst("picture.thumb-picture img.thumb-img-100.thumb-img")
+                    ?.let { img ->
 
-                val source = picture.selectFirst("source[srcset]")
-                val sourceUrl = source?.absUrl("srcset")?.trim()
+                        // first try src
+                        val src = img.attr("src").trim()
 
-                if (!sourceUrl.isNullOrEmpty()) {
-                    sourceUrl
-                } else {
-                    picture.selectFirst("img")?.let { img ->
-                        img.absUrl("src").trim()
-                    }
-                }
+                        if (src.isNotEmpty()) {
+                            img.absUrl("src")
+                        } else {
+                            // if the site use lazy loading
+                            val dataSrc = img.attr("data-src").trim()
 
-            } ?: ""
+                            if (dataSrc.isNotEmpty()) {
+                                img.absUrl("data-src")
+                            } else {
+                                ""
+                            }
+                        }
+                    } ?: ""
 
                 if (title.isEmpty() || link.isEmpty() || imageUrl.isEmpty()) {
                     null
                 } else {
                     WebRecipeModel(
-                        title = title,
-                        imageUrl = imageUrl,
-                        recipeLinksPath = link
+                        title = title, imageUrl = imageUrl, recipeLinksPath = link
                     )
                 }
 
@@ -72,8 +70,7 @@ object TudoGostosoImporter {
 
             webRecipes.forEach {
                 Log.i(
-                    "searchRecipe",
-                    """
+                    "searchRecipe", """
                     Título: ${it.title}
                     Link: ${it.recipeLinksPath}
                     Imagem: ${it.imageUrl}
@@ -92,32 +89,23 @@ object TudoGostosoImporter {
         withContext(Dispatchers.IO) {
             try {
 
-                val doc = Jsoup.connect(url)
-                    .userAgent(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                                "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                                "Chrome/140.0.0.0 Safari/537.36"
-                    )
-                    .referrer("https://www.tudogostoso.com.br/")
-                    .timeout(15_000)
-                    .get()
+                val doc = Jsoup.connect(url).userAgent(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " + "AppleWebKit/537.36 (KHTML, like Gecko) " + "Chrome/140.0.0.0 Safari/537.36"
+                ).referrer("https://www.tudogostoso.com.br/").timeout(15_000).get()
 
-                val recipes = doc.select("div.card.card-recipe")
+                val recipes =
+                    doc.select("article.news-card.news-card-row-mobile.news-card-16-9.news-card-col")
+
+                Log.i("getFeed", "$recipes")
 
                 val webRecipes = recipes.mapNotNull { card ->
 
-                    val title = card
-                        .select("strong.card-title a.card-link")
-                        .text()
-                        .trim()
+                    val title = card.select("div.news-card-title a").text().trim()
 
-                    val link = card
-                        .select("strong.card-title a.card-link")
-                        .attr("href")
-                        .trim()
+                    val link = card.select("div.news-card-title a").attr("href").trim()
 
                     val imageElement = card.selectFirst(
-                        "picture.card-media img"
+                        "img.thumb-img-100.thumb-img"
                     )
 
                     val imageUrl = imageElement?.let { img ->
@@ -143,9 +131,7 @@ object TudoGostosoImporter {
                         null
                     } else {
                         WebRecipeModel(
-                            title = title,
-                            imageUrl = imageUrl,
-                            recipeLinksPath = link
+                            title = title, imageUrl = imageUrl, recipeLinksPath = link
                         )
                     }
                 }
@@ -154,8 +140,7 @@ object TudoGostosoImporter {
 
                 webRecipes.forEach {
                     Log.i(
-                        "getFeed",
-                        """
+                        "getFeed", """
                     Título: ${it.title}
                     Link: ${it.recipeLinksPath}
                     Imagem: ${it.imageUrl}
@@ -172,79 +157,56 @@ object TudoGostosoImporter {
         }
 
 
-    suspend fun import(url: String): Recipe? =
-        withContext(Dispatchers.IO) {
+    suspend fun import(url: String): Recipe? = withContext(Dispatchers.IO) {
 
-            try {
-                val doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Android)")
-                    .get()
+        try {
+            val doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (Android)").get()
 
-                val title = doc
-                    .selectFirst("span.u-title-page")
-                    ?.text()
-                    ?: return@withContext null
+            val title = doc.selectFirst("span.u-title-page")?.text() ?: return@withContext null
 
-                val ingredients = doc
-                    .select("span.recipe-ingredients-item-label")
-                    .map { it.text() }
+            val ingredients = doc.select("span.recipe-ingredients-item-label").map { it.text() }
 
-                val preparation = doc
-                    .select("div.recipe-steps-text p")
-                    .map { it.text() }
+            val preparation = doc.select("div.recipe-steps-text p").map { it.text() }
 
 
-                val description = doc
-                    .select("div.is-wysiwyg p")
-                    .joinToString {
-                        it.text().replace("\u00A0", " ").trim()
-                    }
-
-                val recipeImageUrl = doc
-                    .select("div.recipe-cover source")
-                    .firstOrNull()
-                    ?.attr("srcset")
-                    ?: doc.select("div.recipe-cover img")
-                        .firstOrNull()
-                        ?.attr("src") ?: "Error"
-
-                val times = doc.select("div.recipe-steps-info-item time")
-
-                val prepMinutes = parseIsoDurationToMinutes(times.getOrNull(0)?.attr("datetime"))
-                val cookMinutes = parseIsoDurationToMinutes(times.getOrNull(1)?.attr("datetime"))
-
-                val recipeType = doc
-                    .select("ul.breadcrumb a")
-                    .firstOrNull { it.attr("href").contains("/categorias/") }
-                    ?.text()
-                    ?.trim()
-                    ?.replace("Receitas", "")
-                    ?: "Outros"
-
-
-
-
-               val recipe = Recipe(
-                    chef = "Web",
-                    title = title,
-                    ingredients = ingredients,
-                    preparationMode = preparation,
-                    description = description,
-                    difficult = 1,
-                    imageUriString = listOf(recipeImageUrl),
-                    cookingTime = cookMinutes,
-                    preparationTime = prepMinutes,
-                    type = recipeType
-                )
-
-                Log.i("TGimport", recipe.toString() )
-
-                recipe
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+            val description = doc.select("div.is-wysiwyg p").joinToString {
+                it.text().replace("\u00A0", " ").trim()
             }
+
+            val recipeImageUrl = doc.select("div.recipe-cover source").firstOrNull()?.attr("srcset")
+                ?: doc.select("div.recipe-cover img").firstOrNull()?.attr("src") ?: "Error"
+
+            val times = doc.select("div.recipe-steps-info-item time")
+
+            val prepMinutes = parseIsoDurationToMinutes(times.getOrNull(0)?.attr("datetime"))
+            val cookMinutes = parseIsoDurationToMinutes(times.getOrNull(1)?.attr("datetime"))
+
+            val recipeType = doc.select("ul.breadcrumb a")
+                .firstOrNull { it.attr("href").contains("/categorias/") }?.text()?.trim()
+                ?.replace("Receitas", "") ?: "Outros"
+
+
+            val recipe = Recipe(
+                chef = "Web",
+                title = title,
+                ingredients = ingredients,
+                preparationMode = preparation,
+                description = description,
+                difficult = 1,
+                imageUriString = listOf(recipeImageUrl),
+                cookingTime = cookMinutes,
+                preparationTime = prepMinutes,
+                type = recipeType
+            )
+
+            Log.i("TGimport", recipe.toString())
+
+            recipe
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
+    }
 
 
     fun parseIsoDurationToMinutes(iso: String?): Int {

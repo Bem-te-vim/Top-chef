@@ -124,7 +124,7 @@ class SearchActivity : AppCompatActivity() {
                 RecipePost(
                     id = it.id,
                     title = it.name,
-                    coverUrl = it.thumbnail,
+                    coverUrl = it.getEffectiveThumbnailPath(),
                     isFavorite = it.isFavorite,
                     reviews = 0.0,
                     isTikTok = true

@@ -79,6 +79,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".feature_redirector.RedirectorActivity"
@@ -103,6 +104,10 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".feature_settings.view.SettingsRecipeListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".feature_settings.view.SettingsCategoryListActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

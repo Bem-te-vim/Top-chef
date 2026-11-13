@@ -63,6 +63,9 @@ class RedirectorActivity : AppCompatActivity() {
             url.contains("tudogostoso.com") -> {
                 Intent(this, TudoGostosoImportActivity::class.java)
             }
+            url.contains("instagram.com") ->{
+                Intent(this, TiktokImportActivity::class.java)
+            }
             else -> {
                 null
             }

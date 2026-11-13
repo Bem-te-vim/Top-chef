@@ -103,9 +103,10 @@
     <string name="settings_title">Configurações</string>
     <string name="section_recipes">Ver receitas</string>
     <string name="favorite_recipes">Receitas Favoritas</string>
-    <string name="tiktok_recipes">Receitas do TikTok</string>
+    <string name="tiktok_recipes">Receitas em Video</string>
     <string name="tudogostoso_recipes">Receitas do TudoGostoso</string>
     <string name="all_recipes_option">Todas as Receitas</string>
+    <string name="section_categories">Categorias</string>
     <string name="section_general">Geral</string>
     <string name="dark_mode">Modo Escuro</string>
     <string name="shopping_list_option">Lista de Compras</string>
@@ -116,6 +117,16 @@
     <string name="section_about">Sobre</string>
     <string name="app_version">Versão do Aplicativo</string>
     <string name="app_version_code">1.0.0</string>
+
+    <!-- Categories Settings -->
+    <string name="categories_title">Categorias</string>
+    <string name="recipe_count_zero">Nenhuma receita</string>
+    <string name="recipe_count_singular">%1$d receita</string>
+    <string name="recipe_count_plural">%1$d receitas</string>
+    <string name="delete_category_title">Excluir categoria</string>
+    <string name="delete_category_confirm">Deseja excluir a categoria \"%1$s\"?</string>
+    <string name="category_deleted_success">Categoria excluída com sucesso</string>
+    <string name="empty_categories_message">Nenhuma categoria cadastrada.</string>
 
     <!-- Recipe List Settings -->
     <string name="items_selected">%1$d selecionado(s)</string>

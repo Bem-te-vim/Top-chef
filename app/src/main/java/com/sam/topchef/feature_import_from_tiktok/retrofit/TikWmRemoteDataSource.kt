@@ -8,7 +8,7 @@ import retrofit2.Response
 class   TikWmRemoteDataSource {
 
     fun getTikTokData(url: String, callback: TikWmCallBack) {
-        HTTPClient.retrofit().create(TikWmApi::class.java).getTikTokData(url)
+        HTTPClient.retrofitForTiktok().create(TikWmApi::class.java).getTikTokData(url)
             .enqueue(object : Callback<TikTokData> {
 
                 override fun onResponse(

@@ -26,6 +26,7 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.TypeUtils
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.DialogAddTypeBinding
 import com.sam.topchef.databinding.DialogEditTiktokRecipeBinding
@@ -325,27 +326,27 @@ class TiktokEditRecipeDialog : BottomSheetDialogFragment() {
             val recipeType = binding.autoCompleteType.text.toString().trim().takeIf {
                 it.isNotEmpty() && it != getString(R.string.type)
             }
-            recipeType?.let { typeName ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val typeDao = (requireContext().applicationContext as App).typeDao
-                    if (!typeDao.getAllTypeNames().contains(typeName)) {
-                        typeDao.insert(Type(type = typeName))
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                val app = requireContext().applicationContext as App
+                val finalType = TypeUtils.findOrInsertType(app.db, recipeType)
+
+                val updatedRecipe = recipe.copy(
+                    name = binding.edtxRecipeTitle.text.toString(),
+                    description = binding.edtxRecipeDescription.text.toString(),
+                    thumbnail = newThumbnailPath,
+                    type = finalType,
+                    ingredients = listOf(TiktokSection("Ingredientes", ingredients.toList())),
+                    preparationMode = preparations.mapIndexed { index, s ->
+                        TiktokStep("Passo ${index + 1}", s)
                     }
+                )
+
+                withContext(Dispatchers.Main) {
+                    (activity as? TiktokImportActivity)?.onRecipeUpdated(updatedRecipe)
+                    dismissAllowingStateLoss()
                 }
             }
-
-            val updatedRecipe = recipe.copy(
-                name = binding.edtxRecipeTitle.text.toString(),
-                description = binding.edtxRecipeDescription.text.toString(),
-                thumbnail = newThumbnailPath,
-                type = recipeType,
-                ingredients = listOf(TiktokSection("Ingredientes", ingredients.toList())),
-                preparationMode = preparations.mapIndexed { index, s ->
-                    TiktokStep("Passo ${index + 1}", s)
-                }
-            )
-            (activity as? TiktokImportActivity)?.onRecipeUpdated(updatedRecipe)
-            dismissAllowingStateLoss()
         }
     }
 

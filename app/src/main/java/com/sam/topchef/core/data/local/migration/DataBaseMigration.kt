@@ -5,6 +5,22 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 object DataBaseMigration {
 
+    private fun SupportSQLiteDatabase.addColumnIfNotExists(tableName: String, columnName: String, columnDefinition: String) {
+        var exists = false
+        query("PRAGMA table_info(`$tableName`)").use { cursor ->
+            val nameIndex = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (nameIndex != -1 && cursor.getString(nameIndex) == columnName) {
+                    exists = true
+                    break
+                }
+            }
+        }
+        if (!exists) {
+            execSQL("ALTER TABLE `$tableName` ADD COLUMN `$columnName` $columnDefinition")
+        }
+    }
+
     val MIGRATION_13_14 = object : Migration(13, 14) {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("DROP TABLE IF EXISTS `User` ")
@@ -42,21 +58,49 @@ object DataBaseMigration {
 
     val MIGRATION_15_16 = object : Migration(15, 16) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `origin_url` TEXT")
+            db.addColumnIfNotExists("Tiktok", "origin_url", "TEXT")
         }
     }
 
     val MIGRATION_16_17 = object : Migration(16, 17) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `author_name` TEXT")
-            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `author_avatar` TEXT")
-            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `likes_count` INTEGER NOT NULL DEFAULT 0")
+            db.addColumnIfNotExists("Tiktok", "author_name", "TEXT")
+            db.addColumnIfNotExists("Tiktok", "author_avatar", "TEXT")
+            db.addColumnIfNotExists("Tiktok", "likes_count", "INTEGER NOT NULL DEFAULT 0")
         }
     }
 
     val MIGRATION_17_18 = object : Migration(17, 18) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE `Tiktok` ADD COLUMN `type` TEXT")
+            db.addColumnIfNotExists("Tiktok", "type", "TEXT")
+        }
+    }
+
+    val MIGRATION_18_19 = object : Migration(18, 19) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.addColumnIfNotExists("Tiktok", "local_video_path", "TEXT")
+        }
+    }
+
+    val MIGRATION_19_20 = object : Migration(19, 20) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.addColumnIfNotExists("Tiktok", "local_thumbnail_path", "TEXT")
+            db.addColumnIfNotExists("Tiktok", "local_author_avatar_path", "TEXT")
+        }
+    }
+
+    val MIGRATION_20_21 = object : Migration(20, 21) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.addColumnIfNotExists("Recipe", "local_image_paths", "TEXT")
+            db.addColumnIfNotExists("User", "local_image_uri", "TEXT")
+            db.addColumnIfNotExists("Cart", "local_cart_image", "TEXT")
+        }
+    }
+
+    val MIGRATION_21_22 = object : Migration(21, 22) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.addColumnIfNotExists("Recipe", "created_date", "INTEGER NOT NULL DEFAULT 0")
+            db.addColumnIfNotExists("Cart", "cart_image", "TEXT")
         }
     }
 }

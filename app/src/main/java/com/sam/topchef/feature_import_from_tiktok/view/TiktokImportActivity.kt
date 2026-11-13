@@ -4,34 +4,36 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
+import android.widget.SeekBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import android.util.Log
-import androidx.core.view.updateLayoutParams
-import android.view.ViewGroup.MarginLayoutParams
-import android.view.View
-import android.widget.SeekBar
-import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.MediaDownloader
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.core.utils.Utils.hide
 import com.sam.topchef.core.utils.Utils.setClicksListener
@@ -41,9 +43,13 @@ import com.sam.topchef.core.utils.Utils.toShareText
 import com.sam.topchef.databinding.ActivityTiktokImportBinding
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
 import com.sam.topchef.feature_import_from_tiktok.ia.RecipeInfoByIA
+import com.sam.topchef.feature_import_from_tiktok.model.IgramMediaResponse
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokData
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
+import com.sam.topchef.feature_import_from_tiktok.offline.TiktokVideoDownloader
 import com.sam.topchef.feature_import_from_tiktok.player.PlayerListener
+import com.sam.topchef.feature_import_from_tiktok.presenter.IGramImportPresenter
+import com.sam.topchef.feature_import_from_tiktok.presenter.IGramUICallBack
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokImportPresenter
 import com.sam.topchef.feature_import_from_tiktok.presenter.TikTokUICallBack
 import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
@@ -57,9 +63,10 @@ import java.io.File
  * Activity responsible for importing and displaying TikTok recipe data.
  * It implements the [TikTokUICallBack] to handle UI updates from the presenter.
  */
-class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
+class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack, IGramUICallBack {
     private lateinit var binding: ActivityTiktokImportBinding
-    private lateinit var presenter: TikTokImportPresenter
+    private lateinit var tikwmPresenter: TikTokImportPresenter
+    private lateinit var igramPresenter: IGramImportPresenter
     private lateinit var player: ExoPlayer
 
     private lateinit var message: TextView
@@ -74,6 +81,8 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     private var isImportMode = false
     private lateinit var playerListener: PlayerListener
     private var isUserSeeking = false
+
+    private val videoDownloader by lazy { TiktokVideoDownloader(this) }
 
     /**
      * Initializes the activity, sets up edge-to-edge display, binding,
@@ -145,10 +154,12 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
     @OptIn(UnstableApi::class)
     private fun setupPlayer() {
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setUserAgent("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36")
             .setDefaultRequestProperties(mapOf("Referer" to "https://www.tiktok.com/"))
             .setAllowCrossProtocolRedirects(true)
+
+        val dataSourceFactory = DefaultDataSource.Factory(this, httpDataSourceFactory)
 
         playerListener = PlayerListener()
 
@@ -198,12 +209,21 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
 
         playerListener.onPlayerError {
             val cause = it.cause
-            if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
+            val localPath = currentTikTokModel?.localVideoPath
+            val localFile = if (!localPath.isNullOrEmpty()) File(localPath) else null
+
+            if (localFile != null && localFile.exists() && localFile.length() > 0) {
+                Log.d("TiktokImport", "Player error on remote stream, falling back to local file")
+                val mediaItem = MediaItem.fromUri(Uri.fromFile(localFile))
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.play()
+            } else if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 403) {
                 handle403Error()
             }
         }
 
-        playerListener.isPlaying { 
+        playerListener.isPlaying {
             showPlayerIc(it)
             if (it) startProgressUpdate() else stopProgressUpdate()
         }
@@ -261,7 +281,8 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
     }
 
     private fun setupPresenter() {
-        presenter = TikTokImportPresenter(this)
+        tikwmPresenter = TikTokImportPresenter(this)
+        igramPresenter = IGramImportPresenter(this)
         message = binding.message
     }
 
@@ -277,7 +298,22 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             val url = extractUrlFromSharedText(sharedText)
             if (url != null) {
                 currentOriginUrl = url
-                presenter.getTikTokData(url)
+                lifecycleScope.launch {
+                    val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+                    val existing = withContext(Dispatchers.IO) {
+                        db.tiktokDao().getByUrl(url)
+                    }
+                    if (existing != null) {
+                        currentRecipeId = existing.id
+                        loadSavedTiktokRecipe(existing.id)
+                    } else {
+                        if (url.contains("instagram.com")) {
+                            igramPresenter.getIGramData(url)
+                        } else {
+                            tikwmPresenter.getTikTokData(url)
+                        }
+                    }
+                }
             } else {
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
@@ -355,7 +391,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         }
     }
 
-
     /**
      * Regex utility to extract a URL from a shared string of text.
      * @param text The raw text containing a potential URL.
@@ -366,8 +401,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         val regex = Regex("""https?://\S+""")
         return regex.find(normalized)?.value
     }
-
-
 
     /**
      * Updates the video player's source URL and metadata for a specific recipe in the database.
@@ -390,6 +423,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                     if (currentRecipeId == id) {
                         currentTikTokModel = updated
                         updateVideoInfoUI(updated)
+                        lifecycleScope.launch {
+                            videoDownloader.downloadAndSaveVideo(updated) { model ->
+                                currentTikTokModel = model
+                            }
+                        }
                     }
                 }
                 Log.d("TiktokImport", "Updated video metadata in DB for recipe $id")
@@ -412,31 +450,62 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 val audioFile = recipeInfoByIA.downloadAudio(response.data.videoAudioFile, tempFile)
 
                 val recipe = recipeInfoByIA.importRecipe(listOf(response.data.title), audioFile)
-                recipe.copy(
-                    thumbnail = response.data.thumbnail,
-                    videoUrl = response.data.videoUrl,
-                    originUrl = currentOriginUrl,
-                    authorName = response.data.author.name,
-                    authorAvatar = response.data.author.avatar,
-                    likesCount = response.data.likesCount
-                ).also { updatedRecipe ->
-                    Log.d("RecipeIA", "Recipe imported successfully: $updatedRecipe")
-                    updatedRecipe.type?.let { typeName ->
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
-                            if (!db.typeDao().getAllTypeNames().contains(typeName)) {
-                                db.typeDao().insert(com.sam.topchef.core.data.model.Type(type = typeName))
-                            }
+
+                val savedRecipe = withContext(Dispatchers.IO) {
+                    val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+                    val existing = currentOriginUrl?.let { db.tiktokDao().getByUrl(it) }
+                    val toInsert = if (existing != null) {
+                        recipe.copy(
+                            id = existing.id,
+                            thumbnail = response.data.thumbnail,
+                            videoUrl = response.data.videoUrl,
+                            originUrl = currentOriginUrl,
+                            authorName = response.data.author.name,
+                            authorAvatar = response.data.author.avatar,
+                            likesCount = response.data.likesCount,
+                            localVideoPath = existing.localVideoPath
+                        )
+                    } else {
+                        recipe.copy(
+                            thumbnail = response.data.thumbnail,
+                            videoUrl = response.data.videoUrl,
+                            originUrl = currentOriginUrl,
+                            authorName = response.data.author.name,
+                            authorAvatar = response.data.author.avatar,
+                            likesCount = response.data.likesCount
+                        )
+                    }
+
+                    toInsert.type?.let { typeName ->
+                        if (!db.typeDao().getAllTypeNames().contains(typeName)) {
+                            db.typeDao().insert(com.sam.topchef.core.data.model.Type(type = typeName))
                         }
                     }
-                    currentTikTokModel = updatedRecipe
-                    message.visibility = View.GONE
-                    messageLoadAnimation(false)
 
-                    updateFavoriteUI()
-                    updateVideoInfoUI(updatedRecipe)
-                    showRecipeDialog(updatedRecipe)
+                    if (existing != null) {
+                        db.tiktokDao().update(toInsert)
+                        toInsert
+                    } else {
+                        db.tiktokDao().insert(toInsert)
+                        db.tiktokDao().getByUrl(currentOriginUrl ?: "") ?: toInsert
+                    }
                 }
+
+                currentTikTokModel = savedRecipe
+                currentRecipeId = savedRecipe.id
+                message.visibility = View.GONE
+                messageLoadAnimation(false)
+
+                updateFavoriteUI()
+                updateVideoInfoUI(savedRecipe)
+                showRecipeDialog(savedRecipe)
+
+                lifecycleScope.launch {
+                    videoDownloader.downloadAndSaveVideo(savedRecipe) { model ->
+                        currentTikTokModel = model
+                    }
+                }
+
             } catch (e: Exception) {
                 messageLoadAnimation(false)
                 Log.e("RecipeIA", "Error importing recipe with IA", e)
@@ -490,22 +559,44 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         lifecycleScope.launch {
             val updated = withContext(Dispatchers.IO) {
                 val db = AppDataBase.getDataBase(this@TiktokImportActivity)
-                var result = updatedRecipe
                 updatedRecipe.type?.let { typeName ->
                     if (!db.typeDao().getAllTypeNames().contains(typeName)) {
                         db.typeDao().insert(com.sam.topchef.core.data.model.Type(type = typeName))
                     }
                 }
-                if (updatedRecipe.id != 0) {
-                    db.tiktokDao().update(updatedRecipe)
+                val existing = if (updatedRecipe.id != 0) {
+                    db.tiktokDao().getById(updatedRecipe.id)
                 } else {
-                    updatedRecipe.originUrl?.let { url ->
-                        val savedRecipe = db.tiktokDao().getByUrl(url)
-                        if (savedRecipe != null) {
-                            result = updatedRecipe.copy(id = savedRecipe.id)
-                            db.tiktokDao().update(result)
-                        }
+                    updatedRecipe.originUrl?.let { url -> db.tiktokDao().getByUrl(url) }
+                }
+
+                var localThumbPath = existing?.localThumbnailPath
+                val thumbnailUri = updatedRecipe.thumbnail
+                if (!thumbnailUri.isNullOrEmpty()) {
+                    val imagesDir = File(filesDir, "tiktok_images")
+                    if (!imagesDir.exists()) imagesDir.mkdirs()
+                    val targetThumbFile = File(imagesDir, "tiktok_thumb_${existing?.id ?: System.currentTimeMillis()}.jpg")
+                    val downloader = MediaDownloader(this@TiktokImportActivity)
+                    val success = downloader.downloadOrCopyImage(thumbnailUri, targetThumbFile)
+                    if (success && targetThumbFile.exists() && targetThumbFile.length() > 0) {
+                        localThumbPath = targetThumbFile.absolutePath
                     }
+                }
+
+                var result = if (existing != null) {
+                    updatedRecipe.copy(
+                        id = existing.id,
+                        localVideoPath = existing.localVideoPath ?: updatedRecipe.localVideoPath,
+                        localThumbnailPath = localThumbPath,
+                        localAuthorAvatarPath = existing.localAuthorAvatarPath
+                    )
+                } else updatedRecipe.copy(localThumbnailPath = localThumbPath)
+
+                if (existing != null) {
+                    db.tiktokDao().update(result)
+                } else {
+                    db.tiktokDao().insert(result)
+                    result = result.originUrl?.let { db.tiktokDao().getByUrl(it) } ?: result
                 }
                 result
             }
@@ -513,6 +604,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             updateFavoriteUI()
             updateVideoInfoUI(updated)
             showRecipeDialog(updated)
+            lifecycleScope.launch {
+                videoDownloader.downloadAndSaveVideo(updated) { model ->
+                    currentTikTokModel = model
+                }
+            }
         }
     }
 
@@ -541,8 +637,6 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
         }
     }
 
-
-
     /**
      * Updates the UI with the fetched TikTok data, specifically setting
      * and playing the video URL in the ExoPlayer.
@@ -550,28 +644,196 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
      * @param response The data object containing TikTok video information.
      */
     override fun showData(response: TikTokData) {
-        val mediaItem = MediaItem.fromUri(response.data.videoUrl)
+        lifecycleScope.launch {
+            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+            val existing = withContext(Dispatchers.IO) {
+                currentOriginUrl?.let { db.tiktokDao().getByUrl(it) }
+            }
 
-        player.setMediaItem(mediaItem)
-        player.prepare()
-        player.play()
+            if (existing != null) {
+                currentTikTokModel = existing
+                currentRecipeId = existing.id
+                playVideoForRecipe(existing)
+            } else {
+                val mediaItem = MediaItem.fromUri(response.data.videoUrl)
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.play()
+            }
 
-        updateVideoInfoUI(
-            authorName = response.data.author.name,
-            authorAvatar = response.data.author.avatar,
-            likesCount = response.data.likesCount,
-            name = response.data.title,
-            description = null
-        )
+            updateVideoInfoUI(
+                authorName = response.data.author.name,
+                authorAvatar = response.data.author.avatar,
+                likesCount = response.data.likesCount,
+                name = response.data.title,
+                description = null
+            )
 
-        Log.i("TTKResponse", response.toString())
+            Log.i("TTKResponse", response.toString())
 
-        if (isRefreshing && currentRecipeId != null) {
-            updateVideoMetadataInDb(currentRecipeId!!, response.data)
-        } else if (!isRefreshing) {
-            importRecipeWithIA(response)
+            if (isRefreshing && currentRecipeId != null) {
+                updateVideoMetadataInDb(currentRecipeId!!, response.data)
+            } else if (!isRefreshing && existing == null) {
+                importRecipeWithIA(response)
+            }
+            isRefreshing = false
         }
-        isRefreshing = false
+    }
+
+    // =========================================================================
+    // PRESENTER CALLBACKS (TikTok & Instagram)
+    // =========================================================================
+
+    private fun getLowResVideoUrl(response: IgramMediaResponse): String? {
+        val formatUrl = response.formats
+            ?.filter { !it.id.isNullOrEmpty() && it.id.startsWith("mp4") && !it.url.isNullOrEmpty() }
+            ?.minByOrNull { format ->
+                format.id?.filter { it.isDigit() }?.toIntOrNull() ?: Int.MAX_VALUE
+            }?.url
+        return formatUrl ?: response.videoUrl
+    }
+
+    private fun getDashAudioUrl(response: IgramMediaResponse): String? {
+        val dashFormat = response.formats
+            ?.filter { !it.id.isNullOrEmpty() && it.id.contains("dash") && (!it.audioUrl.isNullOrEmpty() || !it.url.isNullOrEmpty()) }
+            ?.minByOrNull { format ->
+                format.id?.filter { it.isDigit() }?.toIntOrNull() ?: Int.MAX_VALUE
+            }
+        return dashFormat?.audioUrl ?: dashFormat?.url ?: response.videoUrl
+    }
+
+    override fun showData(response: IgramMediaResponse) {
+        lifecycleScope.launch {
+            val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+            val existing = withContext(Dispatchers.IO) {
+                currentOriginUrl?.let { db.tiktokDao().getByUrl(it) }
+            }
+
+            val videoToPlay = getLowResVideoUrl(response)
+            if (existing != null) {
+                currentTikTokModel = existing
+                currentRecipeId = existing.id
+                playVideoForRecipe(existing)
+            } else if (!videoToPlay.isNullOrEmpty()) {
+                val mediaItem = MediaItem.fromUri(videoToPlay)
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.play()
+            }
+
+            updateVideoInfoUI(
+                authorName = response.author?.username,
+                authorAvatar = response.author?.profilePicture,
+                likesCount = response.likesCount ?: 0,
+                name = response.caption ?: "Instagram Recipe",
+                description = null
+            )
+
+            Log.i("IGramResponse", response.toString())
+
+            if (!isRefreshing && existing == null) {
+                importInstagramRecipeWithIA(response)
+            }
+            isRefreshing = false
+        }
+    }
+
+    private fun importInstagramRecipeWithIA(response: IgramMediaResponse) {
+        lifecycleScope.launch {
+            try {
+                message.visibility = View.VISIBLE
+                messageLoadAnimation(true)
+                message.text = getString(R.string.load_info)
+
+                val audioUrlToDownload = getDashAudioUrl(response)
+                val audioFile = if (!audioUrlToDownload.isNullOrEmpty()) {
+                    val tempFile = File(cacheDir, "temp_audio_igram.mp3")
+                    recipeInfoByIA.downloadAudio(audioUrlToDownload, tempFile)
+                } else {
+                    null
+                }
+
+                val recipe = if (audioFile != null) {
+                    recipeInfoByIA.importRecipe(listOf(response.caption ?: "Instagram Recipe"), audioFile)
+                } else {
+                    TikTokModel(
+                        name = response.caption ?: "Instagram Recipe",
+                        description = "",
+                        ingredients = emptyList(),
+                        preparationMode = emptyList()
+                    )
+                }
+
+                val videoToSave = getLowResVideoUrl(response) ?: response.videoUrl
+                val savedRecipe = withContext(Dispatchers.IO) {
+                    val db = AppDataBase.getDataBase(this@TiktokImportActivity)
+                    val existing = currentOriginUrl?.let { db.tiktokDao().getByUrl(it) }
+                    val toInsert = if (existing != null) {
+                        recipe.copy(
+                            id = existing.id,
+                            thumbnail = response.thumbnail,
+                            videoUrl = videoToSave,
+                            originUrl = currentOriginUrl,
+                            authorName = response.author?.username,
+                            authorAvatar = response.author?.profilePicture,
+                            likesCount = response.likesCount ?: 0,
+                            localVideoPath = existing.localVideoPath
+                        )
+                    } else {
+                        recipe.copy(
+                            thumbnail = response.thumbnail,
+                            videoUrl = videoToSave,
+                            originUrl = currentOriginUrl,
+                            authorName = response.author?.username,
+                            authorAvatar = response.author?.profilePicture,
+                            likesCount = response.likesCount ?: 0
+                        )
+                    }
+
+                    toInsert.type?.let { typeName ->
+                        if (!db.typeDao().getAllTypeNames().contains(typeName)) {
+                            db.typeDao().insert(com.sam.topchef.core.data.model.Type(type = typeName))
+                        }
+                    }
+
+                    if (existing != null) {
+                        db.tiktokDao().update(toInsert)
+                        toInsert
+                    } else {
+                        db.tiktokDao().insert(toInsert)
+                        db.tiktokDao().getByUrl(currentOriginUrl ?: "") ?: toInsert
+                    }
+                }
+
+                currentTikTokModel = savedRecipe
+                currentRecipeId = savedRecipe.id
+                message.visibility = View.GONE
+                messageLoadAnimation(false)
+
+                updateFavoriteUI()
+                updateVideoInfoUI(savedRecipe)
+                showRecipeDialog(savedRecipe)
+
+                lifecycleScope.launch {
+                    videoDownloader.downloadAndSaveVideo(savedRecipe) { model ->
+                        currentTikTokModel = model
+                    }
+                }
+
+            } catch (e: Exception) {
+                messageLoadAnimation(false)
+                Log.e("RecipeIA", "Error importing Instagram recipe with IA", e)
+
+                val errorMessage = e.message ?: "Erro ao converter receita do Instagram"
+                message.visibility = View.VISIBLE
+                message.text = errorMessage
+
+                Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Tentar Novamente") {
+                        importInstagramRecipeWithIA(response)
+                    }.show()
+            }
+        }
     }
 
     /**
@@ -612,15 +874,40 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             if (recipe != null) {
                 currentTikTokModel = recipe
                 currentOriginUrl = recipe.originUrl
-                val mediaItem = MediaItem.fromUri(recipe.videoUrl ?: "")
 
-                player.setMediaItem(mediaItem)
-                player.prepare()
-                player.play()
+                playVideoForRecipe(recipe)
+
                 updateFavoriteUI()
                 updateVideoInfoUI(recipe)
                 showRecipeDialog(recipe)
             }
+        }
+    }
+
+    private fun playVideoForRecipe(recipe: TikTokModel) {
+        val localPath = recipe.localVideoPath
+        val localFile = if (!localPath.isNullOrEmpty()) File(localPath) else null
+
+        if (localFile != null && localFile.exists() && localFile.length() > 0) {
+            Log.d("TiktokImport", "Playing video from local file: ${localFile.absolutePath}")
+            val mediaItem = MediaItem.fromUri(Uri.fromFile(localFile))
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.play()
+        } else if (!recipe.videoUrl.isNullOrEmpty()) {
+            Log.d("TiktokImport", "Playing video from remote URL: ${recipe.videoUrl}")
+            val mediaItem = MediaItem.fromUri(recipe.videoUrl)
+            player.setMediaItem(mediaItem)
+            player.prepare()
+            player.play()
+
+            lifecycleScope.launch {
+                videoDownloader.downloadAndSaveVideo(recipe) { model ->
+                    currentTikTokModel = model
+                }
+            }
+        } else {
+            Toast.makeText(this, "Vídeo não disponível offline.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -635,7 +922,7 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             "TiktokImport",
             "403 error detected, attempting to refresh URL from: $currentOriginUrl"
         )
-        presenter.getTikTokData(currentOriginUrl!!)
+        tikwmPresenter.getTikTokData(currentOriginUrl!!)
     }
 
     private fun showHeartAnimation(x: Float, y: Float) {
@@ -676,8 +963,11 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
             val db = AppDataBase.getDataBase(this@TiktokImportActivity)
             val tiktokDao = db.tiktokDao()
 
-            val existing = recipe.originUrl?.let { tiktokDao.getByUrl(it) }
-            val toUpdate = (existing ?: recipe).copy(isFavorite = isFavorite)
+            val existing = recipe.originUrl?.let { tiktokDao.getByUrl(it) } ?: tiktokDao.getById(recipe.id)
+            val toUpdate = (existing ?: recipe).copy(
+                isFavorite = isFavorite,
+                localVideoPath = existing?.localVideoPath ?: recipe.localVideoPath
+            )
 
             if (existing != null || recipe.id != 0) {
                 tiktokDao.update(toUpdate)
@@ -685,11 +975,16 @@ class TiktokImportActivity : AppCompatActivity(), TikTokUICallBack {
                 tiktokDao.insert(toUpdate)
             }
 
-            val finalModel = recipe.originUrl?.let { tiktokDao.getByUrl(it) } ?: toUpdate
+            val finalModel = recipe.originUrl?.let { tiktokDao.getByUrl(it) } ?: tiktokDao.getById(toUpdate.id) ?: toUpdate
             withContext(Dispatchers.Main) {
                 currentTikTokModel = finalModel
                 updateFavoriteUI()
                 updateVideoInfoUI(finalModel)
+                lifecycleScope.launch {
+                    videoDownloader.downloadAndSaveVideo(finalModel) { model ->
+                        currentTikTokModel = model
+                    }
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.imageview.ShapeableImageView
 import com.sam.topchef.R
 import jp.wasabeef.glide.transformations.BlurTransformation
+import java.io.File
 
 class LoadImages {
     fun loadImagesWithBlur(
@@ -56,6 +57,24 @@ class LoadImages {
             .thumbnail(
                 Glide.with(into.context)
                     .load(imageUrl)
+                    .override(200, 112)
+                    .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
+            )
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(placeHolder)
+            .into(into)
+    }
+
+    fun loadImagesWithBlur(
+        file: File?,
+        into: ShapeableImageView,
+        @DrawableRes placeHolder: Int = R.drawable.placeholder_item
+    ) {
+        Glide.with(into.context)
+            .load(file)
+            .thumbnail(
+                Glide.with(into.context)
+                    .load(file)
                     .override(200, 112)
                     .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
             )

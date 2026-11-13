@@ -3,6 +3,7 @@ package com.sam.topchef.core.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.File
 
 @Entity
 data class User(
@@ -15,6 +16,18 @@ data class User(
     val name: String? = null,
 
     @ColumnInfo(name = "image_uri")
-    val imageUri: String? = null
-)
+    val imageUri: String? = null,
 
+    @ColumnInfo(name = "local_image_uri")
+    val localImageUri: String? = null
+) {
+    fun getEffectiveImageUri(): String? {
+        if (!localImageUri.isNullOrEmpty()) {
+            val f = File(localImageUri)
+            if (f.exists() && f.length() > 0) {
+                return f.absolutePath
+            }
+        }
+        return imageUri
+    }
+}

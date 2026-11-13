@@ -67,11 +67,15 @@ android {
     }
 
     // 3. Lê a chave e a injeta no BuildConfig
-    val rawApiKey = localProperties.getProperty("GEMINI_FLASH")?.replace("\"", "")?.trim() ?: "CHAVE_PADRAO_VAZIA"
-    val apiKey = "\"$rawApiKey\""
+    val geminiApiKey = localProperties.getProperty("GEMINI_FLASH")?.replace("\"", "")?.trim() ?: "CHAVE_PADRAO_VAZIA"
+    val geminiKey = "\"$geminiApiKey\""
+
+    val igramApiKey = localProperties.getProperty("IGRAM_API")?.replace("\"", "")?.trim() ?: "CHAVE_PADRAO_VAZIA"
+    val igramKey = "\"$igramApiKey\""
 
     defaultConfig {
-        buildConfigField("String", "GEMINI_FLASH", apiKey)
+        buildConfigField("String", "GEMINI_FLASH", geminiKey)
+        buildConfigField("String", "IGRAM_API", igramKey)
     }
 
 }
@@ -80,14 +84,18 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.generativeai)
+
     implementation(libs.glide)
     implementation(libs.glide.transformations)
+
     annotationProcessor(libs.compiler)
     implementation(libs.gson)
+
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.paging)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler.v272)
+
     implementation(libs.androidx.viewpager2)
 
 
@@ -99,20 +107,13 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    
+
     implementation("org.jsoup:jsoup:1.17.2")
 
 
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
 
-    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
-    implementation("com.google.firebase:firebase-ai")
-
-    implementation("com.google.firebase:firebase-appcheck-debug")
-    implementation("com.google.firebase:firebase-appcheck-playintegrity")
-
-    implementation("com.google.firebase:firebase-analytics")
 
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries

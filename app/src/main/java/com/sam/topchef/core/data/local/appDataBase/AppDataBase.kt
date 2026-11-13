@@ -5,7 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.sam.topchef.core.data.local.dao.CartDao
 import com.sam.topchef.core.data.local.dao.RecipeDao
@@ -17,6 +16,10 @@ import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_14_
 import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_15_16
 import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_16_17
 import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_17_18
+import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_18_19
+import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_19_20
+import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_20_21
+import com.sam.topchef.core.data.local.migration.DataBaseMigration.MIGRATION_21_22
 import com.sam.topchef.core.data.model.Cart
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
@@ -34,7 +37,7 @@ import com.sam.topchef.core.utils.TiktokConverter
         Cart::class,
         User::class,
         TikTokModel::class
-    ], version = 18
+    ], version = 22
 )
 @TypeConverters(
     DateConverter::class,
@@ -65,7 +68,7 @@ abstract class AppDataBase : RoomDatabase() {
                 )
                     .fallbackToDestructiveMigration()
                     .fallbackToDestructiveMigrationOnDowngrade(true)
-                    .addMigrations(MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
+                    .addMigrations(MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22)
                     .build()
                     .also { INSTANCE = it }
             }

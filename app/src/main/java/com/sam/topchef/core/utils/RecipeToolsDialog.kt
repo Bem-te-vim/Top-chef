@@ -272,6 +272,13 @@ object RecipeToolsDialog {
                     }
                 }
                 is RecipeTarget.TikTokRecipe -> {
+                    val recipe = db.tiktokDao().getById(target.id)
+                    recipe?.localVideoPath?.let { path ->
+                        val file = java.io.File(path)
+                        if (file.exists()) {
+                            file.delete()
+                        }
+                    }
                     db.tiktokDao().delete(target.id)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "Receita do TikTok deletada", Toast.LENGTH_SHORT).show()
@@ -329,10 +336,11 @@ object RecipeToolsDialog {
                 val cartItems = recipe.ingredients.map { CartItem(itemName = it) }
                 val newCart = Cart(
                     title = recipe.title,
-                    cartImage = recipe.imageUriString.firstOrNull(),
+                    cartImage = recipe.getEffectiveImageUris().firstOrNull() ?: recipe.imageUriString.firstOrNull(),
                     cartItems = cartItems
                 )
-                val cartId = db.cartDao().insert(newCart).toInt()
+                val cartWithMedia = MediaDownloader(context).downloadCartImage(newCart) ?: newCart
+                val cartId = db.cartDao().insert(cartWithMedia).toInt()
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Ingredientes movidos para o carrinho!", Toast.LENGTH_SHORT).show()

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_settings_card"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/imgCategoryIcon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:contentDescription="@string/categories"
+        android:src="@drawable/category_variety_24dp"
+        app:tint="@color/default_color_app" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvCategoryName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Sobremesas" />
+
+        <TextView
+            android:id="@+id/tvRecipeCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/myGray"
+            android:textSize="13sp"
+            tools:text="3 receitas" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnDeleteCategory"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/delete_recipe"
+        android:src="@drawable/delete_24dp"
+        android:visibility="gone"
+        app:tint="@color/default_color_app"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/imgArrow"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:src="@drawable/rounded_arrow_forward_ios_24"
+        app:tint="@color/myGray" />
+
+</LinearLayout>

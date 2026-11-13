@@ -166,6 +166,11 @@ class SettingsRecipeListActivity : AppCompatActivity() {
             val app = application as App
             selectedList.forEach { item ->
                 if (item.isTikTok) {
+                    val recipe = app.tiktokDao.getById(item.id)
+                    recipe?.localVideoPath?.let { path ->
+                        val file = java.io.File(path)
+                        if (file.exists()) file.delete()
+                    }
                     app.tiktokDao.delete(item.id)
                 } else {
                     app.recipeDao.delete(item.id)
@@ -214,7 +219,7 @@ class SettingsRecipeListActivity : AppCompatActivity() {
                             id = t.id,
                             title = t.name,
                             subtitle = "${t.authorName ?: "TikTok"} • ${t.type ?: "Vídeo"}",
-                            imageUrl = t.thumbnail,
+                            imageUrl = t.getEffectiveThumbnailPath(),
                             isTikTok = true,
                             isFavorite = true
                         )
@@ -230,7 +235,7 @@ class SettingsRecipeListActivity : AppCompatActivity() {
                             id = t.id,
                             title = t.name,
                             subtitle = "${t.authorName ?: "TikTok"} • ${t.type ?: "Vídeo"}",
-                            imageUrl = t.thumbnail,
+                            imageUrl = t.getEffectiveThumbnailPath(),
                             isTikTok = true,
                             isFavorite = t.isFavorite
                         )

@@ -25,6 +25,8 @@ import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.Recipe
 import com.sam.topchef.core.data.model.Type
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.MediaDownloader
+import com.sam.topchef.core.utils.TypeUtils
 import com.sam.topchef.core.utils.adapter.ImagesAdapter
 import com.sam.topchef.core.utils.adapter.TextsAdapter
 import com.sam.topchef.databinding.ActivityAddRecipeBinding
@@ -346,14 +348,10 @@ class EditRecipeActivity : AppCompatActivity() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 val app = application as App
-                
-                newRecipe.type?.let { typeName ->
-                    if (!app.typeDao.getAllTypeNames().contains(typeName)) {
-                        app.typeDao.insert(Type(type = typeName))
-                    }
-                }
-                
-                app.recipeDao.update(newRecipe)
+                val finalType = TypeUtils.findOrInsertType(app.db, newRecipe.type)
+                val recipeWithMedia = MediaDownloader(applicationContext).downloadRecipeImages(newRecipe) ?: newRecipe
+                val recipeToUpdate = recipeWithMedia.copy(type = finalType)
+                app.recipeDao.update(recipeToUpdate)
             }
 
             intent.putExtra(MainActivity.EXTRA_RELOAD, true)

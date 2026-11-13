@@ -68,7 +68,7 @@ class VideoRecipeFragment : Fragment() {
             val videoThumbnails = tiktokRecipes.map {
                 VideoThumbnail(
                     videoId = it.id,
-                    thumbnailPath = it.thumbnail,
+                    thumbnailPath = it.getEffectiveThumbnailPath(),
                     title = it.name,
                     description = it.description
                 )

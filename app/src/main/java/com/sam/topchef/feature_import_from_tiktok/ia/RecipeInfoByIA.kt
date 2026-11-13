@@ -1,11 +1,10 @@
 package com.sam.topchef.feature_import_from_tiktok.ia
 
-import com.google.firebase.Firebase
-import com.google.firebase.ai.FirebaseAI
-import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.GenerativeBackend
-import com.google.firebase.ai.type.content
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.generationConfig
+import com.google.ai.client.generativeai.type.content
 import com.google.gson.GsonBuilder
+import com.sam.topchef.BuildConfig
 import com.sam.topchef.feature_import_from_tiktok.model.TikTokModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,28 +16,22 @@ import java.io.IOException
 class RecipeInfoByIA {
 
     companion object {
-        private const val MODEL_NAME = "gemini-3.8-flash"
+        private const val MODEL_NAME = "gemini-2.5-flash"
         private const val AUDIO_MIME_TYPE = "audio/mpeg"
 
-        // Firebase AI Logic / Gemini Developer API
-        // possui limite de 20 MB para a requisição multimodal.
         private const val MAX_AUDIO_SIZE = 20L * 1024L * 1024L
     }
 
-    // Instancie uma única vez para reaproveitar o pool de conexões
     private val httpClient = OkHttpClient()
 
-    /**
-     * Modelo Gemini através do Firebase AI Logic.
-     *
-     * Não existe mais API Key aqui.
-     */
-    private val model by lazy {
-        Firebase.ai(backend = GenerativeBackend.googleAI())
-            .generativeModel(
-                modelName = MODEL_NAME
-            )
-    }
+    val model = GenerativeModel(
+        modelName = MODEL_NAME,
+        apiKey = BuildConfig.GEMINI_FLASH,
+        generationConfig = generationConfig {
+            // Altera o tipo de resposta para sempre ser JSON válido
+            responseMimeType = "application/json"
+        }
+    )
 
     suspend fun downloadAudio(
         url: String,
@@ -164,26 +157,15 @@ class RecipeInfoByIA {
         """.trimIndent()
 
         try {
-
-            /*
-             * IMPORTANTE:
-             *
-             * O Firebase AI Logic recebe o áudio como bytes.
-             *
-             * Aqui o arquivo já foi validado para ter no máximo 20 MB.
-             */
             val audioBytes = audioFile.readBytes()
 
-            val promptContent = content {
-                inlineData(
-                    audioBytes,
-                    AUDIO_MIME_TYPE
-                )
+            val response = model.generateContent(
+                content {
+                    text(prompt)
+                    blob("audio/mpeg", audioBytes)
+                }
+            )
 
-                text(prompt)
-            }
-
-            val response = model.generateContent(promptContent)
 
             val jsonString = response.text
                 ?: throw IOException(
@@ -200,7 +182,6 @@ class RecipeInfoByIA {
             )
 
         } finally {
-
             // Deleta o arquivo temporário local após o processamento
             if (audioFile.exists()) {
                 audioFile.delete()

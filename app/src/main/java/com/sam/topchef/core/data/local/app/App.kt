@@ -1,34 +1,22 @@
 package com.sam.topchef.core.data.local.app
 
 import android.app.Application
-import com.google.firebase.Firebase
-import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.BuildConfig
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.appCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
-import com.google.firebase.initialize
 import com.sam.topchef.core.data.local.appDataBase.AppDataBase
+import com.sam.topchef.core.utils.TypeUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        cleanUpDuplicateTypes()
+    }
 
-
-        FirebaseApp.initializeApp(this)
-
-        val appCheck = FirebaseAppCheck.getInstance()
-
-        if (BuildConfig.DEBUG) {
-            appCheck.installAppCheckProviderFactory(
-                DebugAppCheckProviderFactory.getInstance()
-            )
-        } else {
-            appCheck.installAppCheckProviderFactory(
-                PlayIntegrityAppCheckProviderFactory.getInstance()
-            )
+    fun cleanUpDuplicateTypes() {
+        CoroutineScope(Dispatchers.IO).launch {
+            TypeUtils.cleanUpDuplicateTypes(db)
         }
     }
 

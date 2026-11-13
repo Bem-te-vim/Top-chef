@@ -1,6 +1,5 @@
 package com.sam.topchef.feature_settings.view
 
-import android.app.Application
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -8,10 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.sam.topchef.BuildConfig
 import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.utils.LoadImages
 import com.sam.topchef.databinding.ActivitySettingsBinding
+import com.sam.topchef.feature_shopping_list.activities.ShoppingListActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,6 +41,8 @@ class SettingsActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) { (application as App).userDao.getUser()?.imageUri }
             LoadImages().loadImagesWithBlur(userImage, binding.imgUser)
         }
+
+        binding.tvAppVersion.text = BuildConfig.VERSION_NAME
     }
 
     private fun setupListeners() {
@@ -80,6 +83,16 @@ class SettingsActivity : AppCompatActivity() {
                 filterType = SettingsRecipeListActivity.FILTER_ALL,
                 title = getString(R.string.all_recipes_option)
             )
+        }
+
+        binding.btnCategories.setOnClickListener {
+            val intent = Intent(this, SettingsCategoryListActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnShoppingList.setOnClickListener {
+            val i = Intent(this, ShoppingListActivity::class.java)
+            startActivity(i)
         }
     }
 

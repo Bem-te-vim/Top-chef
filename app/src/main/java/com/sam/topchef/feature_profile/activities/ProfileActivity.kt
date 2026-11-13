@@ -17,6 +17,7 @@ import com.sam.topchef.R
 import com.sam.topchef.core.data.local.app.App
 import com.sam.topchef.core.data.model.User
 import com.sam.topchef.core.utils.LoadImages
+import com.sam.topchef.core.utils.MediaDownloader
 import com.sam.topchef.core.utils.Utils.clickAnimation
 import com.sam.topchef.databinding.ActivityProfileBinding
 import com.sam.topchef.feature_feed_main.ui.activity.MainActivity
@@ -133,7 +134,9 @@ class ProfileActivity : AppCompatActivity() {
             //Save the image and the username on DataBase
             lifecycleScope.launch {
                 withContext(Dispatchers.IO) {
-                    (application as App).userDao.saveUser(user)
+                    val app = application as App
+                    val userWithMedia = MediaDownloader(applicationContext).downloadUserImage(user) ?: user
+                    app.userDao.saveUser(userWithMedia)
                 }
             }
 
